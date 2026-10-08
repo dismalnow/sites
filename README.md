@@ -11,6 +11,7 @@ index.html        landing page listing the published sites
 CNAME             custom domain for GitHub Pages (do not edit)
 .nojekyll         serve files as-is, no Jekyll build
 CLAUDE.md         publishing rules, read by AI assistants working here
+RUNBOOK.md        paste-into-any-chat steps for publishing a site here
 tools/            credential scan and its tests
 .githooks/        pre-push hook that runs the scan
 <site-name>/      one folder per site -> https://sites.dismal.me/<site-name>/
