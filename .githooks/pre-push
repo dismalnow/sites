@@ -1,0 +1,19 @@
+#!/bin/sh
+# Blocks the push when the credential scan finds anything or cannot run.
+# Enable once per clone:  git config core.hooksPath .githooks
+
+if python3 -c "" >/dev/null 2>&1; then
+    PYTHON=python3
+elif python -c "import sys; sys.exit(0 if sys.version_info[0] == 3 else 1)" >/dev/null 2>&1; then
+    PYTHON=python
+else
+    echo "pre-push: Python 3 not found. Push blocked." >&2
+    exit 1
+fi
+
+REPO_ROOT=$(git rev-parse --show-toplevel) || exit 1
+
+if ! "$PYTHON" "$REPO_ROOT/tools/check_secrets.py"; then
+    echo "pre-push: credential scan did not pass. Push blocked." >&2
+    exit 1
+fi

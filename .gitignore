@@ -1,0 +1,4 @@
+# Python bytecode caches. Never publish compiled artifacts.
+__pycache__/
+*.pyc
+*.pyo
