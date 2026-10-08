@@ -1,0 +1,1042 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Star Citizen Fleet Planner</title>
+<!-- Version 2, built 2026-10-08. Hangar export 2026-10-07. Prices and contracts: Star Citizen Wiki data API, Alpha 4.10.1. -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Electrolize&display=swap">
+<style>
+  /* Layout: a hangar manifest that answers five questions in order.
+     Five answer tiles up top, then one bay per question: have, can do, missing, lost, get.
+     Status is always a pill with a lamp: own (green), loaner (blue), gap (coral), idle (grey). */
+  :root {
+    color-scheme: dark;
+    --bg: #0b111b;
+    --surface: #121b29;
+    --surface-2: #19263a;
+    --line: #27374d;
+    --fg: #e6edf5;
+    --muted: #94a4b9;
+    --accent: #f0a63c;
+    --accent-ink: #1b1203;
+    --own: #62cfa2;
+    --loan: #6fb1e8;
+    --gap: #f27e69;
+    --idle: #8a98ab;
+    --lock: #b79cf0;
+    --display: "Electrolize", "Eurostile", "Bahnschrift", "Segoe UI", sans-serif;
+    --body: "Barlow", "Segoe UI", system-ui, -apple-system, sans-serif;
+    --step--1: 0.8125rem;
+    --step-0: 1rem;
+    --step-1: 1.1875rem;
+    --step-2: 1.5rem;
+    --step-3: 2rem;
+  }
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      color-scheme: light;
+      --bg: #edf0f5;
+      --surface: #ffffff;
+      --surface-2: #e3e8f0;
+      --line: #c8d1de;
+      --fg: #111a27;
+      --muted: #536176;
+      --accent: #a85f00;
+      --accent-ink: #ffffff;
+      --own: #0d7450;
+      --loan: #1c69ad;
+      --gap: #b53723;
+      --idle: #5d6b7e;
+      --lock: #6542c0;
+    }
+  }
+  :root[data-theme="light"] {
+    color-scheme: light;
+    --bg: #edf0f5;
+    --surface: #ffffff;
+    --surface-2: #e3e8f0;
+    --line: #c8d1de;
+    --fg: #111a27;
+    --muted: #536176;
+    --accent: #a85f00;
+    --accent-ink: #ffffff;
+    --own: #0d7450;
+    --loan: #1c69ad;
+    --gap: #b53723;
+    --idle: #5d6b7e;
+    --lock: #6542c0;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--body);
+    font-size: var(--step-0);
+    line-height: 1.5;
+    padding-inline: 16px;
+    padding-block: 28px 64px;
+  }
+  .wrap { max-width: 1120px; margin-inline: auto; display: flex; flex-direction: column; gap: 28px; }
+  a { color: var(--fg); text-underline-offset: 3px; }
+  p { margin: 0; }
+  button, select, input { font: inherit; color: inherit; }
+  button { cursor: pointer; }
+  button:focus-visible, summary:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+  .num { font-variant-numeric: tabular-nums; }
+  .muted { color: var(--muted); }
+  .small { font-size: var(--step--1); }
+
+  .eyebrow, .label {
+    font-family: var(--display);
+    font-size: var(--step--1);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin: 0;
+  }
+  .eyebrow { color: var(--accent); }
+  .label { color: var(--muted); }
+
+  /* Masthead */
+  .masthead { display: flex; flex-direction: column; gap: 10px; }
+  h1 {
+    font-family: var(--display);
+    font-weight: 400;
+    font-size: clamp(1.75rem, 5vw, 2.5rem);
+    line-height: 1.12;
+    margin: 0;
+    text-wrap: balance;
+  }
+  .lede { max-width: 64ch; color: var(--muted); font-size: var(--step-1); line-height: 1.45; }
+
+  /* Five answers */
+  .answers { display: grid; grid-template-columns: repeat(auto-fit, minmax(196px, 1fr)); gap: 10px; list-style: none; margin: 0; padding: 0; }
+  .answer {
+    display: flex; flex-direction: column; gap: 6px; height: 100%;
+    background: var(--surface); border: 1px solid var(--line); border-radius: 3px;
+    padding: 14px; text-decoration: none; min-width: 0;
+  }
+  .answer:hover { border-color: var(--accent); }
+  .answer .q { font-family: var(--display); font-size: 0.75rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); }
+  .answer .a { font-family: var(--display); font-size: var(--step-1); line-height: 1.2; text-wrap: balance; }
+  .answer .s { color: var(--muted); font-size: var(--step--1); line-height: 1.4; }
+
+  /* Jump bar */
+  .jump {
+    position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
+    background: var(--bg); border-bottom: 1px solid var(--line);
+    margin-inline: -16px; padding-inline: 16px; overflow-x: auto;
+  }
+  .jump ul { list-style: none; margin: 0; padding: 0; display: flex; gap: 20px; white-space: nowrap; }
+  .jump a {
+    display: block; padding: 14px 0 12px;
+    font-family: var(--display); font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--muted); text-decoration: none; border-bottom: 2px solid transparent;
+  }
+  .jump a:hover, .jump a[aria-current="true"] { color: var(--fg); border-bottom-color: var(--accent); }
+
+  /* Bays */
+  .bay { display: flex; flex-direction: column; gap: 16px; scroll-margin-top: 56px; }
+  .bay-head { display: flex; flex-direction: column; gap: 6px; border-top: 1px solid var(--line); padding-top: 22px; }
+  h2 { font-family: var(--display); font-weight: 400; font-size: var(--step-2); line-height: 1.2; margin: 0; text-wrap: balance; }
+  h3 { font-family: var(--display); font-weight: 400; font-size: var(--step-1); line-height: 1.25; margin: 0; }
+  h4 { font-family: var(--body); font-weight: 600; font-size: var(--step-0); line-height: 1.3; margin: 0; }
+  .bay-head p { max-width: 72ch; color: var(--muted); }
+  .sub { display: flex; flex-direction: column; gap: 10px; }
+  .sub > .label { padding-top: 6px; }
+
+  /* Filter chips */
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip {
+    background: transparent; border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 12px; font-size: var(--step--1); color: var(--muted);
+  }
+  .chip:hover { color: var(--fg); border-color: var(--muted); }
+  .chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 600; }
+  .chip .num { opacity: 0.8; margin-left: 4px; }
+
+  /* Pills */
+  .pill {
+    display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
+    font-size: 0.75rem; font-weight: 600; letter-spacing: 0.03em;
+    border: 1px solid currentColor; border-radius: 999px; padding: 1px 9px 1px 7px;
+  }
+  .pill::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+  .pill.own { color: var(--own); }
+  .pill.loan { color: var(--loan); }
+  .pill.gap { color: var(--gap); }
+  .pill.idle { color: var(--idle); }
+  .pill.lock { color: var(--lock); }
+  .pill.trade { color: var(--accent); }
+  .pill.plain { color: var(--muted); }
+  .pill.plain::before { display: none; }
+  .pill.plain { padding-left: 9px; }
+
+  /* Card grids */
+  .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+  @media (max-width: 900px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 600px) { .grid { grid-template-columns: minmax(0, 1fr); } }
+  .card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 3px;
+    padding: 14px; display: flex; flex-direction: column; gap: 8px; min-width: 0;
+  }
+  .card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+  .card-top h3 { font-size: var(--step-0); letter-spacing: 0.02em; }
+  .pills { display: flex; flex-wrap: wrap; gap: 6px; }
+  .role { color: var(--muted); font-size: var(--step--1); }
+  .note { font-size: var(--step--1); line-height: 1.45; }
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 0; padding-top: 8px; border-top: 1px solid var(--line); margin-top: auto; }
+  .stats div { display: flex; flex-direction: column; min-width: 0; }
+  .stats dt { font-size: 0.6875rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+  .stats dd { margin: 0; font-variant-numeric: tabular-nums; font-size: var(--step--1); }
+  .kv { display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; margin: 0; font-size: var(--step--1); }
+  .kv dt { color: var(--muted); }
+  .kv dd { margin: 0; }
+
+  /* Gap cards */
+  .gaps { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  @media (max-width: 720px) { .gaps { grid-template-columns: minmax(0, 1fr); } }
+  .prices { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 3px; overflow: hidden; margin: 2px 0 0; }
+  .prices div { background: var(--surface-2); padding: 8px 10px; display: flex; flex-direction: column; min-width: 0; }
+  .prices dt { font-size: 0.6875rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+  .prices dd { margin: 0; font-family: var(--display); font-size: var(--step-0); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+  .prices small { color: var(--muted); font-family: var(--body); font-size: 0.6875rem; }
+
+  /* Tables */
+  .scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: 3px; background: var(--surface); }
+  table { border-collapse: collapse; width: 100%; font-size: var(--step--1); }
+  th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tbody tr:last-child td { border-bottom: 0; }
+  th { font-family: var(--display); font-weight: 400; font-size: 0.6875rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
+  td.r, th.r { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  td.nw { white-space: nowrap; }
+
+  /* Timeline */
+  .trades { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+  .trade { background: var(--surface); border: 1px solid var(--line); border-radius: 3px; padding: 14px; display: grid; grid-template-columns: 124px 1fr; gap: 6px 16px; }
+  .trade-when { font-family: var(--display); font-size: var(--step--1); color: var(--muted); letter-spacing: 0.04em; }
+  .trade-main { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+  .trade-main .card-top { align-items: baseline; flex-wrap: wrap; }
+  @media (max-width: 620px) { .trade { grid-template-columns: 1fr; } }
+
+  /* Moves */
+  .totals { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--accent); border-radius: 3px; overflow: hidden; }
+  .totals div { background: var(--surface); padding: 12px 14px; display: flex; flex-direction: column; gap: 2px; }
+  .totals dt { font-size: 0.6875rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+  .totals dd { margin: 0; font-family: var(--display); font-size: var(--step-2); font-variant-numeric: tabular-nums; line-height: 1.1; }
+  .totals small { color: var(--muted); font-size: var(--step--1); }
+  .moves { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+  .move { background: var(--surface); border: 1px solid var(--line); border-radius: 3px; padding: 14px; display: grid; grid-template-columns: auto 1fr auto; gap: 14px; align-items: start; }
+  .move.is-done { opacity: 0.62; }
+  .move.is-out { border-style: dashed; }
+  .tick { display: flex; align-items: center; gap: 8px; font-size: var(--step--1); color: var(--muted); padding-top: 2px; cursor: pointer; }
+  .tick input { width: 20px; height: 20px; accent-color: var(--accent); margin: 0; }
+  .move-body { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+  .move-body > p { max-width: 70ch; }
+  .move-cost { text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+  .move-cost b { font-family: var(--display); font-weight: 400; font-size: var(--step-2); line-height: 1; font-variant-numeric: tabular-nums; }
+  .move-cost span { color: var(--muted); font-size: 0.75rem; }
+  .move details, .how { font-size: var(--step--1); }
+  .move summary, .how summary, .fold summary { cursor: pointer; color: var(--accent); padding-block: 4px; }
+  .move ol, .how ol { margin: 6px 0 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; max-width: 72ch; }
+  .routes { display: flex; flex-direction: column; gap: 6px; border: 0; padding: 0; margin: 2px 0 0; font-size: var(--step--1); }
+  .routes label { display: flex; gap: 8px; align-items: baseline; cursor: pointer; }
+  .routes input { accent-color: var(--accent); }
+  .toggle { background: transparent; border: 1px solid var(--line); border-radius: 3px; padding: 5px 10px; font-size: 0.75rem; white-space: nowrap; }
+  .toggle[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 600; }
+  @media (max-width: 620px) {
+    .move { grid-template-columns: 1fr auto; }
+    .tick { grid-column: 1 / -1; order: 3; }
+    .move-body { grid-column: 1; }
+  }
+  .how { background: var(--surface-2); border-radius: 3px; padding: 10px 14px; }
+
+  /* Explorer */
+  .explorer { background: var(--surface); border: 1px solid var(--line); border-radius: 3px; padding: 14px; display: flex; flex-direction: column; gap: 12px; }
+  .controls { display: flex; flex-wrap: wrap; gap: 12px 18px; align-items: flex-end; }
+  .field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .field label, .field .label { font-size: 0.6875rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); font-family: var(--display); }
+  select, input[type="search"] {
+    background: var(--bg); border: 1px solid var(--line); border-radius: 3px; padding: 8px 10px; max-width: 100%;
+  }
+  .explorer .scroll { max-height: 460px; overflow-y: auto; }
+  .explorer thead th { position: sticky; top: 0; background: var(--surface); }
+
+  /* Lists */
+  .rules { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 8px; max-width: 78ch; }
+  .fold { border: 1px solid var(--line); border-radius: 3px; padding: 6px 14px; background: var(--surface); }
+  .fold[open] { padding-bottom: 14px; }
+  .fold .scroll { margin-top: 8px; }
+  footer { border-top: 1px solid var(--line); padding-top: 18px; color: var(--muted); font-size: var(--step--1); display: flex; flex-direction: column; gap: 8px; }
+  footer p { max-width: 90ch; }
+  @media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+</style>
+<style>
+  .sitebar { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 20px; padding-bottom: 12px; border-bottom: 1px solid var(--line);
+    font-family: var(--display); font-size: 0.8125rem; letter-spacing: 0.1em; text-transform: uppercase; }
+  .sitebar a { color: var(--muted); text-decoration: none; }
+  .sitebar a:hover, .sitebar a[aria-current="page"] { color: var(--fg); }
+  .sitebar a.sitebar-home { color: var(--accent); margin-right: auto; }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <nav class="sitebar" aria-label="Site"><a class="sitebar-home" href="./">SC Planner</a><a href="./spawn-picker.html">Spawn Picker</a><a href="./fleet-planner.html" aria-current="page">Fleet Planner</a></nav>
+  <header class="masthead">
+    <p class="eyebrow">Your hangar · Alpha 4.10.1 · data pulled 8 Oct 2026</p>
+    <h1>Star Citizen Fleet Planner</h1>
+    <p class="lede">Five questions about your pledged fleet, each with one answer and the evidence under it. Tap an answer to jump to it.</p>
+  </header>
+
+  <ol class="answers" id="answers"></ol>
+
+  <nav class="jump" aria-label="Sections">
+    <ul>
+      <li><a href="#have">1 Have</a></li>
+      <li><a href="#can">2 Can do</a></li>
+      <li><a href="#missing">3 Missing</a></li>
+      <li><a href="#lost">4 Lost</a></li>
+      <li><a href="#get">5 Get</a></li>
+    </ul>
+  </nav>
+
+  <!-- 1 HAVE -->
+  <section class="bay" id="have" aria-labelledby="have-h">
+    <div class="bay-head">
+      <p class="eyebrow">1 · What I have</p>
+      <h2 id="have-h"></h2>
+      <p>Every ship and vehicle pledged on your RSI account as of 7 October 2026. Paid is what a melt would return. Now is today's store price, which is what the hull is worth as the starting point of an upgrade. In game is the cheapest aUEC price to replace it at a ship shop.</p>
+    </div>
+    <div class="chips" id="fleet-chips" role="group" aria-label="Filter ships"></div>
+    <div id="fleet"></div>
+    <div class="sub">
+      <p class="label">Borrowed while concept ships are unfinished</p>
+      <div class="scroll"><table id="loaners"></table></div>
+      <p class="small muted">Loaners need a game package (your Andromeda package is one), do not stack, and end when the lending ship becomes flight ready. Source: RSI Loaner Ship Matrix, updated 26 Aug 2026.</p>
+    </div>
+  </section>
+
+  <!-- 2 CAN DO -->
+  <section class="bay" id="can" aria-labelledby="can-h">
+    <div class="bay-head">
+      <p class="eyebrow">2 · What I can do</p>
+      <h2 id="can-h"></h2>
+      <p>A loop here is a line of work with paying contracts in the 4.10.1 mission list. All 1,427 live contracts were grouped by type. Each tile names who pays and which of your ships fits.</p>
+    </div>
+    <div class="chips" id="loop-chips" role="group" aria-label="Filter loops"></div>
+    <div class="grid" id="loops"></div>
+  </section>
+
+  <!-- 3 MISSING -->
+  <section class="bay" id="missing" aria-labelledby="missing-h">
+    <div class="bay-head">
+      <p class="eyebrow">3 · What I'm missing</p>
+      <h2 id="missing-h"></h2>
+      <p>Each card shows three ways to cover the hole: upgrade a pledge you barely use, buy the ship in game with aUEC, or rent it for a day to see if you like the work.</p>
+    </div>
+    <div class="gaps" id="gaps"></div>
+    <div class="sub">
+      <p class="label">Also missing, outside the loops</p>
+      <div class="grid" id="extras"></div>
+    </div>
+    <div class="sub">
+      <p class="label">Ships you can skip for now</p>
+      <p class="muted" style="max-width:72ch">These roles have ships for sale but no paying contracts in the 4.10.1 mission list. Pledging one today buys a ship with no job.</p>
+      <div class="scroll"><table id="idle"></table></div>
+    </div>
+  </section>
+
+  <!-- 4 LOST -->
+  <section class="bay" id="lost" aria-labelledby="lost-h">
+    <div class="bay-head">
+      <p class="eyebrow">4 · How I lost it</p>
+      <h2 id="lost-h"></h2>
+      <p>RSI keeps no record of a pledge that was melted and later bought back. These trades were rebuilt from your order history: wherever an order spent more store credit than the visible melts supplied, a hidden melt happened, and the amount identifies the pledge. Treat each as an inference until you confirm it.</p>
+    </div>
+    <ol class="trades" id="trades"></ol>
+    <details class="fold">
+      <summary>Everything still in your buy-back list (39 pledges)</summary>
+      <div class="scroll"><table id="buyback"></table></div>
+      <p class="small muted" style="margin-top:8px">A buy-back returns the original pledge at its original price. Upgrades that were applied to it do not come back. Paying with store credit needs the quarterly buy-back token.</p>
+    </details>
+  </section>
+
+  <!-- 5 GET -->
+  <section class="bay" id="get" aria-labelledby="get-h">
+    <div class="bay-head">
+      <p class="eyebrow">5 · How I can get it</p>
+      <h2 id="get-h"></h2>
+      <p>The rule behind every move: spend pledge value on ships that cost millions in game or are not sold there, and replace cheap ground vehicles with aUEC. Polaris, Merchantman and Arrastra never move. Tick a move when it is done. Your ticks stay in this browser.</p>
+    </div>
+    <dl class="totals" id="totals"></dl>
+    <div class="sub">
+      <p class="label">Pay for it without new money</p>
+      <p class="muted" style="max-width:72ch">Some pledges in your hangar are worth more as store credit than as items: paints for ships you no longer own, and one pack bought well above what its vehicle costs today. Tick what you would melt and the totals update. Store credit pays for standard upgrades.</p>
+      <div class="scroll"><table id="funding"></table></div>
+      <details class="how">
+        <summary>How to melt a pledge, step by step</summary>
+        <ol>
+          <li>Sign in at robertsspaceindustries.com and open <b>My Hangar</b>. Multi-factor authentication must be switched on for the account.</li>
+          <li>Find the pledge by the name shown in the table and expand it.</li>
+          <li>Choose <b>Exchange</b>. That is RSI's label for melting a pledge into store credit.</li>
+          <li>The dialog states the credit you will receive. Compare it with the figure in the table. The figures here are estimates from your order history, so the dialog is the authority.</li>
+          <li>If the amount is right, confirm with your password. The credit lands on the account at once.</li>
+          <li>A melted pledge moves to your buy-back list. Getting it back costs its original price in new money, or in store credit with the quarterly token.</li>
+        </ol>
+      </details>
+    </div>
+    <details class="how">
+      <summary>How an upgrade works on the RSI site, step by step</summary>
+      <ol>
+        <li>Sign in at robertsspaceindustries.com. Open <b>Store</b>, then <b>Ship Upgrades</b>.</li>
+        <li>Pick the ship you own as the starting ship and the target as the destination. The tool only offers targets that cost more than the starting ship.</li>
+        <li>Check the price. It should equal the figure on the move below. If it does not, a store price changed since 8 October. Stop and re-check before paying.</li>
+        <li>Add it to the cart and pay. A standard upgrade accepts store credit. A warbond upgrade needs new money.</li>
+        <li>The upgrade now sits in <b>My Hangar</b> as its own item. Nothing has changed yet, and you can still melt it for what you paid.</li>
+        <li>To commit, open the upgrade in My Hangar, choose <b>Apply Upgrade</b>, pick the pledge, and confirm. This step is permanent.</li>
+        <li>The pledge keeps its name, insurance and extras. Only the ship inside changes.</li>
+      </ol>
+      <p class="muted" style="margin-top:8px">Button labels on the site may differ slightly. The order of steps does not.</p>
+    </details>
+    <div class="sub">
+      <p class="label">The plan</p>
+      <ol class="moves" id="moves-core"></ol>
+    </div>
+    <div class="sub">
+      <p class="label">Optional: undo old trades and put idle insurance to work</p>
+      <ol class="moves" id="moves-opt"></ol>
+    </div>
+    <div class="sub">
+      <p class="label">Upgrade explorer</p>
+      <div class="explorer">
+        <div class="controls">
+          <div class="field">
+            <label for="donor">Start from</label>
+            <select id="donor"></select>
+          </div>
+          <div class="field">
+            <span class="label">Show</span>
+            <div class="chips" id="scope-chips" role="group" aria-label="Which targets to show"></div>
+          </div>
+          <div class="field">
+            <label for="q">Find a ship</label>
+            <input type="search" id="q" placeholder="Vulture, medical, freight" autocomplete="off">
+          </div>
+        </div>
+        <p class="small" id="donor-facts"></p>
+        <div class="scroll"><table id="targets"></table></div>
+        <p class="small muted">Cost is the target's store price minus the starting ship's store price, per the wiki data pull of 8 Oct 2026. The RSI upgrade tool is the authority. If it does not list a pair, that route does not exist.</p>
+      </div>
+    </div>
+    <div class="sub">
+      <p class="label">Rules that bite</p>
+      <ul class="rules" id="rules"></ul>
+    </div>
+    <div class="sub">
+      <p class="label">Still unknown</p>
+      <ul class="rules" id="unknowns"></ul>
+    </div>
+  </section>
+
+  <footer>
+    <p><b>Sources.</b> Your RSI account pages (My Hangar, Buy Back, Billing) saved 7 Oct 2026 and parsed locally. Ship prices, roles, in-game prices and the contract list: <a href="https://api.star-citizen.wiki/">Star Citizen Wiki data API</a>, build 4.10.1-LIVE.12660092. Upgrade, melt, buy-back, warbond and game access rules: <a href="https://support.robertsspaceindustries.com/">RSI Knowledge Base</a>. Loaners: <a href="https://support.robertsspaceindustries.com/hc/en-us/articles/360003093114-Loaner-Ship-Matrix">Loaner Ship Matrix</a>. Hull sizes: <a href="https://starcitizen.tools/Merchantman">Merchantman</a> and <a href="https://starcitizen.tools/Arrastra">Arrastra</a> wiki pages. Expo dates: <a href="https://www.starshipdealers.com/calendar/">a fan calendar</a>, unconfirmed.</p>
+    <p>Paid figures are estimates matched from order lines. RSI's own melt values are hidden fields the saved pages do not include. This page holds your account details, so share it with that in mind.</p>
+  </footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ---------- Data ---------- */
+
+  // verdict: lock = never a donor, keep = in use, trade = best used as an upgrade base, call = your decision
+  // st: fly = flight ready or drivable, concept = not usable yet
+  var FLEET = [
+    { id: "polaris", n: "Polaris", grp: "big", role: "Corvette, crew up to 12, 576 SCU, Tier 2 med bay", st: "fly", ins: "120 mo", paid: 675, now: 975, rebuy: null, v: "lock",
+      note: "Your only capital hull. Paid 675, sells for 975. A melt would hand back the 675 and burn the difference." },
+    { id: "merchantman", n: "Merchantman", grp: "big", role: "Heavy freighter, 2,880 SCU, 237 m", st: "concept", ins: "120 mo", paid: 330, now: 650, rebuy: null, v: "lock",
+      note: "Paid 330 through a Caterpillar upgrade, sells for 650. Lends you the bulk haulers until it ships." },
+    { id: "arrastra", n: "Arrastra", grp: "big", role: "Mining and refining, crew 2 to 5, 124 m", st: "concept", ins: "120 mo", paid: 575, now: 575, rebuy: null, v: "lock",
+      note: "Bought in 2023 with the MOLE, a Prospector and a Gladius. Lends the MOLE and an Arrow back until it ships." },
+    { id: "andromeda", n: "Constellation Andromeda", grp: "haul", role: "Gunship and freighter, 96 SCU, with P-52 Merlin and PTV", st: "fly", ins: "6 mo", paid: 275, now: 240, rebuy: 9652610, v: "keep",
+      note: "Game package. This is your licence to play, and it is what makes loaners work. Never melt it." },
+    { id: "redeemer", n: "Redeemer", grp: "combat", role: "Crew gunship", st: "fly", ins: "120 mo", paid: 250, now: 330, rebuy: 9803430, v: "call",
+      note: "Needs a crew, and the Polaris already covers crewed combat. Your strongest upgrade base outside the big hulls." },
+    { id: "corsair", n: "Corsair", grp: "haul", role: "Expedition gunboat, 72 SCU", st: "fly", ins: "120 mo", paid: 215, now: 250, rebuy: 6224400, v: "call",
+      note: "Was a Mercury Star Runner until 2021. Ten dollars turns it back." },
+    { id: "scorpius", n: "Scorpius", grp: "combat", role: "Heavy fighter, 2 seats", st: "fly", ins: "LTI", paid: 160, now: 240, rebuy: 5171040, v: "keep",
+      note: "Your bounty and security workhorse. Lifetime insurance." },
+    { id: "sabre", n: "Sabre Comet", grp: "combat", role: "Stealth fighter", st: "fly", ins: "120 mo", paid: 185, now: 185, rebuy: 4650340, v: "keep",
+      note: "Solo dogfighter for bounties." },
+    { id: "cutlassred", n: "Cutlass Red", grp: "work", role: "Medical, two Tier 3 beds, 12 SCU", st: "fly", ins: "6 mo", paid: 135, now: 135, rebuy: 2714800, v: "keep",
+      note: "Covers rescue beacons and doubles as a dropship for ground contracts." },
+    { id: "nomad", n: "Nomad", grp: "haul", role: "Solo freighter, 24 SCU, tractor beam", st: "fly", ins: "6 mo", paid: 96.63, now: 80, rebuy: 1436400, v: "keep",
+      note: "Daily driver for small hauls. Five paints ride along with the pledge." },
+    { id: "m50", n: "M50", grp: "ground", role: "Racer", st: "fly", ins: "12 mo", paid: 100, now: 100, rebuy: 1424430, v: "keep",
+      note: "Your only racer, and Wildstar Racing pays for time trials. Keep it out of the upgrade pool." },
+    { id: "rocds", n: "ROC DS", grp: "work", role: "Ground miner, 2 seats", st: "fly", ins: "6 mo", paid: 114, now: 75, rebuy: 134663, v: "melt",
+      note: "Sits in the Miner's Megapack, bought for 114. The ROC DS alone is 75 in the store and 134,663 aUEC in game. The best melt in the hangar." },
+    { id: "roc", n: "ROC", grp: "work", role: "Ground miner, 1 seat", st: "fly", ins: "6 mo", paid: 55, now: 55, rebuy: 98753, v: "trade",
+      note: "Costs 98,753 aUEC to replace in game. Five dollars turns it into a refuelling ship that is not sold in game at all." },
+    { id: "cyclonemt", n: "Cyclone MT", grp: "ground", role: "Anti-air buggy, crew 1 to 3", st: "fly", ins: "LTI", paid: 70, now: 75, rebuy: 134663, v: "call",
+      note: "Lifetime insurance on a buggy that costs 134,663 aUEC in game. Fifteen dollars moves that insurance onto a Gladius." },
+    { id: "g12r", n: "G12r", grp: "ground", role: "Racing rover", st: "concept", ins: "LTI", paid: 55, now: 60, rebuy: null, v: "call",
+      note: "Not drivable yet. Lifetime insurance sitting on a concept rover. Lends a Lynx meanwhile." },
+    { id: "dragonfly", n: "Dragonfly Black", grp: "ground", role: "Hoverbike", st: "fly", ins: "120 mo", paid: 40, now: 40, rebuy: 325584, v: "trade",
+      note: "Twenty dollars turns it into a Golem, with the 120 month insurance carried over." },
+    { id: "hoverquad", n: "HoverQuad", grp: "ground", role: "Hoverbike", st: "fly", ins: "6 mo", paid: 27, now: 30, rebuy: 53865, v: "trade",
+      note: "Costs 53,865 aUEC to replace in game. Thirty dollars turns it into a Salvation." }
+  ];
+  var GROUPS = [
+    ["big", "Big hulls, locked"],
+    ["combat", "Combat"],
+    ["haul", "Hauling and multi-role"],
+    ["work", "Industrial and medical"],
+    ["ground", "Ground and racing"]
+  ];
+  var VERDICT = { lock: ["lock", "Locked"], keep: ["own", "Keep"], trade: ["trade", "Trade up"], melt: ["trade", "Melt candidate"], call: ["plain", "Your call"] };
+
+  var LOANERS = [
+    ["MOLE", "Arrastra", "Crewed mining ship, flyable solo"],
+    ["Arrow", "Arrastra", "Light fighter"],
+    ["C2 Hercules Starlifter", "Merchantman", "Freighter, 696 SCU"],
+    ["Hull C", "Merchantman", "Bulk freighter, 4,608 SCU"],
+    ["Defender", "Merchantman", "Light fighter, 2 seats"],
+    ["Lynx", "G12r", "Rover"],
+    ["Mustang Alpha", "Dragonfly Black, Cyclone MT", "Starter ship"]
+  ];
+
+  // s: own = on ships you own, loan = only on loaners, gap = no ship for it
+  var LOOPS = [
+    { n: "Cargo hauling and trading", s: "own", pay: "Covalex, Ling Family Hauling, Red Wind", solo: "Nomad (24 SCU), Corsair (72), Andromeda (96)", crew: "Polaris (576)", note: "Reputation is the limit here. Your hulls are big enough." },
+    { n: "Bulk and interstellar hauling", s: "loan", pay: "Master rank and bulk contracts", solo: "C2 Hercules (696 SCU) and Hull C (4,608), both on loan", crew: "Polaris (576)", note: "The loaners end when the Merchantman ships. Its own 2,880 SCU hold then takes over." },
+    { n: "Bounty hunting", s: "own", pay: "Bounty Hunters Guild, InterSec", solo: "Scorpius, Sabre Comet", crew: "Redeemer", note: "" },
+    { n: "Security and mercenary flying", s: "own", pay: "Foxwell Enforcement, Eckhart Security, Headhunters, Citizens for Prosperity", solo: "Scorpius, Andromeda, Corsair", crew: "Redeemer, Polaris", note: "Patrols, escorts, ambushes, base defence and bombing runs on fuel depots." },
+    { n: "Ground and bunker contracts", s: "own", pay: "Security firms, distribution centres, outposts", solo: "Cutlass Red or Corsair to get there", crew: "Cyclone MT for ground support", note: "On-foot work. The ship is transport and a respawn point." },
+    { n: "Fleet battles and events", s: "own", pay: "InterSec Tactical Strike Group in Nyx, XenoThreat call-outs", solo: "Scorpius", crew: "Polaris", note: "The one place the Polaris earns its keep today." },
+    { n: "Medical rescue", s: "own", pay: "Player rescue beacons", solo: "Cutlass Red (Tier 3 beds)", crew: "Polaris (Tier 2 bay)", note: "" },
+    { n: "Hand mining", s: "own", pay: "Shubin purchase orders", solo: "Any ship and a multi-tool", crew: "", note: "" },
+    { n: "Vehicle mining", s: "own", pay: "Shubin purchase orders", solo: "ROC", crew: "ROC DS", note: "" },
+    { n: "Ship mining", s: "loan", pay: "Shubin purchase orders, Recco Battaglia scan and mine jobs", solo: "MOLE on loan, built for a crew of three", crew: "MOLE on loan", note: "You melted three Prospectors. The loaner ends when the Arrastra ships." },
+    { n: "Salvage", s: "gap", pay: "Adagio Holdings orders and salvage claims", solo: "Nothing", crew: "Nothing", note: "The Nomad's tractor beam can pull components. Scraping hulls needs a salvage ship." },
+    { n: "Refuelling", s: "gap", pay: "United Wayfarers Club, six contracts up to capital fleet refuels", solo: "Nothing", crew: "Nothing", note: "" },
+    { n: "Racing", s: "own", pay: "Wildstar Racing, seven tracks, time trials and open track", solo: "M50", crew: "", note: "" },
+    { n: "Recovery and investigation", s: "own", pay: "Hockrow black box recovery, missing persons, courier retrieval", solo: "Any ship with a hold", crew: "", note: "" },
+    { n: "Player service beacons", s: "own", pay: "Personal transport, escort, combat assistance", solo: "Any ship", crew: "", note: "" }
+  ];
+  var LOOP_STATE = { own: ["own", "On your ships"], loan: ["loan", "Loaner only"], gap: ["gap", "Can't yet"] };
+
+  var GAPS = [
+    { n: "Salvage", s: "gap", why: "Adagio Holdings pays for hull scrapings and components, and you have no ship that can scrape.",
+      fix: "Salvation", usd: 30, route: "HoverQuad → Salvation", auec: 1185030, at: "Teach's Ship Shop, Levski", rent: 31185,
+      up: "Step up later: Salvation → Vulture is another 115 dollars." },
+    { n: "Refuelling", s: "gap", why: "The United Wayfarers Club ladder runs from single top-ups to capital fleet refuels. You have no tanker.",
+      fix: "Starlite", usd: 5, route: "ROC → Starlite, sale only", auec: null, at: "Not sold in game", rent: null,
+      up: "Bigger jobs want a Starfarer: 12,568,500 aUEC in game. Unknown: how far up the ladder a Starlite's tanks reach." },
+    { n: "Ship mining you own", s: "loan", why: "The borrowed MOLE is built for three and disappears when the Arrastra ships.",
+      fix: "Golem", usd: 20, route: "Dragonfly Black → Golem", auec: 1005480, at: "New Deal, Lorville", rent: 15082,
+      up: "Step up later: Golem → Prospector is another 95 dollars." },
+    { n: "Bulk hauling you own", s: "loan", why: "The C2 Hercules and Hull C are loaners from the Merchantman.",
+      fix: "Wait", usd: 0, route: "No move needed", auec: 18900000, at: "C2 Hercules, Astro Armada, Area18", rent: null,
+      up: "When the Merchantman ships, its 2,880 SCU hold replaces both. Until then the loaners do the job for free." }
+  ];
+  var EXTRAS = [
+    { n: "A cargo loader", why: "An ATLS power suit is built for loading cargo by hand. It helps on every hauling contract.",
+      line: "71,820 aUEC at New Deal, Lorville. Pledge price 40 dollars, which is poor value for something this cheap in game." },
+    { n: "A light fighter you own", why: "The Arrow is a loaner from the Arrastra. Your own Gladius went into the Arrastra in 2023.",
+      line: "Optional: Cyclone MT → Gladius for 15 dollars, with lifetime insurance carried over." },
+    { n: "Squadron 42", why: "Five combo packs with the single-player game were melted between 2018 and 2019. Combo packs and Squadron 42 pledges cannot be bought back.",
+      line: "The only route is a new purchase. Current price and release date: not confirmed here." }
+  ];
+  var IDLE = [
+    ["Towing and recovery", "SRV", 165, "No towing contracts exist."],
+    ["Data running", "Herald", 85, "No data courier loop. Black box and courier jobs work with any ship."],
+    ["Interdiction", "Mantis", 150, "Useful only against other players. No contract needs a quantum snare."],
+    ["Stealth bombing", "Eclipse", 300, "No contract needs one. The Polaris carries torpedoes."],
+    ["Deep exploration", "Carrack", 600, "No contract needs an expedition ship. Scan jobs are mining scans."]
+  ];
+
+  // tone: hurt, mixed, wash, shut
+  var TRADES = [
+    { when: "27 May 2020", t: "Carrack package melted", tone: "hurt",
+      out: "Carrack game package, 550 paid (Andromeda package 275 plus a 275 upgrade).",
+      inn: "Retaliator Bomber and Redeemer, 525 in credit, bought the same morning during Invictus.",
+      now: "The Retaliator became an Eclipse and was melted in 2021. The Redeemer left and came back. The Andromeda package returned in 2021 without its upgrade. The Carrack sells for 600 today and only during sales.",
+      back: "Three routes in section 5. The cheapest that leaves the big hulls alone is Redeemer → Carrack, 270 dollars." },
+    { when: "About 11 Oct 2021", t: "Mercury Star Runner melted", tone: "hurt",
+      out: "Mercury Star Runner, 225 paid (Corsair 215 plus a 10 warbond upgrade).",
+      inn: "400i pre-order, 250.",
+      now: "The 400i was melted on 16 Dec 2022 and the Corsair bought back without its upgrade. Six Star Runner paints still sit in your hangar with no ship to wear them.",
+      back: "Corsair → Mercury Star Runner, 10 dollars, next time the Star Runner is on sale." },
+    { when: "27 Nov 2023", t: "Mining fleet folded into the Arrastra", tone: "mixed",
+      out: "MOLE (315), Prospector (155) and a Gladius (90).",
+      inn: "Arrastra, 575, still in concept.",
+      now: "The MOLE and an Arrow come back as loaners. The solo miner and your own light fighter are gone until the Arrastra flies.",
+      back: "Dragonfly Black → Golem, 20 dollars, restores solo mining. Cyclone MT → Gladius, 15 dollars, restores the fighter." },
+    { when: "29 May 2020 to 2 Oct 2021", t: "Redeemer swapped for a Vanguard Warden and back", tone: "wash",
+      out: "Redeemer, then the Warden 16 months later.",
+      inn: "Vanguard Warden, then the Redeemer again by buy-back.",
+      now: "Net zero. You hold the same Redeemer pledge at the same 250.",
+      back: "Nothing to undo." },
+    { when: "2018 to 2019", t: "Five Squadron 42 combo packs melted", tone: "shut",
+      out: "Every package that included Squadron 42.",
+      inn: "Store credit that went into ships.",
+      now: "The hangar holds no Squadron 42 access.",
+      back: "Cannot be bought back. A new purchase is the only way." }
+  ];
+  var TONE = { hurt: ["gap", "Cost you"], mixed: ["loan", "Mixed"], wash: ["idle", "A wash"], shut: ["lock", "Door closed"] };
+
+  // ship, count, last let go, what does its job today
+  var BUYBACK = [
+    ["Prospector", 3, "Nov 2023", "Nothing you own. Borrowed MOLE for now. The Golem move fixes it."],
+    ["MOLE", 1, "Nov 2023", "On loan from the Arrastra."],
+    ["Gladius", 1, "Nov 2023", "Arrow on loan."],
+    ["400i", 1, "Dec 2022", "Nothing needs it."],
+    ["Vanguard Warden", 1, "Oct 2021", "Scorpius."],
+    ["Eclipse (was a Retaliator Bomber)", 1, "Apr 2021", "No paying work for a stealth bomber."],
+    ["Avenger Titan Renegade (was an Aurora starter pack)", 1, "Apr 2021", "Nomad."],
+    ["Nomad starter pack", 1, "Apr 2021", "You hold a standalone Nomad."],
+    ["Constellation Andromeda, standalone", 2, "Apr 2021", "You hold the Andromeda package."],
+    ["G12a", 1, "Apr 2021", "Concept rover."],
+    ["F7C-M Super Hornet", 1, "May 2020", "Scorpius."],
+    ["Avenger Titan", 2, "May 2020", "Nomad."],
+    ["Hurricane", 1, "May 2020", "Scorpius."],
+    ["Cutlass Black", 5, "May 2020", "Cutlass Red and Corsair."],
+    ["Ursa Rover", 2, "Nov 2019", "Borrowed Lynx."],
+    ["300i", 1, "Oct 2019", "Nothing needs it."],
+    ["Constellation Aquila", 3, "Oct 2019", "Andromeda and Corsair."],
+    ["Reliant Kore starter pack", 1, "Oct 2019", "Nomad."],
+    ["Cyclone", 1, "Aug 2019", "Cyclone MT."],
+    ["Arrow", 1, "Mar 2019", "Arrow on loan."],
+    ["600i Touring", 1, "Jan 2019", "Nothing needs it."],
+    ["Freelancer package", 1, "Dec 2018", "Corsair and Andromeda."]
+  ];
+  var BUYBACK_OTHER = "Plus five paint items and one unused Aurora to Avenger Titan upgrade.";
+
+  var MOVES = [
+    { id: "access", core: true, when: "Before 1 Nov 2026", usd: 0, auec: 0, t: "Choose your protected game access pledge",
+      p: "Until 1 November you can pick which pledge carries your protected game access. After that RSI locks it, and a protected pledge can never be melted or gifted.",
+      steps: [
+        "Sign in at robertsspaceindustries.com. Open Account, then My Hangar, then the Game Access area.",
+        "Look at which pledges it offers. You hold two with game access: the Constellation Andromeda package and VIP High Admiral.",
+        "If VIP High Admiral is offered, choose it. It cannot be melted anyway, so protecting it costs you nothing and leaves the Andromeda package flexible.",
+        "If only the Andromeda package is offered, choose that. You are keeping it regardless.",
+        "Planning the Andromeda package → Carrack route below? Apply that upgrade before you lock anything. Unknown: whether a protected pledge still accepts upgrades."
+      ] },
+    { id: "golem", core: true, when: "Any day", usd: 20, auec: 0, t: "Dragonfly Black → Golem",
+      p: "Gives you a solo mining ship of your own, so ship mining no longer depends on the Arrastra's loaner. The Dragonfly's 120 month insurance moves to the Golem.",
+      steps: [
+        "Unsure about mining? Rent a Golem first: 15,082 aUEC a day at Vantage Rentals, Lorville.",
+        "In the RSI upgrade tool choose Dragonfly Black as the starting ship and Golem as the target. Expect 20 dollars.",
+        "Buy the upgrade, then apply it to the pledge named Standalone Ship - Drake Dragonfly Black - ILW2950.",
+        "You give up a hoverbike that costs 325,584 aUEC to replace in game."
+      ] },
+    { id: "salvation", core: true, when: "Any day", usd: 30, auec: 0, t: "HoverQuad → Salvation",
+      p: "Opens salvage, the larger of your two missing loops. 29 of the 64 live salvage contracts need no standing at all.",
+      steps: [
+        "Unsure about salvage? Rent a Salvation first: 31,185 aUEC a day at Regal Luxury Rentals, New Babbage.",
+        "In the RSI upgrade tool choose HoverQuad as the starting ship and Salvation as the target. Expect 30 dollars.",
+        "Buy the upgrade, then apply it to the pledge named Standalone Ship - HoverQuad.",
+        "You give up a hoverbike that costs 53,865 aUEC to replace in game."
+      ] },
+    { id: "atls", core: true, when: "Any day, in game", usd: 0, auec: 71820, t: "Buy an ATLS with aUEC",
+      p: "A power suit for loading cargo. No pledge needed.",
+      steps: [
+        "Fly to Lorville. At New Deal in Teasa Spaceport buy the ATLS for 71,820 aUEC.",
+        "It is delivered like a vehicle. Call it up in the hangar where you load cargo.",
+        "Anything bought with aUEC is lost in a full wipe. The last one was Alpha 4.8.0 on 14 May 2026."
+      ] },
+    { id: "starlite", core: true, when: "Next sale", usd: 5, auec: 98753, t: "ROC → Starlite, then rebuy the ROC in game",
+      p: "Opens refuelling. The Starlite is sold only during sales and is not sold in game at all, which makes it the best use of a pledge on this page.",
+      steps: [
+        "Wait for the Starlite to appear in the store. The Intergalactic Aerospace Expo is the likely window. A fan calendar lists 13 to 30 November 2026. CIG has not confirmed those dates.",
+        "In the RSI upgrade tool choose ROC as the starting ship and Starlite as the target. Expect 5 dollars. Check for a cheaper warbond version of the same upgrade.",
+        "Buy the upgrade, then apply it to the pledge named Standalone Ship - Greycat Industrial ROC.",
+        "Rebuy a ROC at New Deal, Lorville for 98,753 aUEC. If you kept the Miner's Megapack, its two-seat ROC DS also covers vehicle mining.",
+        "Prefer to keep the pledged ROC? Buy the Starlite outright for 60 dollars instead."
+      ] },
+    { id: "msr", core: false, when: "Next sale", usd: 10, auec: 0, t: "Corsair → Mercury Star Runner",
+      p: "Undoes the 2021 trade. You get 114 SCU and a use for six paints. You give up the Corsair's guns. No loop needs either ship more than the other, so this one is taste.",
+      steps: [
+        "The Star Runner is sold only during sales. Check the store during the next expo.",
+        "In the RSI upgrade tool choose Corsair as the starting ship and Mercury Star Runner as the target. Expect 10 dollars.",
+        "Apply it to the pledge named Standalone Ship - Drake Corsair - ILW2950. The 120 month insurance stays."
+      ] },
+    { id: "gladius", core: false, when: "Any day", usd: 15, auec: 0, t: "Cyclone MT → Gladius",
+      p: "Puts a light fighter back in your own name with lifetime insurance. The Arrow loaner already covers the role while the Arrastra is unfinished.",
+      steps: [
+        "In the RSI upgrade tool choose Cyclone MT as the starting ship and Gladius as the target. Expect 15 dollars.",
+        "Apply it to the pledge named Standalone Ship - Origin G12 - Warbond - Presale Upgrades. The lifetime insurance stays.",
+        "You give up a buggy that costs 134,663 aUEC to replace in game."
+      ] },
+    { id: "c8r", core: false, when: "Any day", usd: 5, auec: 0, t: "G12r → C8R Pisces Rescue",
+      p: "Turns a rover you cannot drive yet into a usable rescue boat with a Tier 3 bed and lifetime insurance. You lose the Lynx loaner.",
+      steps: [
+        "In the RSI upgrade tool choose G12r as the starting ship and C8R Pisces Rescue as the target. Expect 5 dollars.",
+        "Apply it to the pledge named Standalone Ship - Origin G12r - Warbond - Presale.",
+        "Skip this if you want the G12r itself. Its lifetime insurance is the only reason it is on this list."
+      ] },
+    { id: "carrack", core: false, when: "Next sale", usd: null, auec: 0, t: "Get the Carrack back",
+      p: "Undoes the 2020 trade. No contract needs a Carrack, and the Polaris already carries more cargo with the same Tier 2 med bay. This is for wanting the ship.",
+      routes: [
+        { id: "redeemer", label: "Redeemer → Carrack", usd: 270, give: "Gives up the Redeemer. Big hulls and game package untouched." },
+        { id: "andromeda", label: "Andromeda package → Carrack", usd: 360, give: "Rebuilds the exact package you had in 2020. Gives up the Andromeda and its Merlin." },
+        { id: "arrastra", label: "Arrastra → Carrack", usd: 25, give: "Cheapest, and it breaks the keep rule: the Arrastra goes, and its MOLE and Arrow loaners with it." }
+      ],
+      steps: [
+        "The Carrack is sold only during sales. Check the store during the next expo.",
+        "In the RSI upgrade tool choose the starting ship from the route you picked and Carrack as the target. Check the price against the route.",
+        "Apply it to that pledge. Insurance on the starting pledge carries over."
+      ] }
+  ];
+
+  // credit = price paid minus line discount, from the order history
+  var FUNDING = [
+    { id: "p400i", n: "400i paints, three", pledge: "Paints - 400i - Afterglow, Stratus and Calacatta", credit: 18.00, rec: true,
+      lose: "Nothing you can use. The 400i left the hangar in 2022." },
+    { id: "megapack", n: "Greycat Miner's Megapack", pledge: "Packs - Greycat Miner's Megapack", credit: 114.00, rec: true,
+      lose: "The ROC DS (134,663 aUEC to replace in game), three ROC paints and three armor sets." },
+    { id: "phq", n: "HoverQuad paints, four", pledge: "Paints - HoverQuad - Copperhead, Terminus, Lightspeed and Lovestruck", credit: 12.60, rec: true,
+      lose: "Nothing once the HoverQuad has become a Salvation. Melt these after that move." },
+    { id: "pmsr", n: "Mercury Star Runner paints, six", pledge: "Paints - Mercury Star Runner - 5 Paint Pack and 2951 Fortuna Paint", credit: 41.75, rec: false,
+      lose: "Nothing today. Keep them if the Star Runner is coming back." },
+    { id: "pglad", n: "Gladius paint pack", pledge: "Paints - Gladius - ILW 2951 Paint Pack", credit: 15.72, rec: false,
+      lose: "Nothing today. Keep it if the Gladius is coming back." },
+    { id: "g12r", n: "G12r", pledge: "Standalone Ship - Origin G12r - Warbond - Presale", credit: 55.00, rec: false,
+      lose: "A rover you cannot drive yet, its lifetime insurance and the Lynx loaner. Rules out the C8R move." }
+  ];
+
+  var RULES = [
+    "<b>Upgrades only go up.</b> The target must cost more than the ship you start from. The price is the gap between the two store prices today.",
+    "<b>Applying is permanent.</b> Buying an upgrade changes nothing. Applying it does, and it cannot be reversed.",
+    "<b>A melt returns what you paid.</b> The Polaris would return 675 against a 975 price. The Merchantman would return 330 against 650. That spread exists only while you hold the pledge.",
+    "<b>A buy-back returns the original pledge.</b> Upgrades that were applied do not come back. Your Corsair and Andromeda package both returned this way.",
+    "<b>Store credit buy-backs need a token.</b> One is issued each quarter, in early January, April, July and October. They do not stack.",
+    "<b>Warbond means new money.</b> Store credit cannot pay for a warbond ship or upgrade. Standard upgrades accept it.",
+    "<b>A melt is one way.</b> The pledge goes to the buy-back list and costs its original price to recover.",
+    "<b>Loaners are temporary.</b> They end the day the lending ship becomes flight ready, and they need a game package on the account.",
+    "<b>aUEC purchases do not survive a full wipe.</b> Pledges do. The last full wipe was Alpha 4.8.0 on 14 May 2026."
+  ];
+  var UNKNOWNS = [
+    "Your store credit balance. The rebuilt ledger implies about 6 dollars, assuming no credits outside the order history.",
+    "Whether you hold an unused buy-back token for this quarter.",
+    "Exact melt values. The figures here are the price paid minus the line discount on each order. RSI's dialog shows the real number before you confirm.",
+    "Ships you bought in game with aUEC. They are not on the RSI site, so none are counted here.",
+    "Whether VIP High Admiral is offered as a protected game access pledge.",
+    "Confirmed dates for the next expo sale.",
+    "Whether the Miner's Megapack that holds the ROC DS accepts upgrades. It is left out of the explorer."
+  ];
+
+  // Why a target matters to this fleet
+  var WHY = {
+    "Golem": "Closes solo ship mining", "Prospector": "Closes solo ship mining, bigger", "MOLE": "Own the crew miner",
+    "Salvation": "Closes salvage", "Vulture": "Closes salvage, bigger", "Fortune": "Closes salvage, bigger", "MOTH": "Crew salvage", "Reclaimer": "Crew salvage",
+    "Starlite": "Closes refuelling", "Starfarer": "Closes refuelling, big jobs", "Starfarer Gemini": "Closes refuelling, big jobs",
+    "Gladius": "You had one until 2023", "Arrow": "Own the light fighter",
+    "Mercury Star Runner": "You had one until 2021", "Carrack": "You had one until 2020",
+    "C8R Pisces Rescue": "Rescue boat, Tier 3 bed", "Terrapin Medic": "Tier 2 medical",
+    "C2 Hercules Starlifter": "Own the bulk hauler", "Hull C": "Own the bulk hauler",
+    "ATLS": "Cargo loader, cheaper in game"
+  };
+  var NO_DONOR = { rocds: "pack, upgrade rules unknown" };
+
+  var CATALOG = [{"n":"100i","p":50,"r":"Starter / Pathfinder","a":"A","b":1089270,"t":28665,"c":2},{"n":"125a","p":60,"r":"Light Fighter","a":"A","b":1508220,"t":null,"c":2},{"n":"135c","p":65,"r":"Light Freight","a":"A","b":1490580,"t":null,"c":6},{"n":"300i","p":60,"r":"Luxury Touring","a":"A","b":1375920,"t":34398,"c":8},{"n":"315p","p":65,"r":"Pathfinder","a":"A","b":1490580,"t":null,"c":12},{"n":"325a","p":70,"r":"Interceptor","a":"A","b":1852200,"t":46305,"c":4},{"n":"350r","p":125,"r":"Racing","a":"L","b":3748500,"t":null,"c":4},{"n":"400i","p":250,"r":"Expedition","a":"L","b":8398060,"t":null,"c":42},{"n":"600i","p":475,"r":"Expedition","a":"L","b":27231800,"t":680794,"c":44},{"n":"600i Touring","p":435,"r":"Luxury Touring","a":"L","b":24938600,"t":null,"c":20},{"n":"85X Limited","p":50,"r":"Touring","a":"L","b":544635,"t":null,"c":0},{"n":"890 Jump","p":950,"r":"Luxury Touring","a":"L","b":62088400,"t":null,"c":388},{"n":"A1 Spirit","p":200,"r":"Bomber","a":"L","b":4961250,"t":null,"c":0},{"n":"A2 Hercules Starlifter","p":750,"r":"Heavy Bomber","a":"L","b":37800200,"t":null,"c":216},{"n":"ATLS","p":40,"r":"Cargo","a":"A","b":71820,"t":null,"c":0},{"n":"ATLS GEO","p":45,"r":"Mining","a":"A","b":86184,"t":null,"c":0},{"n":"Apollo Medivac","p":290,"r":"Medical","a":"L","b":8295210,"t":218295,"c":32},{"n":"Apollo Triage","p":260,"r":"Medical","a":"L","b":7541100,"t":198450,"c":32},{"n":"Ares Star Fighter Inferno","p":250,"r":"Heavy Fighter","a":"L","b":4725000,"t":null,"c":0},{"n":"Ares Star Fighter Ion","p":250,"r":"Heavy Fighter","a":"L","b":4725000,"t":null,"c":0},{"n":"Arrow","p":75,"r":"Light Fighter","a":"A","b":1984500,"t":null,"c":0},{"n":"Asgard","p":350,"r":"Dropship","a":"L","b":17860500,"t":null,"c":180},{"n":"Aurora Mk I CL","p":45,"r":"Light Freight","a":"L","b":null,"t":null,"c":6},{"n":"Aurora Mk I ES","p":20,"r":"Starter / Pathfinder","a":"L","b":null,"t":null,"c":3},{"n":"Aurora Mk I LN","p":40,"r":"Light Fighter","a":"L","b":null,"t":null,"c":3},{"n":"Aurora Mk I LX","p":35,"r":"Pathfinder","a":"L","b":null,"t":null,"c":3},{"n":"Aurora Mk I MR","p":30,"r":"Light Fighter","a":"L","b":null,"t":null,"c":3},{"n":"Aurora Mk I SE","p":60,"r":"Light Fighter","a":"L","b":null,"t":null,"c":6},{"n":"Aurora Mk II","p":45,"r":"Starter / Light Fighter","a":"A","b":904932,"t":22623,"c":2},{"n":"Avenger Stalker","p":60,"r":"Interceptor","a":"A","b":1508220,"t":null,"c":0},{"n":"Avenger Titan","p":60,"r":"Light Freight","a":"A","b":1290370,"t":27166,"c":8},{"n":"Avenger Titan Renegade","p":75,"r":"Light Freight","a":"L","b":1759590,"t":null,"c":8},{"n":"Avenger Warlock","p":85,"r":"Interdiction","a":"L","b":2136640,"t":null,"c":0},{"n":"Ballista","p":140,"r":"Anti-Air","a":"A","b":1407670,"t":null,"c":0},{"n":"Basher","p":110,"r":"Light Fighter","a":"?","b":null,"t":null,"c":0},{"n":"Blade","p":275,"r":"Light Fighter","a":"L","b":7796250,"t":null,"c":0},{"n":"Buccaneer","p":110,"r":"Light Fighter","a":"L","b":1580040,"t":39501,"c":0},{"n":"C1 Spirit","p":125,"r":"Light Freight","a":"A","b":3118500,"t":62370,"c":64},{"n":"C2 Hercules Starlifter","p":400,"r":"Medium Freight","a":"L","b":18900000,"t":null,"c":696},{"n":"C8R Pisces Rescue","p":65,"r":"Medical","a":"A","b":555660,"t":13892,"c":0},{"n":"C8X Pisces Expedition","p":45,"r":"Pathfinder","a":"A","b":515970,"t":null,"c":4},{"n":"CSV-SM","p":45,"r":"Light Freight","a":"L","b":359100,"t":null,"c":4},{"n":"Carrack","p":600,"r":"Expedition","a":"L","b":34398000,"t":null,"c":456},{"n":"Caterpillar","p":330,"r":"Medium Freight","a":"L","b":11850300,"t":null,"c":576},{"n":"Caterpillar Pirate","p":330,"r":"Medium Freight","a":"?","b":null,"t":null,"c":576},{"n":"Centurion","p":110,"r":"Anti-Air","a":"A","b":1106030,"t":null,"c":0},{"n":"Clipper","p":150,"r":"Generalist","a":"L","b":3619730,"t":90493,"c":12},{"n":"Constellation Andromeda","p":240,"r":"Medium Freight / Gun Ship","a":"A","b":9652610,"t":254016,"c":96},{"n":"Constellation Aquila","p":315,"r":"Expedition","a":"A","b":11577400,"t":null,"c":96},{"n":"Constellation Phoenix","p":350,"r":"Luxury Touring","a":"L","b":14076700,"t":null,"c":80},{"n":"Constellation Phoenix Emerald","p":350,"r":"Luxury Touring","a":"L","b":null,"t":null,"c":80},{"n":"Constellation Taurus","p":200,"r":"Medium Freight","a":"A","b":7641650,"t":160877,"c":174},{"n":"Corsair","p":250,"r":"Expedition","a":"L","b":6224400,"t":155610,"c":72},{"n":"Cutlass Black","p":110,"r":"Light Freight / Medium Fighter","a":"A","b":2010960,"t":50274,"c":46},{"n":"Cutlass Blue","p":175,"r":"Interdiction","a":"L","b":3519180,"t":null,"c":12},{"n":"Cutlass Red","p":135,"r":"Medical","a":"L","b":2714800,"t":67869,"c":12},{"n":"Cutlass Steel","p":235,"r":"Dropship","a":"L","b":3797480,"t":null,"c":0},{"n":"Cutter","p":45,"r":"Starter / Pathfinder","a":"A","b":603288,"t":9050,"c":4},{"n":"Cutter Rambler","p":50,"r":"Expedition","a":"L","b":703836,"t":null,"c":2},{"n":"Cutter Scout","p":50,"r":"Pathfinder","a":"A","b":670320,"t":null,"c":2},{"n":"Cyclone","p":55,"r":"Passenger","a":"A","b":98753,"t":2468,"c":1},{"n":"Cyclone AA","p":80,"r":"Anti-Air","a":"L","b":143640,"t":null,"c":0},{"n":"Cyclone MT","p":75,"r":"Anti-Air","a":"L","b":134663,"t":null,"c":0},{"n":"Cyclone RC","p":65,"r":"Racing","a":"L","b":116708,"t":null,"c":0},{"n":"Cyclone RN","p":65,"r":"Pathfinder","a":"L","b":116708,"t":null,"c":0},{"n":"Cyclone TR","p":65,"r":"Anti-Vehicle","a":"L","b":116708,"t":null,"c":0},{"n":"Defender","p":220,"r":"Light Fighter","a":"L","b":6237000,"t":155925,"c":0},{"n":"Dragonfly","p":40,"r":"Racing","a":"?","b":325584,"t":8139,"c":0},{"n":"Eclipse","p":300,"r":"Stealth Bomber","a":"L","b":7541100,"t":null,"c":0},{"n":"F7C Hornet Mk II","p":175,"r":"Medium Fighter","a":"L","b":4650340,"t":null,"c":2},{"n":"F7C-M Hornet Heartseeker Mk II","p":200,"r":"Medium Fighter","a":"L","b":null,"t":null,"c":0},{"n":"F7C-M Super Hornet Mk II","p":240,"r":"Medium Fighter","a":"L","b":null,"t":null,"c":0},{"n":"F7C-R Hornet Tracker Mk II","p":185,"r":"Pathfinder","a":"L","b":4882860,"t":null,"c":0},{"n":"F7C-S Hornet Ghost Mk II","p":185,"r":"Stealth Fighter","a":"L","b":5115370,"t":null,"c":0},{"n":"Fury","p":55,"r":"Snub Fighter","a":"L","b":691268,"t":null,"c":0},{"n":"Fury LX","p":55,"r":"Racing","a":"L","b":824670,"t":null,"c":0},{"n":"Fury MX","p":55,"r":"Snub Fighter","a":"L","b":691268,"t":null,"c":0},{"n":"Gladiator","p":165,"r":"Bomber","a":"L","b":4365900,"t":null,"c":0},{"n":"Gladius","p":90,"r":"Light Fighter","a":"A","b":2262330,"t":null,"c":0},{"n":"Gladius Valiant","p":110,"r":"Light Fighter","a":"L","b":2765070,"t":null,"c":0},{"n":"Glaive","p":350,"r":"Medium Fighter","a":"L","b":null,"t":null,"c":0},{"n":"Golem","p":60,"r":"Starter / Light Mining","a":"A","b":1005480,"t":15082,"c":0},{"n":"Golem OX","p":90,"r":"Light Freight","a":"L","b":1149120,"t":null,"c":64},{"n":"Guardian","p":250,"r":"Heavy Fighter","a":"L","b":6284250,"t":null,"c":0},{"n":"Guardian MX","p":290,"r":"Heavy Fighter","a":"L","b":7038360,"t":null,"c":0},{"n":"Guardian QI","p":260,"r":"Interdiction","a":"L","b":null,"t":null,"c":0},{"n":"Hammerhead","p":725,"r":"Heavy Gunship","a":"L","b":null,"t":null,"c":64},{"n":"Hawk","p":100,"r":"Light Fighter","a":"L","b":2646000,"t":null,"c":0},{"n":"Herald","p":85,"r":"Medium Data","a":"L","b":1220940,"t":null,"c":0},{"n":"Hermes","p":220,"r":"Medium Freight","a":"L","b":7110180,"t":187110,"c":288},{"n":"HoverQuad","p":30,"r":"Passenger","a":"L","b":53865,"t":null,"c":0},{"n":"Hurricane","p":210,"r":"Heavy Fighter","a":"L","b":5556600,"t":null,"c":0},{"n":"Idris-M","p":1000,"r":"Frigate","a":"L","b":null,"t":null,"c":1326},{"n":"Idris-P","p":1900,"r":"Frigate","a":"L","b":null,"t":null,"c":1374},{"n":"Intrepid","p":65,"r":"Starter / Light Freight","a":"A","b":1173060,"t":null,"c":8},{"n":"Ironclad","p":600,"r":"Heavy Freight","a":"L","b":null,"t":null,"c":2200},{"n":"Ironclad Assault","p":650,"r":"Heavy Dropship","a":"L","b":null,"t":null,"c":1440},{"n":"Khartu-al","p":175,"r":"Light Fighter","a":"L","b":7229250,"t":null,"c":0},{"n":"L-21 Wolf","p":100,"r":"Light Fighter","a":"L","b":2381400,"t":null,"c":0},{"n":"L-22 Alpha Wolf","p":120,"r":"Light Fighter","a":"L","b":4536000,"t":null,"c":0},{"n":"Lynx","p":60,"r":"Luxury Touring","a":"L","b":129276,"t":null,"c":0},{"n":"M2 Hercules Starlifter","p":520,"r":"Medium Freight","a":"L","b":28009800,"t":null,"c":522},{"n":"M50 Interceptor","p":100,"r":"Racing","a":"L","b":1424430,"t":37485,"c":0},{"n":"M80","p":300,"r":"Heavy Fighter","a":"L","b":null,"t":null,"c":2},{"n":"MDC","p":50,"r":"Anti-Air","a":"L","b":127575,"t":null,"c":0},{"n":"Fortune","p":175,"r":"Light Salvage","a":"L","b":1795500,"t":28350,"c":16},{"n":"Freelancer","p":110,"r":"Light Freight","a":"A","b":2962580,"t":59251,"c":66},{"n":"Freelancer DUR","p":135,"r":"Expedition","a":"A","b":3151100,"t":null,"c":36},{"n":"Freelancer MAX","p":150,"r":"Medium Freight","a":"A","b":4039880,"t":80797,"c":120},{"n":"Freelancer MIS","p":175,"r":"Gunship","a":"L","b":4713190,"t":null,"c":36},{"n":"Hull A","p":100,"r":"Light Freight","a":"A","b":1615950,"t":32319,"c":64},{"n":"Hull B","p":280,"r":"Medium Freight","a":"L","b":7541100,"t":null,"c":512},{"n":"Hull C","p":500,"r":"Heavy Freight","a":"L","b":15710600,"t":null,"c":4608},{"n":"Prospector","p":155,"r":"Light Mining","a":"A","b":2783020,"t":69575,"c":0},{"n":"Reliant Kore","p":65,"r":"Starter / Light Freight","a":"A","b":1633900,"t":40847,"c":6},{"n":"Reliant Mako","p":95,"r":"Reporting","a":"L","b":2388020,"t":null,"c":0},{"n":"Reliant Sen","p":85,"r":"Light Science","a":"L","b":2136640,"t":null,"c":0},{"n":"Reliant Tana","p":75,"r":"Light Fighter","a":"L","b":1885280,"t":null,"c":1},{"n":"Starfarer","p":300,"r":"Heavy Refueling","a":"L","b":12568500,"t":null,"c":291},{"n":"Starfarer Gemini","p":340,"r":"Heavy Refueling","a":"L","b":14244300,"t":null,"c":291},{"n":"Starlancer MAX","p":250,"r":"Medium Freight","a":"L","b":8379000,"t":null,"c":224},{"n":"Starlancer TAC","p":375,"r":"Gunship","a":"L","b":13381200,"t":null,"c":96},{"n":"Starlite","p":60,"r":"Light Refueling","a":"L","b":null,"t":null,"c":0},{"n":"MOLE","p":315,"r":"Medium Mining","a":"A","b":8483740,"t":223256,"c":32},{"n":"MOTH","p":315,"r":"Medium Salvage","a":"L","b":8483740,"t":223256,"c":224},{"n":"MPUV Cargo","p":35,"r":"Light Freight","a":"L","b":314213,"t":null,"c":2},{"n":"MPUV Personnel","p":40,"r":"Passenger","a":"L","b":359100,"t":null,"c":0},{"n":"MPUV Tractor","p":40,"r":"Light Freight","a":"L","b":395010,"t":9875,"c":16},{"n":"MTC","p":50,"r":"Passenger","a":"L","b":75600,"t":null,"c":0},{"n":"Mantis","p":150,"r":"Interdiction","a":"A","b":3231900,"t":null,"c":0},{"n":"Mercury Star Runner","p":260,"r":"Medium Freight","a":"L","b":12285000,"t":null,"c":114},{"n":"Meteor","p":260,"r":"Medium Fighter","a":"L","b":4309200,"t":null,"c":0},{"n":"Mule","p":45,"r":"Light Freight","a":"L","b":64638,"t":null,"c":1},{"n":"Mustang Alpha","p":30,"r":"Starter / Light Freight","a":"A","b":610470,"t":9157,"c":4},{"n":"Mustang Beta","p":40,"r":"Pathfinder","a":"A","b":622440,"t":null,"c":0},{"n":"Mustang CitizenCon 2948 Edition","p":30,"r":"Starter / Light Freight","a":"L","b":null,"t":null,"c":4},{"n":"Mustang Delta","p":65,"r":"Light Fighter","a":"L","b":1228500,"t":null,"c":0},{"n":"Mustang Gamma","p":55,"r":"Racing","a":"A","b":1178100,"t":29453,"c":0},{"n":"Mustang Omega","p":55,"r":"Racing","a":"L","b":null,"t":null,"c":0},{"n":"Nomad","p":80,"r":"Starter / Light Freight","a":"A","b":1436400,"t":28728,"c":24},{"n":"Nova","p":120,"r":"Heavy Tank","a":"L","b":861840,"t":null,"c":0},{"n":"Nox","p":45,"r":"Racing","a":"?","b":722925,"t":null,"c":0},{"n":"Nox Kue","p":45,"r":"Racing","a":"?","b":null,"t":null,"c":0},{"n":"P-52 Merlin","p":25,"r":"Snub Fighter","a":"L","b":283500,"t":null,"c":0},{"n":"P-72 Archimedes","p":35,"r":"Racing","a":"L","b":449820,"t":null,"c":0},{"n":"P-72 Archimedes Emerald","p":40,"r":"Racing","a":"L","b":null,"t":null,"c":0},{"n":"Paladin","p":350,"r":"Gunship","a":"L","b":15876000,"t":null,"c":4},{"n":"Perseus","p":800,"r":"Heavy Gunship","a":"L","b":39690000,"t":null,"c":96},{"n":"Pitbull","p":55,"r":"Snub Fighter","a":"L","b":null,"t":null,"c":0},{"n":"Polaris","p":975,"r":"Corvette","a":"L","b":null,"t":null,"c":576},{"n":"Prowler","p":440,"r":"Dropship","a":"L","b":null,"t":null,"c":0},{"n":"Prowler Utility","p":300,"r":"Light Freight","a":"L","b":18711000,"t":336780,"c":32},{"n":"Pulse","p":30,"r":"Pathfinder","a":"?","b":175959,"t":null,"c":0},{"n":"Pulse LX","p":30,"r":"Racing","a":"?","b":201096,"t":null,"c":0},{"n":"RAFT","p":190,"r":"Medium Freight","a":"L","b":3366560,"t":67331,"c":192},{"n":"ROC","p":55,"r":"Light Mining","a":"A","b":98753,"t":2468,"c":0},{"n":"ROC-DS","p":75,"r":"Light Mining","a":"A","b":134663,"t":null,"c":0},{"n":"Railen","p":400,"r":"Medium Freight","a":"L","b":null,"t":null,"c":640},{"n":"Razor","p":145,"r":"Racing","a":"L","b":1770360,"t":46589,"c":0},{"n":"Razor EX","p":155,"r":"Stealth Fighter","a":"L","b":1669820,"t":null,"c":0},{"n":"Razor LX","p":150,"r":"Racing","a":"L","b":1831410,"t":null,"c":0},{"n":"Reclaimer","p":400,"r":"Heavy Salvage","a":"L","b":30164400,"t":null,"c":420},{"n":"Redeemer","p":330,"r":"Gunship","a":"L","b":9803430,"t":null,"c":2},{"n":"Retaliator","p":275,"r":"Modular","a":"L","b":7541100,"t":null,"c":0},{"n":"S-65 Stingray","p":175,"r":"Medium Fighter","a":"?","b":null,"t":null,"c":0},{"n":"SRV","p":165,"r":"Recovery","a":"L","b":3770550,"t":null,"c":12},{"n":"STV","p":40,"r":"Passenger","a":"A","b":75600,"t":1795,"c":0},{"n":"Sabre","p":175,"r":"Stealth Fighter","a":"L","b":4273290,"t":null,"c":0},{"n":"Sabre Comet","p":185,"r":"Stealth Fighter","a":"L","b":4650340,"t":null,"c":0},{"n":"Sabre Firebird","p":185,"r":"Stealth Fighter","a":"L","b":5580410,"t":null,"c":0},{"n":"Sabre Peregrine","p":185,"r":"Racing","a":"L","b":3845960,"t":null,"c":0},{"n":"Sabre Raven EX","p":185,"r":"Medium Fighter","a":"L","b":null,"t":null,"c":0},{"n":"Salvation","p":60,"r":"Starter / Light Salvage","a":"A","b":1185030,"t":31185,"c":6},{"n":"San'tok.y\u0101i","p":240,"r":"Medium Fighter","a":"L","b":9355500,"t":null,"c":0},{"n":"Scorpius","p":240,"r":"Heavy Fighter","a":"L","b":5171040,"t":null,"c":0},{"n":"Scorpius Antares","p":230,"r":"Heavy Fighter","a":"L","b":4955580,"t":null,"c":0},{"n":"Shiv","p":150,"r":"Heavy Fighter","a":"L","b":5556600,"t":null,"c":32},{"n":"Spartan","p":80,"r":"Passenger","a":"L","b":804384,"t":null,"c":0},{"n":"Stinger","p":315,"r":"Heavy Fighter","a":"L","b":8930250,"t":null,"c":0},{"n":"Storm","p":90,"r":"Light Tank","a":"L","b":430920,"t":null,"c":0},{"n":"Storm AA","p":100,"r":"Light Tank","a":"L","b":452466,"t":null,"c":0},{"n":"Syulen","p":70,"r":"Starter / Pathfinder","a":"A","b":2082500,"t":null,"c":6},{"n":"Talon","p":115,"r":"Light Fighter","a":"L","b":3260250,"t":null,"c":0},{"n":"Talon Shrike","p":115,"r":"Light Fighter","a":"L","b":3260250,"t":null,"c":0},{"n":"Terrapin","p":220,"r":"Pathfinder","a":"L","b":5433120,"t":null,"c":0},{"n":"Terrapin Medic","p":220,"r":"Medical","a":"L","b":5704770,"t":null,"c":0},{"n":"Tiburon","p":775,"r":"Heavy Gunship","a":"L","b":null,"t":null,"c":64},{"n":"Tyilui","p":425,"r":"Snub Carrier","a":"L","b":null,"t":null,"c":96},{"n":"UTV","p":40,"r":"Passenger","a":"L","b":75600,"t":null,"c":1},{"n":"Ursa","p":50,"r":"Pathfinder","a":"A","b":107730,"t":2835,"c":0},{"n":"Ursa Fortuna","p":55,"r":"Pathfinder","a":"A","b":null,"t":null,"c":0},{"n":"Ursa Medivac","p":60,"r":"Medical","a":"L","b":118503,"t":3119,"c":0},{"n":"Valkyrie","p":375,"r":"Dropship","a":"L","b":19845000,"t":null,"c":90},{"n":"Vanguard Harbinger","p":290,"r":"Heavy Fighter / Bomber","a":"L","b":8200400,"t":null,"c":0},{"n":"Vanguard Hoplite","p":240,"r":"Dropship","a":"L","b":6645250,"t":null,"c":0},{"n":"Vanguard Sentinel","p":275,"r":"Heavy Fighter / Bomber","a":"L","b":7776700,"t":null,"c":0},{"n":"Vanguard Warden","p":260,"r":"Heavy Fighter","a":"L","b":7354900,"t":null,"c":0},{"n":"Vulture","p":175,"r":"Light Salvage","a":"A","b":2513700,"t":69458,"c":12},{"n":"X1","p":45,"r":"Passenger","a":"?","b":105840,"t":null,"c":0},{"n":"X1 Force","p":55,"r":"Passenger","a":"?","b":125685,"t":null,"c":0},{"n":"X1 Velocity","p":50,"r":"Racing","a":"?","b":113117,"t":null,"c":0},{"n":"Zeus Mk II CL","p":175,"r":"Medium Freight","a":"L","b":6463800,"t":null,"c":128},{"n":"Zeus Mk II ES","p":175,"r":"Expedition","a":"L","b":4201470,"t":null,"c":32}];
+
+  /* ---------- Helpers ---------- */
+
+  function $(id) { return document.getElementById(id); }
+  function usd(n) {
+    var whole = Math.round(n * 100) % 100 === 0;
+    return "$" + n.toLocaleString("en-US", { minimumFractionDigits: whole ? 0 : 2, maximumFractionDigits: whole ? 0 : 2 });
+  }
+  function auec(n) { return n.toLocaleString("en-US") + " aUEC"; }
+  function pill(cls, text) { return '<span class="pill ' + cls + '">' + text + "</span>"; }
+  function sum(list, f) { return list.reduce(function (t, x) { return t + f(x); }, 0); }
+  function byId(list, id) { return list.filter(function (x) { return x.id === id; })[0]; }
+
+  var KEY = "sc-fleet-planner-v1";
+  var state = { done: {}, inc: {}, melt: null, route: "redeemer", fleet: "all", loop: "all", donor: "redeemer", scope: "useful", q: "" };
+  try {
+    var saved = JSON.parse(localStorage.getItem(KEY) || "null");
+    if (saved && typeof saved === "object") {
+      ["done", "inc", "melt"].forEach(function (k) { if (saved[k] && typeof saved[k] === "object") state[k] = saved[k]; });
+      ["route", "fleet", "loop", "donor", "scope"].forEach(function (k) { if (typeof saved[k] === "string") state[k] = saved[k]; });
+    }
+  } catch (e) { /* storage unavailable: page still works */ }
+  if (!state.melt) {
+    state.melt = {};
+    FUNDING.forEach(function (f) { state.melt[f.id] = f.rec; });
+  }
+  function save() {
+    try {
+      localStorage.setItem(KEY, JSON.stringify({ done: state.done, inc: state.inc, melt: state.melt, route: state.route, fleet: state.fleet, loop: state.loop, donor: state.donor, scope: state.scope }));
+    } catch (e) { /* ignore */ }
+  }
+  function chips(el, options, current, onPick) {
+    el.innerHTML = options.map(function (o) {
+      return '<button type="button" class="chip" data-v="' + o[0] + '" aria-pressed="' + (o[0] === current) + '">' + o[1] +
+        (o[2] === undefined ? "" : '<span class="num">' + o[2] + "</span>") + "</button>";
+    }).join("");
+    el.onclick = function (ev) {
+      var b = ev.target.closest("button");
+      if (b) onPick(b.getAttribute("data-v"));
+    };
+  }
+
+  /* ---------- Derived numbers ---------- */
+
+  var usable = FLEET.filter(function (s) { return s.st === "fly"; }).length;
+  var concept = FLEET.length - usable;
+  var paidTotal = sum(FLEET, function (s) { return s.paid; });
+  var nowTotal = sum(FLEET, function (s) { return s.now; });
+  var loopCount = { own: 0, loan: 0, gap: 0 };
+  LOOPS.forEach(function (l) { loopCount[l.s] += 1; });
+  var hurt = TRADES.filter(function (t) { return t.tone === "hurt"; }).length;
+  var coreUsd = sum(MOVES.filter(function (m) { return m.core; }), function (m) { return m.usd; });
+
+  function moveUsd(m) {
+    if (m.routes) { return (byId(m.routes, state.route) || m.routes[0]).usd; }
+    return m.usd;
+  }
+  function inPlan(m) { return m.core || !!state.inc[m.id]; }
+
+  /* ---------- Renderers ---------- */
+
+  function renderAnswers() {
+    var rows = [
+      ["#have", "What I have", FLEET.length + " pledges, " + usable + " usable today", usd(nowTotal) + " at today's prices. " + usd(paidTotal) + " paid."],
+      ["#can", "What I can do", loopCount.own + " of " + LOOPS.length + " paying loops", loopCount.loan + " more run on borrowed ships."],
+      ["#missing", "What I'm missing", "Salvage and refuelling", "Ship mining and bulk hauling depend on loaners."],
+      ["#lost", "How I lost it", TRADES.length + " trades, " + hurt + " that cost you", "The Carrack in 2020. The Mercury Star Runner in 2021."],
+      ["#get", "How I can get it", usd(coreUsd) + " closes every gap", "Idle pledges can pay for it. No new money needed."]
+    ];
+    $("answers").innerHTML = rows.map(function (r, i) {
+      return '<li><a class="answer" href="' + r[0] + '"><span class="q">' + (i + 1) + " · " + r[1] + '</span><span class="a">' + r[2] + '</span><span class="s">' + r[3] + "</span></a></li>";
+    }).join("");
+    $("have-h").textContent = FLEET.length + " pledges. " + usable + " usable today, " + concept + " still in concept.";
+    $("can-h").textContent = loopCount.own + " of " + LOOPS.length + " paying loops on ships you own.";
+    $("missing-h").textContent = loopCount.gap + " loops you can't do. " + loopCount.loan + " more hang on loaners.";
+    $("lost-h").textContent = TRADES.length + " trades shaped this hangar. " + hurt + " of them cost you.";
+    $("get-h").textContent = usd(coreUsd) + " closes every gap. Idle pledges can pay for all of it.";
+  }
+
+  function fleetMatch(s) {
+    if (state.fleet === "fly") return s.st === "fly";
+    if (state.fleet === "concept") return s.st === "concept";
+    if (state.fleet === "move") return s.v === "trade" || s.v === "call" || s.v === "melt";
+    if (state.fleet === "lti") return s.ins === "LTI";
+    return true;
+  }
+  function renderFleet() {
+    var count = function (f) { var keep = state.fleet; state.fleet = f; var n = FLEET.filter(fleetMatch).length; state.fleet = keep; return n; };
+    chips($("fleet-chips"), [
+      ["all", "All", FLEET.length], ["fly", "Usable today", count("fly")], ["concept", "In concept", count("concept")],
+      ["move", "Could trade or melt", count("move")], ["lti", "Lifetime insurance", count("lti")]
+    ], state.fleet, function (v) { state.fleet = v; save(); renderFleet(); });
+    $("fleet").innerHTML = GROUPS.map(function (g) {
+      var ships = FLEET.filter(function (s) { return s.grp === g[0] && fleetMatch(s); });
+      if (!ships.length) return "";
+      return '<div class="sub"><p class="label">' + g[1] + '</p><div class="grid">' + ships.map(function (s) {
+        var v = VERDICT[s.v];
+        return '<article class="card"><div class="card-top"><h3>' + s.n + "</h3>" + pill(v[0], v[1]) + "</div>" +
+          '<p class="role">' + s.role + "</p>" +
+          '<div class="pills">' + (s.st === "fly" ? pill("own", "Usable") : pill("idle", "Concept")) + pill("plain", s.ins + " insurance") + "</div>" +
+          '<p class="note">' + s.note + "</p>" +
+          '<dl class="stats"><div><dt>Paid</dt><dd>' + usd(s.paid) + "</dd></div><div><dt>Now</dt><dd>" + usd(s.now) +
+          "</dd></div><div><dt>In game</dt><dd>" + (s.rebuy ? s.rebuy.toLocaleString("en-US") : "Not sold") + "</dd></div></dl></article>";
+      }).join("") + "</div></div>";
+    }).join("") || '<p class="muted">No ships match that filter.</p>';
+  }
+  function renderLoaners() {
+    $("loaners").innerHTML = "<thead><tr><th>Borrowed ship</th><th>Lent by</th><th>What it is</th></tr></thead><tbody>" +
+      LOANERS.map(function (l) { return "<tr><td class=\"nw\">" + l[0] + "</td><td>" + l[1] + "</td><td>" + l[2] + "</td></tr>"; }).join("") + "</tbody>";
+  }
+
+  function renderLoops() {
+    chips($("loop-chips"), [
+      ["all", "All", LOOPS.length], ["own", "On your ships", loopCount.own], ["loan", "Loaner only", loopCount.loan], ["gap", "Can't yet", loopCount.gap]
+    ], state.loop, function (v) { state.loop = v; save(); renderLoops(); });
+    $("loops").innerHTML = LOOPS.filter(function (l) { return state.loop === "all" || l.s === state.loop; }).map(function (l) {
+      var st = LOOP_STATE[l.s];
+      return '<article class="card"><div class="card-top"><h3>' + l.n + "</h3>" + pill(st[0], st[1]) + "</div>" +
+        '<dl class="kv"><dt>Who pays</dt><dd>' + l.pay + "</dd><dt>Solo</dt><dd>" + l.solo + "</dd>" +
+        (l.crew ? "<dt>Crewed</dt><dd>" + l.crew + "</dd>" : "") + "</dl>" +
+        (l.note ? '<p class="note muted">' + l.note + "</p>" : "") + "</article>";
+    }).join("");
+  }
+
+  function renderGaps() {
+    $("gaps").innerHTML = GAPS.map(function (g) {
+      var st = LOOP_STATE[g.s];
+      return '<article class="card"><div class="card-top"><h3>' + g.n + "</h3>" + pill(st[0], st[1]) + "</div>" +
+        '<p class="note">' + g.why + "</p>" +
+        '<dl class="prices"><div><dt>Upgrade</dt><dd>' + (g.usd ? usd(g.usd) : "$0") + "</dd><small>" + g.route + "</small></div>" +
+        "<div><dt>Buy in game</dt><dd>" + (g.auec ? g.auec.toLocaleString("en-US") : "No") + "</dd><small>" + g.at + "</small></div>" +
+        "<div><dt>Rent a day</dt><dd>" + (g.rent ? g.rent.toLocaleString("en-US") : "No") + "</dd><small>" + (g.rent ? "aUEC" : "Not rented") + "</small></div></dl>" +
+        '<p class="note muted">' + g.up + "</p></article>";
+    }).join("");
+    $("extras").innerHTML = EXTRAS.map(function (x) {
+      return '<article class="card"><h3>' + x.n + '</h3><p class="note">' + x.why + '</p><p class="note muted">' + x.line + "</p></article>";
+    }).join("");
+    $("idle").innerHTML = '<thead><tr><th>Role</th><th>Ship</th><th class="r">Pledge</th><th>Why it can wait</th></tr></thead><tbody>' +
+      IDLE.map(function (r) { return '<tr><td class="nw">' + r[0] + "</td><td>" + r[1] + '</td><td class="r">' + usd(r[2]) + "</td><td>" + r[3] + "</td></tr>"; }).join("") + "</tbody>";
+  }
+
+  function renderTrades() {
+    $("trades").innerHTML = TRADES.map(function (t) {
+      var tone = TONE[t.tone];
+      return '<li class="trade"><p class="trade-when">' + t.when + '</p><div class="trade-main"><div class="card-top"><h3>' + t.t + "</h3>" + pill(tone[0], tone[1]) + "</div>" +
+        '<dl class="kv"><dt>Out</dt><dd>' + t.out + "</dd><dt>In</dt><dd>" + t.inn + "</dd><dt>Today</dt><dd>" + t.now + "</dd><dt>Way back</dt><dd>" + t.back + "</dd></dl></div></li>";
+    }).join("");
+    $("buyback").innerHTML = '<thead><tr><th>Ship</th><th class="r">Times</th><th>Last let go</th><th>What does its job today</th></tr></thead><tbody>' +
+      BUYBACK.map(function (r) { return "<tr><td>" + r[0] + '</td><td class="r">' + r[1] + '</td><td class="nw">' + r[2] + "</td><td>" + r[3] + "</td></tr>"; }).join("") +
+      '<tr><td colspan="4" class="muted">' + BUYBACK_OTHER + "</td></tr></tbody>";
+  }
+
+  function renderTotals() {
+    var plan = MOVES.filter(inPlan);
+    var total = sum(plan, moveUsd);
+    var doneUsd = sum(plan.filter(function (m) { return state.done[m.id]; }), moveUsd);
+    var totalAuec = sum(plan, function (m) { return m.auec; });
+    var doneCount = plan.filter(function (m) { return state.done[m.id]; }).length;
+    var extras = plan.length - MOVES.filter(function (m) { return m.core; }).length;
+    var credit = sum(FUNDING.filter(function (f) { return state.melt[f.id]; }), function (f) { return f.credit; });
+    var fresh = Math.max(0, total - credit);
+    $("totals").innerHTML =
+      "<div><dt>Plan total</dt><dd>" + usd(total) + "</dd><small>" + (extras ? usd(coreUsd) + " core plus " + extras + " optional" : "core plan only") + "</small></div>" +
+      "<div><dt>Credit from melts</dt><dd>" + usd(credit) + "</dd><small>" + (credit > total ? usd(credit - total) + " left over" : "ticked in the table below") + "</small></div>" +
+      "<div><dt>New money needed</dt><dd>" + usd(fresh) + "</dd><small>" + (fresh ? "after store credit" : "covered by store credit") + "</small></div>" +
+      "<div><dt>Done so far</dt><dd>" + usd(doneUsd) + "</dd><small>" + doneCount + " of " + plan.length + " moves done</small></div>" +
+      "<div><dt>In-game cost</dt><dd>" + totalAuec.toLocaleString("en-US") + "</dd><small>aUEC, earned by playing</small></div>";
+  }
+  function renderFunding() {
+    $("funding").innerHTML = '<thead><tr><th>Melt</th><th>Pledge</th><th class="r">Credit back</th><th>What you give up</th></tr></thead><tbody>' +
+      FUNDING.map(function (f) {
+        return '<tr><td class="nw"><label class="tick" style="padding:0"><input type="checkbox" id="melt-' + f.id + '"' + (state.melt[f.id] ? " checked" : "") +
+          '><span class="muted">Melt</span></label></td><td><b>' + f.n + "</b>" + (f.rec ? " " + pill("own", "Recommended") : "") +
+          '<br><span class="muted">' + f.pledge + '</span></td><td class="r"><b>' + usd(f.credit) + "</b></td><td>" + f.lose + "</td></tr>";
+      }).join("") + "</tbody>";
+  }
+  function moveHtml(m) {
+    var cost = moveUsd(m);
+    var included = inPlan(m);
+    var done = !!state.done[m.id];
+    var routes = "";
+    if (m.routes) {
+      routes = '<fieldset class="routes"><legend class="label" style="padding:0 0 4px">Pick a route</legend>' + m.routes.map(function (r) {
+        return '<label><input type="radio" name="route" id="route-' + r.id + '" value="' + r.id + '"' + (r.id === state.route ? " checked" : "") + "><span><b>" +
+          r.label + ", " + usd(r.usd) + ".</b> " + r.give + "</span></label>";
+      }).join("") + "</fieldset>";
+    }
+    return '<li class="move' + (done ? " is-done" : "") + (included ? "" : " is-out") + '" data-id="' + m.id + '">' +
+      '<label class="tick"><input type="checkbox" id="done-' + m.id + '"' + (done ? " checked" : "") + "><span>Done</span></label>" +
+      '<div class="move-body"><div class="pills">' + pill(m.when.indexOf("sale") >= 0 ? "loan" : (m.when.indexOf("Before") === 0 ? "gap" : "own"), m.when) + "</div>" +
+      "<h4>" + m.t + "</h4><p>" + m.p + "</p>" + routes +
+      "<details><summary>Exact steps</summary><ol>" + m.steps.map(function (s) { return "<li>" + s + "</li>"; }).join("") + "</ol></details></div>" +
+      '<div class="move-cost"><b>' + (cost ? usd(cost) : (m.auec ? "$0" : "Free")) + "</b>" +
+      (m.auec ? "<span>" + auec(m.auec) + "</span>" : "") +
+      (m.core ? "" : '<button type="button" class="toggle" data-inc="' + m.id + '" aria-pressed="' + included + '">' + (included ? "In my plan" : "Add to plan") + "</button>") +
+      "</div></li>";
+  }
+  function renderMoves() {
+    $("moves-core").innerHTML = MOVES.filter(function (m) { return m.core; }).map(moveHtml).join("");
+    $("moves-opt").innerHTML = MOVES.filter(function (m) { return !m.core; }).map(moveHtml).join("");
+    renderTotals();
+  }
+  function wireMoves() {
+    $("get").addEventListener("change", function (ev) {
+      var t = ev.target;
+      if (t.id && t.id.indexOf("melt-") === 0) {
+        state.melt[t.id.slice(5)] = t.checked;
+        save(); renderTotals();
+      } else if (t.id && t.id.indexOf("done-") === 0) {
+        state.done[t.id.slice(5)] = t.checked;
+        t.closest(".move").classList.toggle("is-done", t.checked);
+        save(); renderTotals();
+      } else if (t.name === "route") {
+        state.route = t.value; save(); renderMoves();
+        var radio = $("route-" + state.route);
+        if (radio) radio.focus();
+      }
+    });
+    $("get").addEventListener("click", function (ev) {
+      var b = ev.target.closest("[data-inc]");
+      if (!b) return;
+      var id = b.getAttribute("data-inc");
+      state.inc[id] = !state.inc[id];
+      save(); renderMoves();
+      var again = document.querySelector('[data-inc="' + id + '"]');
+      if (again) again.focus();
+    });
+  }
+
+  function renderExplorer() {
+    var sel = $("donor");
+    sel.innerHTML = FLEET.map(function (s) {
+      var blocked = s.v === "lock" ? "locked" : NO_DONOR[s.id];
+      return '<option value="' + s.id + '"' + (blocked ? " disabled" : "") + ">" + s.n + " (" + (blocked || usd(s.now)) + ")</option>";
+    }).join("");
+    var donor = byId(FLEET, state.donor);
+    if (!donor || donor.v === "lock" || NO_DONOR[donor.id]) { state.donor = "redeemer"; donor = byId(FLEET, "redeemer"); }
+    sel.value = state.donor;
+    chips($("scope-chips"), [["useful", "Fills a gap or restores a loss"], ["all", "Every ship"]], state.scope, function (v) { state.scope = v; save(); renderExplorer(); });
+    $("donor-facts").innerHTML = "<b>" + donor.n + "</b> counts for " + usd(donor.now) + " in an upgrade. You paid " + usd(donor.paid) + ". " +
+      donor.ins + " insurance carries over. " + (donor.rebuy ? "Replacing it in game costs " + auec(donor.rebuy) + "." : "It is not sold in game.") +
+      (donor.id === "andromeda" ? " This is your game package. Upgrading it keeps game access. Melting it ends game access." : "");
+    var q = state.q.trim().toLowerCase();
+    var owned = {};
+    FLEET.forEach(function (s) { owned[s.n] = true; });
+    var rows = CATALOG.filter(function (c) {
+      if (c.p <= donor.now) return false;
+      if (state.scope === "useful" && !WHY[c.n]) return false;
+      if (q && (c.n + " " + c.r).toLowerCase().indexOf(q) < 0) return false;
+      return true;
+    }).sort(function (a, b) { return (a.p - b.p) || a.n.localeCompare(b.n); });
+    $("targets").innerHTML = '<thead><tr><th class="r">Cost</th><th>Target</th><th>Role</th><th>Why it matters</th><th>Store</th><th class="r">In game, aUEC</th></tr></thead><tbody>' +
+      (rows.length ? rows.map(function (c) {
+        return '<tr><td class="r"><b>' + usd(c.p - donor.now) + '</b></td><td class="nw">' + c.n + "</td><td>" + c.r + "</td><td>" +
+          (WHY[c.n] || (owned[c.n] ? "You own one" : "")) + "</td><td>" +
+          (c.a === "A" ? pill("own", "Any day") : c.a === "L" ? pill("loan", "Sale only") : pill("plain", "Unknown")) +
+          '</td><td class="r">' + (c.b ? c.b.toLocaleString("en-US") : "Not sold") + "</td></tr>";
+      }).join("") : '<tr><td colspan="6" class="muted">Nothing above ' + usd(donor.now) + " matches. Try Every ship, or clear the search.</td></tr>") + "</tbody>";
+  }
+  function wireExplorer() {
+    $("donor").addEventListener("change", function (ev) { state.donor = ev.target.value; save(); renderExplorer(); });
+    $("q").addEventListener("input", function (ev) { state.q = ev.target.value; renderExplorer(); });
+  }
+
+  function renderLists() {
+    $("rules").innerHTML = RULES.map(function (r) { return "<li>" + r + "</li>"; }).join("");
+    $("unknowns").innerHTML = UNKNOWNS.map(function (r) { return "<li>" + r + "</li>"; }).join("");
+  }
+
+  function wireJump() {
+    var links = Array.prototype.slice.call(document.querySelectorAll(".jump a"));
+    if (!("IntersectionObserver" in window)) return;
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (!e.isIntersecting) return;
+        links.forEach(function (a) { a.setAttribute("aria-current", String(a.getAttribute("href") === "#" + e.target.id)); });
+      });
+    }, { rootMargin: "-20% 0px -70% 0px" });
+    document.querySelectorAll(".bay").forEach(function (s) { io.observe(s); });
+  }
+
+  function start() {
+    renderAnswers(); renderFleet(); renderLoaners(); renderLoops(); renderGaps(); renderTrades();
+    renderFunding(); renderMoves(); wireMoves(); renderExplorer(); wireExplorer(); renderLists(); wireJump();
+  }
+  start();
+})();
+</script>
+
+</body>
+</html>

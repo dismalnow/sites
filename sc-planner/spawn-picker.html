@@ -1,0 +1,1899 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Star Citizen Spawn Picker</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Electrolize&display=swap">
+<style>
+  /* Layout: a spaceport departures board that grows into a flight plan.
+     Four stops down one column: pick a home (ranked board), first hours (phased checklist),
+     career paths (three-rung ladders), training (drills from nothing-at-risk to live). */
+  :root {
+    color-scheme: dark;
+    --bg: #0b111b;
+    --surface: #121b29;
+    --surface-2: #19263a;
+    --line: #27374d;
+    --fg: #e6edf5;
+    --muted: #94a4b9;
+    --accent: #f0a63c;
+    --accent-ink: #1b1203;
+    --stanton: #6fb1e8;
+    --nyx: #b79cf0;
+    --pyro: #f0705a;
+    --safe: #62cfa2;
+    --risk: #f27e69;
+    --pip-off: #25344b;
+    --display: "Electrolize", "Eurostile", "Bahnschrift", "Segoe UI", sans-serif;
+    --body: "Barlow", "Segoe UI", system-ui, -apple-system, sans-serif;
+    --step--1: 0.8125rem;
+    --step-0: 1rem;
+    --step-1: 1.1875rem;
+    --step-2: 1.5rem;
+    --step-3: 2rem;
+  }
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      color-scheme: light;
+      --bg: #edf0f5;
+      --surface: #ffffff;
+      --surface-2: #e3e8f0;
+      --line: #c8d1de;
+      --fg: #111a27;
+      --muted: #536176;
+      --accent: #a85f00;
+      --accent-ink: #ffffff;
+      --stanton: #1c69ad;
+      --nyx: #6542c0;
+      --pyro: #bd3b27;
+      --safe: #0d7450;
+      --risk: #b53723;
+      --pip-off: #d2dae6;
+    }
+  }
+  :root[data-theme="light"] {
+    color-scheme: light;
+    --bg: #edf0f5;
+    --surface: #ffffff;
+    --surface-2: #e3e8f0;
+    --line: #c8d1de;
+    --fg: #111a27;
+    --muted: #536176;
+    --accent: #a85f00;
+    --accent-ink: #ffffff;
+    --stanton: #1c69ad;
+    --nyx: #6542c0;
+    --pyro: #bd3b27;
+    --safe: #0d7450;
+    --risk: #b53723;
+    --pip-off: #d2dae6;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--body);
+    font-size: var(--step-0);
+    line-height: 1.5;
+    padding-inline: 16px;
+    padding-block: 28px 56px;
+  }
+  .wrap { max-width: 1040px; margin-inline: auto; display: flex; flex-direction: column; gap: 24px; }
+  a { color: var(--fg); text-underline-offset: 3px; }
+  button { font: inherit; color: inherit; cursor: pointer; }
+  button:focus-visible, summary:focus-visible, a:focus-visible, input:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  /* Update stamp: first thing on the page */
+  .stamp { background: var(--surface); border: 1px solid var(--accent); border-radius: 3px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; }
+  .stamp p { margin: 0; max-width: 84ch; }
+  .stamp-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 12px; font-family: var(--display); font-size: var(--step--1); letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); }
+  .stamp-head span { color: var(--muted); }
+  .stamp-local { color: var(--risk); font-weight: 500; }
+  .stamp summary { cursor: pointer; color: var(--muted); font-size: var(--step--1); padding-block: 6px; }
+  .stamp ol { margin: 4px 0 0; padding-left: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; font-size: var(--step--1); }
+  .stamp ol b { font-family: var(--display); font-weight: 400; letter-spacing: 0.06em; color: var(--fg); margin-right: 8px; }
+  .stamp ol li { color: var(--muted); max-width: 84ch; }
+
+  /* Masthead */
+  .masthead { display: flex; flex-direction: column; gap: 10px; }
+  .eyebrow, .label {
+    font-family: var(--display);
+    font-weight: 400;
+    font-size: var(--step--1);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin: 0;
+  }
+  .eyebrow { color: var(--accent); }
+  .label { color: var(--muted); }
+  h1 {
+    font-family: var(--display);
+    font-weight: 400;
+    font-size: clamp(1.75rem, 6vw, 2.5rem);
+    line-height: 1.12;
+    letter-spacing: 0.01em;
+    margin: 0;
+    text-wrap: balance;
+  }
+  .lede { margin: 0; max-width: 62ch; color: var(--muted); font-size: var(--step-1); line-height: 1.45; }
+
+  /* Section jump bar */
+  .jump {
+    position: sticky;
+    top: env(safe-area-inset-top, 0px);
+    z-index: 5;
+    background: var(--bg);
+    border-bottom: 1px solid var(--line);
+    margin-inline: -16px;
+    padding-inline: 16px;
+    overflow-x: auto;
+  }
+  .jump ul { list-style: none; margin: 0; padding: 0; display: flex; gap: 18px; white-space: nowrap; }
+  @media (max-width: 480px) { .jump b { display: none; } }
+  .jump a {
+    display: block;
+    padding: 14px 0 12px;
+    font-family: var(--display);
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-decoration: none;
+  }
+  .jump a:hover { color: var(--fg); }
+  .jump b { font-weight: 400; color: var(--accent); margin-right: 6px; }
+
+  /* Sections */
+  .sec { display: flex; flex-direction: column; gap: 22px; padding-top: 28px; scroll-margin-top: 44px; }
+  .sec-head { display: flex; flex-direction: column; gap: 8px; }
+  .sec-head h2 {
+    font-family: var(--display);
+    font-weight: 400;
+    font-size: clamp(1.5rem, 5vw, 2rem);
+    line-height: 1.15;
+    margin: 0;
+    text-wrap: balance;
+  }
+  .sec-head h2 span { color: var(--accent); margin-right: 10px; }
+  .sec-head p { margin: 0; max-width: 64ch; color: var(--muted); }
+
+  /* Home picker: two-column shell */
+  .shell { display: grid; grid-template-columns: minmax(0, 1fr); gap: 28px; }
+  .shell > * { min-width: 0; }
+  @media (min-width: 900px) {
+    .shell { grid-template-columns: 320px minmax(0, 1fr); gap: 40px; align-items: start; }
+    .controls { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 64px); }
+  }
+  .controls { display: flex; flex-direction: column; gap: 22px; }
+  .group { display: flex; flex-direction: column; gap: 10px; }
+  .presets { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .chips { display: flex; flex-direction: column; gap: 8px; }
+  .preset, .tab {
+    min-height: 44px;
+    padding: 8px 12px;
+    background: transparent;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    font-family: var(--display);
+    font-size: var(--step--1);
+    letter-spacing: 0.04em;
+    text-align: center;
+  }
+  .preset[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+  .tab[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+  .chip {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 46px;
+    padding: 8px 12px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    text-align: left;
+    line-height: 1.25;
+  }
+  .chip .box {
+    flex: none;
+    width: 18px;
+    height: 18px;
+    border: 1.5px solid var(--muted);
+    border-radius: 2px;
+    display: grid;
+    place-items: center;
+  }
+  .chip .box::after {
+    content: "";
+    width: 10px;
+    height: 10px;
+    background: var(--accent-ink);
+    clip-path: polygon(8% 52%, 36% 80%, 92% 18%, 78% 8%, 36% 56%, 20% 40%);
+    opacity: 0;
+  }
+  .chip .tag {
+    margin-left: auto;
+    flex: none;
+    font-family: var(--display);
+    font-size: 0.6875rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 500; }
+  .chip[aria-pressed="true"] .box { border-color: var(--accent-ink); }
+  .chip[aria-pressed="true"] .box::after { opacity: 1; }
+  .chip[aria-pressed="true"] .tag { color: var(--accent-ink); }
+  .hint { margin: 0; min-height: 1.3em; font-size: var(--step--1); color: var(--muted); }
+
+  /* Board */
+  .results { display: flex; flex-direction: column; gap: 14px; }
+  .board-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 16px; }
+  .board-head p { margin: 0; font-size: var(--step--1); color: var(--muted); }
+  ol.board { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+  .row { background: var(--surface); border: 1px solid var(--line); border-radius: 3px; }
+  .row.top { border-color: var(--accent); }
+  .row summary {
+    list-style: none;
+    cursor: pointer;
+    display: grid;
+    grid-template-columns: 2.25rem minmax(0, 1fr) auto;
+    column-gap: 10px;
+    row-gap: 10px;
+    align-items: center;
+    padding: 14px 14px 14px 12px;
+  }
+  .row summary::-webkit-details-marker { display: none; }
+  .rank {
+    font-family: var(--display);
+    font-size: var(--step-2);
+    line-height: 1;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+    text-align: center;
+  }
+  .row.top .rank { color: var(--accent); }
+  .ident { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+  .name { font-family: var(--display); font-size: var(--step-1); line-height: 1.2; overflow-wrap: anywhere; }
+  .row.top .name { font-size: var(--step-2); }
+  .where { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; font-size: var(--step--1); color: var(--muted); }
+  .sys, .pill {
+    font-family: var(--display);
+    font-size: 0.6875rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 1px 6px;
+    border: 1px solid currentColor;
+    border-radius: 2px;
+    white-space: nowrap;
+  }
+  .sys.stanton { color: var(--stanton); }
+  .sys.nyx { color: var(--nyx); }
+  .sys.pyro { color: var(--pyro); }
+  .pill { color: var(--muted); }
+  .pill.safe { color: var(--safe); }
+  .pill.risk { color: var(--risk); }
+  .fit { text-align: right; line-height: 1.1; }
+  .fit b { font-family: var(--display); font-weight: 400; font-size: var(--step-2); font-variant-numeric: tabular-nums; }
+  .fit span { display: block; font-size: 0.6875rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); font-family: var(--display); }
+  .meter { grid-column: 1 / -1; height: 6px; background: var(--pip-off); border-radius: 1px; overflow: hidden; }
+  .meter i { display: block; height: 100%; width: 0; transition: width 0.35s ease; }
+  .meter i.stanton { background: var(--stanton); }
+  .meter i.nyx { background: var(--nyx); }
+  .meter i.pyro { background: var(--pyro); }
+  .more { grid-column: 1 / -1; font-size: var(--step--1); color: var(--muted); }
+  .more::after { content: "Show reasons"; }
+  .row[open] .more::after { content: "Hide reasons"; }
+  .detail { border-top: 1px solid var(--line); padding: 16px 14px 18px; display: flex; flex-direction: column; gap: 16px; }
+  .reasons { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 14px; }
+  .reason { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; align-items: center; }
+  .reason .lab { font-weight: 600; font-size: var(--step--1); letter-spacing: 0.02em; }
+  .reason p { grid-column: 1 / -1; margin: 0; max-width: 62ch; }
+  .pips { display: flex; gap: 3px; }
+  .pips i { width: 14px; height: 8px; background: var(--pip-off); border-radius: 1px; }
+  .pips i.on { background: var(--fg); }
+  .note { margin: 0; padding: 12px 14px; background: var(--surface-2); border-radius: 3px; max-width: 70ch; }
+  .note > b:first-child {
+    font-family: var(--display);
+    font-weight: 400;
+    font-size: var(--step--1);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    display: block;
+    margin-bottom: 2px;
+  }
+  .note ul { margin: 6px 0 0; padding-left: 1.1em; display: flex; flex-direction: column; gap: 6px; }
+  .est { margin: 0; font-size: var(--step--1); color: var(--muted); max-width: 62ch; }
+
+  .share { display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
+  .copy {
+    min-height: 46px;
+    padding: 10px 18px;
+    background: transparent;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    border-radius: 3px;
+    font-family: var(--display);
+    letter-spacing: 0.04em;
+  }
+  .share textarea {
+    width: 100%;
+    min-height: 7.5rem;
+    padding: 10px 12px;
+    font: inherit;
+    font-size: var(--step--1);
+    color: var(--fg);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    resize: vertical;
+  }
+
+  .rules { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 20px 28px; border-top: 1px solid var(--line); padding-top: 22px; }
+  .rules > div { min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+  .rules h3 { margin: 0; font-family: var(--display); font-weight: 400; font-size: var(--step-0); }
+  .rules p { margin: 0; color: var(--muted); }
+
+  /* Intake and plan */
+  .intake { display: grid; grid-template-columns: minmax(0, 1fr); gap: 22px 32px; }
+  @media (min-width: 760px) { .intake { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .q { min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+  .q-label { margin: 0; font-weight: 600; }
+  .opts { display: flex; flex-wrap: wrap; gap: 8px; }
+  .opt { position: relative; display: block; }
+  .opt input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+  .opt span {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 8px 14px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    line-height: 1.3;
+  }
+  .opt input:checked + span { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 500; }
+  .opt input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .plan { background: var(--surface); border: 1px solid var(--accent); border-radius: 3px; padding: 20px 16px; display: flex; flex-direction: column; gap: 22px; }
+  @media (min-width: 760px) { .plan { padding: 24px; } }
+  .plan-head { display: flex; flex-direction: column; gap: 6px; }
+  .plan-head h3 { margin: 0; font-family: var(--display); font-weight: 400; font-size: var(--step-3); line-height: 1.1; text-wrap: balance; }
+  .plan-head p { margin: 0; max-width: 62ch; color: var(--muted); font-size: var(--step-1); line-height: 1.4; }
+  .plan-head p.eyebrow { color: var(--accent); font-size: var(--step--1); line-height: 1.5; }
+  .orders { list-style: none; margin: 0; padding: 20px 0 0; border-top: 1px solid var(--line); display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 24px 28px; }
+  .order { min-width: 0; display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
+  .order .big { font-family: var(--display); font-size: var(--step-1); line-height: 1.2; }
+  .order p { margin: 0; }
+  .linkbtn {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0;
+    background: none;
+    border: 0;
+    color: var(--accent);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .courses { display: flex; flex-direction: column; gap: 10px; }
+  ol.syllabus { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+  .course { display: grid; grid-template-columns: 2rem minmax(0, 1fr); gap: 2px 12px; padding-block: 12px; border-top: 1px solid var(--line); align-items: start; }
+  @media (min-width: 760px) { .course { grid-template-columns: 2rem minmax(0, 1fr) auto; align-items: center; } }
+  .course .num { font-family: var(--display); font-size: var(--step-2); line-height: 1.1; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .course.is-core .num, .course.is-spec .num { color: var(--accent); }
+  .course-body { min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+  .course-name { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; font-family: var(--display); font-size: var(--step-1); line-height: 1.2; }
+  .course p { margin: 0; max-width: 60ch; }
+  .course .linkbtn { grid-column: 2; }
+  @media (min-width: 760px) { .course .linkbtn { grid-column: 3; } }
+  .course.is-skip .course-name, .course.is-skip p { color: var(--muted); }
+  .pill.core { color: var(--accent); }
+  .pill.spec { color: var(--fg); }
+
+  /* Phases */
+  ol.phases { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+  .phase {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 18px 16px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+  @media (min-width: 760px) {
+    .phase { grid-template-columns: 210px minmax(0, 1fr); gap: 32px; padding: 22px; }
+  }
+  .phase > * { min-width: 0; }
+  .phase-id { display: flex; flex-direction: column; gap: 6px; align-content: start; }
+  .phase-num { font-family: var(--display); font-size: var(--step--1); letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); }
+  .phase h3 { margin: 0; font-family: var(--display); font-weight: 400; font-size: var(--step-2); line-height: 1.15; text-wrap: balance; }
+  .when { color: var(--muted); font-size: var(--step--1); }
+  .count { font-family: var(--display); font-size: var(--step--1); color: var(--muted); font-variant-numeric: tabular-nums; }
+  .phase-body { display: flex; flex-direction: column; gap: 16px; }
+  .checks { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+  .check { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 12px; align-items: start; cursor: pointer; max-width: 70ch; }
+  .check input { width: 20px; height: 20px; margin: 2px 0 0; accent-color: var(--accent); }
+  .check input:checked + * { color: var(--muted); }
+  .sub { margin: 8px 0 0; padding-left: 1.1em; display: flex; flex-direction: column; gap: 6px; }
+  .done { margin: 0; padding-top: 14px; border-top: 1px solid var(--line); color: var(--muted); max-width: 70ch; }
+  .done b { color: var(--fg); font-weight: 600; }
+  kbd {
+    font-family: var(--display);
+    font-size: 0.8125em;
+    padding: 1px 6px;
+    border: 1px solid var(--line);
+    border-bottom-width: 2px;
+    border-radius: 3px;
+    background: var(--surface-2);
+    color: var(--fg);
+    white-space: nowrap;
+  }
+
+  /* Careers */
+  .tabs { display: flex; flex-wrap: wrap; gap: 8px; }
+  .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 3px; padding: 20px 16px; display: flex; flex-direction: column; gap: 20px; }
+  @media (min-width: 760px) { .panel { padding: 24px; } }
+  .panel h3 { margin: 0; font-family: var(--display); font-weight: 400; font-size: var(--step-3); line-height: 1.1; }
+  .tagline { margin: 6px 0 0; max-width: 62ch; color: var(--muted); font-size: var(--step-1); line-height: 1.4; }
+  dl.facts { margin: 0; padding-block: 16px; border-block: 1px solid var(--line); display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 16px 24px; }
+  .facts div { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+  .facts dd { margin: 0; }
+  ol.rungs { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 24px 28px; }
+  .rung { min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+  .rung .stage { font-family: var(--display); font-size: var(--step--1); letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); }
+  .rung h4 { margin: 0; font-family: var(--display); font-weight: 400; font-size: var(--step-1); line-height: 1.2; }
+  .rung ul { margin: 0; padding-left: 1.1em; display: flex; flex-direction: column; gap: 8px; }
+  .rung ul, .sub, .note ul { list-style: disc; }
+
+  /* Training */
+  ol.drills { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+  .drill { padding-block: 18px; border-top: 1px solid var(--line); display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  .drill:last-child { border-bottom: 1px solid var(--line); }
+  @media (min-width: 760px) { .drill { grid-template-columns: 210px minmax(0, 1fr); gap: 32px; } }
+  .drill > * { min-width: 0; }
+  .pills { display: flex; flex-wrap: wrap; gap: 6px; align-content: flex-start; }
+  .drill-body { display: flex; flex-direction: column; gap: 6px; }
+  .drill h3 { margin: 0; font-family: var(--display); font-weight: 400; font-size: var(--step-1); line-height: 1.2; }
+  .drill p { margin: 0; max-width: 66ch; }
+  .drill .ready { color: var(--muted); }
+  .drill .ready b { color: var(--fg); font-weight: 600; }
+
+  footer { border-top: 1px solid var(--line); margin-top: 28px; padding-top: 20px; display: flex; flex-direction: column; gap: 10px; font-size: var(--step--1); color: var(--muted); }
+  footer p { margin: 0; max-width: 84ch; }
+
+  @media (prefers-reduced-motion: reduce) { .meter i { transition: none; } html { scroll-behavior: auto; } }
+</style>
+<style>
+  .sitebar { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 20px; padding-bottom: 12px; border-bottom: 1px solid var(--line);
+    font-family: var(--display); font-size: 0.8125rem; letter-spacing: 0.1em; text-transform: uppercase; }
+  .sitebar a { color: var(--muted); text-decoration: none; }
+  .sitebar a:hover, .sitebar a[aria-current="page"] { color: var(--fg); }
+  .sitebar a.sitebar-home { color: var(--accent); margin-right: auto; }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <nav class="sitebar" aria-label="Site"><a class="sitebar-home" href="./">SC Planner</a><a href="./spawn-picker.html" aria-current="page">Spawn Picker</a><a href="./fleet-planner.html">Fleet Planner</a></nav>
+  <aside class="stamp" aria-label="Latest update">
+    <p class="stamp-head"><b>Update 4</b><span>7 October 2026</span></p>
+    <p>Latest: this update log now sits at the top of the page. Update 3, the same day, added the seven-question plan, a Navigation course, and the tutorial as a factor in the home ranking.</p>
+    <p class="stamp-local" id="stamp-local" hidden>You are viewing a saved copy. Refreshing it will not fetch newer updates. The live page is <a href="https://sites.dismal.me/sc-planner/spawn-picker.html">sites.dismal.me/sc-planner</a>.</p>
+    <details>
+      <summary>All updates</summary>
+      <ol>
+        <li><b>Update 4 · 7 Oct</b>Update log at the top of the page. Saved copies now say that they are saved copies.</li>
+        <li><b>Update 3 · 7 Oct</b>Seven-question plan that sets a home, a starting phase, a first career ladder and a course order. Navigation course. Tutorial added to the home ranking and to Phase 0.</li>
+        <li><b>Update 2 · 7 Oct</b>First-weeks checklist in five phases. Seven career ladders. Flight, business and combat training.</li>
+        <li><b>Update 1 · 5 Oct</b>Home ranking for the 12 selectable homes.</li>
+      </ol>
+    </details>
+  </aside>
+
+  <header class="masthead">
+    <p class="eyebrow">Alpha 4.10.1 · Unofficial starter guide</p>
+    <h1>Your first weeks in the 'verse</h1>
+    <p class="lede">Answer seven questions for a plan, or go straight to the home ranking, the first-weeks checklist, the career ladders and the training courses.</p>
+  </header>
+
+  <nav class="jump" aria-label="Sections">
+    <ul>
+      <li><a href="#plan"><b>1</b>Plan</a></li>
+      <li><a href="#home"><b>2</b>Home</a></li>
+      <li><a href="#start"><b>3</b>Start</a></li>
+      <li><a href="#careers"><b>4</b>Careers</a></li>
+      <li><a href="#training"><b>5</b>Training</a></li>
+    </ul>
+  </nav>
+
+  <!-- 1. PLAN -->
+  <section class="sec" id="plan" aria-labelledby="h-plan">
+    <div class="sec-head">
+      <h2 id="h-plan"><span>1</span>Get your plan</h2>
+      <p>Seven taps. Your answers set a home, a starting phase, a first career ladder, and the courses to take before it. Core courses come before your specialty.</p>
+    </div>
+    <div class="intake" id="intake"></div>
+    <p class="hint" id="intake-note"></p>
+    <div class="plan" id="plan-out" aria-live="polite"></div>
+  </section>
+
+  <!-- 2. HOME -->
+  <section class="sec" id="home" aria-labelledby="h-home">
+    <div class="sec-head">
+      <h2 id="h-home"><span>2</span>Pick a home</h2>
+      <p>Star Citizen locks your home for the whole patch. Tap what you care about and the 12 selectable homes re-rank.</p>
+    </div>
+
+    <div class="shell">
+      <div class="controls">
+        <div class="group">
+          <h3 class="label" id="h-presets">Quick start</h3>
+          <div class="presets" id="presets" role="group" aria-labelledby="h-presets"></div>
+        </div>
+        <div class="group">
+          <h3 class="label" id="h-chips">What matters to you</h3>
+          <div class="chips" id="chips" role="group" aria-labelledby="h-chips"></div>
+          <p class="hint" id="hint" role="status" aria-live="polite"></p>
+        </div>
+      </div>
+
+      <div class="results">
+        <div class="board-head">
+          <h3 class="label">Ranked for you</h3>
+          <p>12 homes in 7 rows. Tap a row for its reasons.</p>
+        </div>
+        <ol class="board" id="board"></ol>
+        <div class="share">
+          <button class="copy" id="copy" type="button">Copy result as text</button>
+          <p class="hint" id="copy-status" role="status" aria-live="polite"></p>
+          <textarea id="copy-fallback" readonly hidden aria-label="Your result as text"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="rules">
+      <div>
+        <h3>Locked for the patch</h3>
+        <p>Your primary residence stays fixed until the next patch. You choose again at your first login after a new patch lands.</p>
+      </div>
+      <div>
+        <h3>Your gear starts there</h3>
+        <p>You first wake up in a hab at your home, and your inventory is stored there.</p>
+      </div>
+      <div>
+        <h3>Rewards ship home</h3>
+        <p>Mission reward items are delivered to your primary residence, wherever you earned them.</p>
+      </div>
+      <div>
+        <h3>Respawn can move</h3>
+        <p>Set your regeneration point at any medical facility or medical bed. You can reset it to your home later.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. FIRST HOURS -->
+  <section class="sec" id="start" aria-labelledby="h-start">
+    <div class="sec-head">
+      <h2 id="h-start"><span>3</span>First hours to first weeks</h2>
+      <p>Five phases, in order. Tick items off as you go. Ticks are saved on this device only. Keys shown are the defaults.</p>
+    </div>
+
+    <ol class="phases">
+      <li class="phase" data-phase="p0">
+        <div class="phase-id">
+          <span class="phase-num">Phase 0</span>
+          <h3>Before you spawn</h3>
+          <span class="when">About 20 minutes. Nothing at risk.</span>
+          <span class="count" id="count-p0"></span>
+        </div>
+        <div class="phase-body">
+          <ul class="checks">
+            <li><label class="check"><input type="checkbox" id="c-p0-1"><span>Pick your home with the ranking above. It is locked until the next patch.</span></label></li>
+            <li><label class="check"><input type="checkbox" id="c-p0-2"><span>Bind your controls and fly a few minutes in Arena Commander's Free Flight. It runs offline, and nothing you fly there can be lost.</span></label></li>
+            <li><label class="check"><input type="checkbox" id="c-p0-3"><span>Say yes to the tutorial when the game offers it. Only the four Stanton cities have one. It pays 15,000 aUEC for each of its first two parts and lends you a C8 Pisces for the first flight. Each part is once-only, so do not abandon it. If you skip, you start in your hangar next to a ship terminal.</span></label></li>
+            <li><label class="check"><input type="checkbox" id="c-p0-4"><span>Want a person to show you around? Request a volunteer through the <a href="https://robertsspaceindustries.com/spectrum/guide">Guide System</a> on Spectrum or from the launcher.</span></label></li>
+          </ul>
+          <p class="done"><b>Done when:</b> your stick, throttle or mouse does what you expect in Free Flight.</p>
+        </div>
+      </li>
+
+      <li class="phase" data-phase="p1">
+        <div class="phase-id">
+          <span class="phase-num">Phase 1</span>
+          <h3>Hab to orbit and back</h3>
+          <span class="when">Your first session.</span>
+          <span class="count" id="count-p1"></span>
+        </div>
+        <div class="phase-body">
+          <ul class="checks">
+            <li><label class="check"><input type="checkbox" id="c-p1-1"><span>Get out of bed with <kbd>Y</kbd>. Open doors and panels with <kbd>F</kbd>, your mobiGlas with <kbd>F1</kbd> and your inventory with <kbd>I</kbd>.</span></label></li>
+            <li><label class="check"><input type="checkbox" id="c-p1-2"><span>Put on a suit and helmet before you leave the city.</span></label></li>
+            <li><label class="check"><input type="checkbox" id="c-p1-3"><span>Ride the tram to the spaceport and call your ship at an ASOP terminal. Note the hangar number it gives you.</span></label></li>
+            <li><label class="check"><input type="checkbox" id="c-p1-4"><span>In the pilot seat, press <kbd>U</kbd> for Flight Ready. Ask for takeoff clearance through mobiGlas Comms. Check third-person view with <kbd>F4</kbd> first, because the hangar exit may be above you.</span></label></li>
+            <li><label class="check"><input type="checkbox" id="c-p1-5"><span>Climb until the altitude marker disappears. Hold <kbd>B</kbd> to switch to NAV mode and quantum to an orbital station.</span></label></li>
+            <li><label class="check"><input type="checkbox" id="c-p1-6"><span>Land at the station (<kbd>N</kbd> drops the landing gear), store the ship, then fly home and land there too.</span></label></li>
+          </ul>
+          <p class="done"><b>Done when:</b> you can go from bed to ship to orbit to a station and home again without looking anything up.</p>
+        </div>
+      </li>
+
+      <li class="phase" data-phase="p2">
+        <div class="phase-id">
+          <span class="phase-num">Phase 2</span>
+          <h3>First paid work</h3>
+          <span class="when">Sessions 2 to 4.</span>
+          <span class="count" id="count-p2"></span>
+        </div>
+        <div class="phase-body">
+          <ul class="checks">
+            <li><label class="check"><input type="checkbox" id="c-p2-1"><span>Buy a multi-tool with a tractor beam attachment. Covalex tells its haulers to bring one.</span></label></li>
+            <li><label class="check"><input type="checkbox" id="c-p2-2"><div>Take one intro contract for the career you want to try. Each one opens that employer's ladder.
+              <ul class="sub">
+                <li>Hauling: Covalex Trainee hauls. A sample 4 SCU run pays 25,000 aUEC.</li>
+                <li>Bounties: Tracker Training Permit Certification. 500 aUEC fee, one very-low-risk ship.</li>
+                <li>Security on foot: Security Work Assessment for Crusader Security. Pays 10,000 aUEC.</li>
+              </ul>
+            </div></label></li>
+            <li><label class="check"><input type="checkbox" id="c-p2-3"><span>Set your regeneration point at a clinic near where you are working.</span></label></li>
+            <li><label class="check"><input type="checkbox" id="c-p2-4"><span>Keep your CrimeStat clean. The intro contracts require CrimeStat 0 to 2.</span></label></li>
+            <li><label class="check"><input type="checkbox" id="c-p2-5"><span>Carry kit you can afford to lose. Leave the good armor at home until you stop dying.</span></label></li>
+          </ul>
+          <p class="done"><b>Done when:</b> you have finished five contracts for one employer.</p>
+        </div>
+      </li>
+
+      <li class="phase" data-phase="p3">
+        <div class="phase-id">
+          <span class="phase-num">Phase 3</span>
+          <h3>Build up</h3>
+          <span class="when">Weeks 1 and 2.</span>
+          <span class="count" id="count-p3"></span>
+        </div>
+        <div class="phase-body">
+          <ul class="checks">
+            <li><label class="check"><input type="checkbox" id="c-p3-1"><span>Climb one ladder until your current ship is the limit. See Careers for where each ladder outgrows a starter.</span></label></li>
+            <li><label class="check"><input type="checkbox" id="c-p3-2"><span>Rent the next ship before you buy it. Rental terminals are at major spaceports. Three days is 10 percent off and seven days is 25 percent off, and the clock keeps running while you are logged off.</span></label></li>
+            <li><label class="check"><input type="checkbox" id="c-p3-3"><span>Learn what losing a ship costs. Since 4.10, claim timers scale with the ship's value and fitted weapons add to the claim price.</span></label></li>
+            <li><label class="check"><input type="checkbox" id="c-p3-4"><span>Plan your fuel. 4.10 shrank hydrogen tanks and raised hydrogen and quantum fuel prices.</span></label></li>
+            <li><label class="check"><input type="checkbox" id="c-p3-5"><span>Keep a cash float and expect wipes. The last full wipe was 4.8.0 on 14 May 2026. A wipe resets aUEC and ships bought in game. Ships pledged with real money stay.</span></label></li>
+          </ul>
+          <p class="note"><b>Live until 4.10.2</b>Orison Relief Support is open to anyone and suits this phase. Covalex and Ling run medical supply hauls from New Babbage and Port Tressler to Orison, Foxwell runs security contracts, and Cornerstone runs rebuilding work. Progress is personal and unlocks six SecondWind weapons and armor sets.</p>
+          <p class="done"><b>Done when:</b> you could lose your ship and its cargo once and keep working.</p>
+        </div>
+      </li>
+
+      <li class="phase" data-phase="p4">
+        <div class="phase-id">
+          <span class="phase-num">Phase 4</span>
+          <h3>Specialize</h3>
+          <span class="when">After that.</span>
+          <span class="count" id="count-p4"></span>
+        </div>
+        <div class="phase-body">
+          <ul class="checks">
+            <li><label class="check"><input type="checkbox" id="c-p4-1"><span>Move into a ship built for your career. The third rung of each ladder below names them.</span></label></li>
+            <li><label class="check"><input type="checkbox" id="c-p4-2"><span>Chase blueprints as well as aUEC. Recco Battaglia pays in mining modules and ore pod blueprints, and Adagio pays in scraper module blueprints. You craft from them at an Item Fabricator.</span></label></li>
+            <li><label class="check"><input type="checkbox" id="c-p4-3"><span>Try squad content. Siege of Orison is a private instance for up to four. Tactical Strike Group in Nyx is built for seven or more ships.</span></label></li>
+            <li><label class="check"><input type="checkbox" id="c-p4-4"><span>Weigh Pyro and Nyx. Contracts there tend to pay more, and nobody polices other players.</span></label></li>
+          </ul>
+          <p class="done"><b>No finish line.</b> Re-pick your home at the next patch to match what you do now.</p>
+        </div>
+      </li>
+    </ol>
+  </section>
+
+  <!-- 3. CAREERS -->
+  <section class="sec" id="careers" aria-labelledby="h-careers">
+    <div class="sec-head">
+      <h2 id="h-careers"><span>4</span>Career paths</h2>
+      <p>Seven ways to earn, each as a three-rung ladder. Fees and payouts are samples from 4.10.1 contract data. They change with patches, so trust the number on the contract.</p>
+    </div>
+    <div class="tabs" id="career-tabs" role="group" aria-label="Choose a career"></div>
+    <div class="panel" id="career-panel" aria-live="polite"></div>
+    <p class="est">Also in the game: refuelling contracts (the intro ones ask for hydrogen only as of 4.10.1), crafting at Item Fabricators, and racing inside Arena Commander.</p>
+  </section>
+
+  <!-- 4. TRAINING -->
+  <section class="sec" id="training" aria-labelledby="h-training">
+    <div class="sec-head">
+      <h2 id="h-training"><span>5</span>Training</h2>
+      <p>Four courses. Drills marked Basics are the core of each course, and the rest build on them. Arena Commander is on the main menu. It is a simulator, so ships and gear used there are never lost.</p>
+    </div>
+    <div class="tabs" id="track-tabs" role="group" aria-label="Choose a training track"></div>
+    <ol class="drills" id="drills" aria-live="polite"></ol>
+    <p class="est" id="track-note"></p>
+  </section>
+
+  <footer>
+    <p><strong>How sure is this?</strong> Home list, lock rule, patch changes and career mechanics come from the Star Citizen Wiki and RSI support articles. Contract fees, payouts and reputation figures are samples from the wiki's 4.10.1 game-data export. Home travel-time and frame-rate ratings are long-standing player consensus with no 4.10 benchmarks behind them. Nyx and Pyro home ratings are estimates. Ship prices are community estimates. Arena Commander's mode list is from an RSI article last updated in June 2025, and modes rotate. Tutorial availability is read from the 4.10.1 game data: variants exist for the four Stanton cities and none were found for Nyx or Pyro homes. The plan logic and the "done when" and "ready when" marks are this guide's own judgment.</p>
+    <p>Sources: Star Citizen Wiki pages for <a href="https://starcitizen.tools/Primary_Residence">Primary Residence</a>, <a href="https://starcitizen.tools/Update:Star_Citizen_Alpha_4.10.0">Alpha 4.10.0</a>, <a href="https://starcitizen.tools/Update:Star_Citizen_Alpha_4.10.1">Alpha 4.10.1</a>, <a href="https://starcitizen.tools/Hauling">Hauling</a>, <a href="https://starcitizen.tools/Trading">Trading</a>, <a href="https://starcitizen.tools/Bounty_Hunters_Guild">Bounty Hunters Guild</a>, <a href="https://starcitizen.tools/Foxwell_Enforcement">Foxwell Enforcement</a>, <a href="https://starcitizen.tools/Security_Work_Assessment">Security Work Assessment</a>, <a href="https://starcitizen.tools/Mining">Mining</a>, <a href="https://starcitizen.tools/Refining">Refining</a>, <a href="https://starcitizen.tools/Salvage">Salvage</a>, <a href="https://starcitizen.tools/Medical">Medical</a>, <a href="https://starcitizen.tools/Rental">Rental</a> and <a href="https://starcitizen.tools/Nyx_system">Nyx</a>. Contract and <a href="https://api.star-citizen.wiki/missions/tutorial-your-first-steps">tutorial</a> samples from <a href="https://api.star-citizen.wiki/missions/tracker-beginners-permit-certification">api.star-citizen.wiki</a>. RSI support: <a href="https://support.robertsspaceindustries.com/hc/en-us/articles/360025028633-Getting-Started-in-the-Verse">Getting Started</a>, <a href="https://support.robertsspaceindustries.com/hc/en-us/articles/360019449994-How-to-Quantum-Travel">How to Quantum Travel</a>, <a href="https://support.robertsspaceindustries.com/hc/en-us/articles/360003091714-Arena-Commander">Arena Commander</a>, <a href="https://support.robertsspaceindustries.com/hc/en-us/articles/115013172187-Renting-equipment-REC-Electronic-Access-ROMs">Renting Ships and Equipment</a>, <a href="https://support.robertsspaceindustries.com/hc/en-us/articles/360038526034-Guide-System">Guide System</a>. Community guides: <a href="https://timesaver.gg/blog/star-citizen-hauling-guide-alpha-4-10">hauling</a>, <a href="https://timesaver.gg/blog/star-citizen-mining-guide-alpha-4-10-1">mining</a>, <a href="https://starcitizenhelp.com/game-guides/in-game-shops-directory">shops directory</a>. Checked October 2026.</p>
+    <p>Unofficial fan guide. Not affiliated with Cloud Imperium Games.</p>
+  </footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ---------- helpers ---------- */
+  function el(tag, cls, text) {
+    var n = document.createElement(tag);
+    if (cls) { n.className = cls; }
+    if (text !== undefined) { n.textContent = text; }
+    return n;
+  }
+  function read(key, fallback) {
+    try {
+      var raw = window.localStorage.getItem(key);
+      return raw === null ? fallback : JSON.parse(raw);
+    } catch (e) { return fallback; }
+  }
+  function write(key, value) {
+    try { window.localStorage.setItem(key, JSON.stringify(value)); } catch (e) { /* optional */ }
+  }
+  function byId(list, id) {
+    for (var i = 0; i < list.length; i++) { if (list[i].id === id) { return list[i]; } }
+    return null;
+  }
+
+  /* ---------- 1. home picker ---------- */
+  var AXES = [
+    { id: "quick",  label: "Short trip from bed to ship" },
+    { id: "lawful", label: "Lawful space, starter contracts nearby" },
+    { id: "tutorial", label: "In-game tutorial at spawn" },
+    { id: "shops",  label: "Good shopping at home" },
+    { id: "mining", label: "Mining" },
+    { id: "perf",   label: "Smoother frame rate at home" },
+    { id: "recco",  label: "Recco Battaglia story missions", tag: "New 4.10" },
+    { id: "siege",  label: "Siege of Orison", tag: "New 4.10" },
+    { id: "outlaw", label: "Outlaw and PvP life" }
+  ];
+
+  var PRESETS = [
+    { id: "returning", label: "New or returning", axes: ["quick", "lawful", "shops", "tutorial"] },
+    { id: "miner",     label: "Miner",            axes: ["mining", "shops", "lawful"] },
+    { id: "story",     label: "4.10 story",       axes: ["recco", "shops"] },
+    { id: "outlaw",    label: "Outlaw",           axes: ["outlaw", "quick", "perf"] }
+  ];
+
+  var CITY_PERF = "A full landing-zone city. Expect lower frame rates than at any station.";
+  var STATION_PERF = "Stations are lighter on frame rate than the landing-zone cities.";
+  var STATION_QUICK = "Compact station. Habs, shops and hangars are an elevator apart.";
+  var WRONG_SYSTEM = "Recco works out of Levski in Nyx, a jump-gate trip from here.";
+  var SAME_SYSTEM = "Same system as Orison, so one quantum trip to Crusader.";
+  var LAWFUL_CITY = "UEE space with an armistice zone at the city and contracts all over Stanton.";
+  var MONITORED = "Monitored, lawful space. Crime earns a CrimeStat fast.";
+  var NO_TUTORIAL = "No tutorial for this home appears in the 4.10.1 game data.";
+  var TUTORIAL_TAIL = " then city transit to the spaceport and a first flight in a loaner C8 Pisces.";
+
+  var PLACES = [
+    {
+      name: "Area18", where: "ArcCorp", kind: "City", sys: "stanton", sysName: "Stanton",
+      r: {
+        quick:  [5, "The shortest hab-to-hangar run of the four cities. One tram ride to Riker Memorial Spaceport."],
+        tutorial: [5, "The tutorial runs here: basics in your hab, a walk to Cubby Blast," + TUTORIAL_TAIL],
+        lawful: [5, LAWFUL_CITY],
+        shops:  [5, "Cubby Blast, CenterMass, Casaba Outlet, Astro Armada and Dumper's Depot sit around one plaza."],
+        mining: [4, "Lyria and Wala, ArcCorp's two moons, are a short quantum hop away."],
+        perf:   [2, CITY_PERF],
+        recco:  [1, WRONG_SYSTEM],
+        siege:  [2, SAME_SYSTEM],
+        outlaw: [1, MONITORED]
+      },
+      catch: "It is a dense city, so frame rates run lower than at a station."
+    },
+    {
+      name: "New Babbage", where: "microTech", kind: "City", sys: "stanton", sysName: "Stanton",
+      r: {
+        quick:  [3, "Easy to find your way around indoors, but the spaceport tram is a longer ride."],
+        tutorial: [5, "The tutorial runs here: basics in your hab, a shop visit," + TUTORIAL_TAIL],
+        lawful: [5, LAWFUL_CITY],
+        shops:  [5, "Omega Pro for ship components, CenterMass for weapons, and the strongest mining-gear shopping in Stanton."],
+        mining: [5, "Mining gear is sold at home, and microTech's moons Calliope, Clio and Euterpe are close."],
+        perf:   [2, CITY_PERF],
+        recco:  [1, WRONG_SYSTEM],
+        siege:  [2, SAME_SYSTEM],
+        outlaw: [1, MONITORED]
+      },
+      catch: "microTech has the widest orbit in Stanton, so trips to the other planets run longer. Step outside the dome without a cold-rated suit and you freeze."
+    },
+    {
+      name: "Lorville", where: "Hurston", kind: "City", sys: "stanton", sysName: "Stanton",
+      r: {
+        quick:  [2, "A metro ride from the L19 habs to Teasa Spaceport. Fine once you learn the lines."],
+        tutorial: [5, "The tutorial runs here: basics in your hab, a walk to Tammany and Sons," + TUTORIAL_TAIL],
+        lawful: [5, LAWFUL_CITY],
+        shops:  [4, "New Deal sells a wide range of ships for aUEC, and Hurston Dynamics Showcase sells ship guns."],
+        mining: [3, "Aberdeen, Arial, Ita and Magda all orbit Hurston."],
+        perf:   [2, CITY_PERF],
+        recco:  [1, WRONG_SYSTEM],
+        siege:  [2, SAME_SYSTEM],
+        outlaw: [1, MONITORED]
+      },
+      catch: "The transit takes the longest to learn, and it has fewer everyday shops than Area18 or New Babbage."
+    },
+    {
+      name: "Orison", where: "Crusader", kind: "City", sys: "stanton", sysName: "Stanton",
+      r: {
+        quick:  [1, "Shuttles link the floating platforms, so bed to August Dunlow Spaceport is the slowest run of the four cities."],
+        tutorial: [5, "The tutorial runs here: basics in your hab, a walk to Kel-To," + TUTORIAL_TAIL],
+        lawful: [5, LAWFUL_CITY],
+        shops:  [3, "Crusader Showroom sells ships. The rest of the shopping is spread across platforms."],
+        mining: [3, "Cellin, Daymar and Yela orbit Crusader, but every trip starts with a shuttle ride."],
+        perf:   [2, CITY_PERF],
+        recco:  [1, WRONG_SYSTEM],
+        siege:  [5, "The reworked siege starts at your home city. It now runs as a private instance for you and up to three friends, all on foot."],
+        outlaw: [1, MONITORED]
+      },
+      catch: "The best-looking city and the slowest one to get around."
+    },
+    {
+      name: "Levski", where: "Delamar, Glaciem Ring", kind: "Settlement", sys: "nyx", sysName: "Nyx", estimate: true,
+      r: {
+        quick:  [3, "A settlement built into an asteroid. Expect a walk and an elevator to reach your ship."],
+        tutorial: [0, NO_TUTORIAL],
+        lawful: [2, "People's Alliance territory, outside UEE law, and a jump-gate trip from Stanton's starter contracts."],
+        shops:  [3, "The busiest settlement in Nyx, with its own shops."],
+        mining: [4, "It sits inside the Glaciem Ring asteroid field, and Recco's contracts include rock cracking and miner defense."],
+        perf:   [2, "A full landing zone. Frame rates dipped here in early Nyx test builds."],
+        recco:  [5, "Recco Battaglia takes visitors in person at Levski. Three story missions, then repeatable contracts."],
+        siege:  [0, "Another system. A jump-gate trip each way."],
+        outlaw: [3, "Outside UEE law, with outlaw bases hidden in the same ring."]
+      },
+      catch: "It is far from Stanton's shops and beginner contracts, and every mission reward ships here."
+    },
+    {
+      name: "People's Service Stations", where: "Alpha, Delta, Theta or Lambda", kind: "4 stations", sys: "nyx", sysName: "Nyx", estimate: true,
+      r: {
+        quick:  [5, STATION_QUICK],
+        lawful: [2, "People's Alliance stations, outside UEE law and a jump-gate trip from Stanton."],
+        tutorial: [0, NO_TUTORIAL],
+        shops:  [2, "Restock, rearm and refuel, plus station shops. Nothing on a city scale."],
+        mining: [3, "Nyx offers the Glaciem Ring and the Keeger Belt to work."],
+        perf:   [4, STATION_PERF],
+        recco:  [4, "The right system for Recco's missions, one hop from her desk in Levski."],
+        siege:  [0, "Another system. A jump-gate trip each way."],
+        outlaw: [3, "Outside UEE law."]
+      },
+      catch: "Current sources say nothing that separates the four stations. Levski is the safer Nyx pick."
+    },
+    {
+      name: "Pyro outlaw stations", where: "Checkmate, Orbituary or Ruin Station", kind: "3 stations", sys: "pyro", sysName: "Pyro", estimate: true,
+      r: {
+        quick:  [5, STATION_QUICK],
+        lawful: [0, "No UEE law and no security response."],
+        tutorial: [0, NO_TUTORIAL],
+        shops:  [2, "Station shops only."],
+        mining: [2, "The rocks are there, and so are players hunting miners."],
+        perf:   [4, STATION_PERF],
+        recco:  [1, "Wrong system for Recco's missions."],
+        siege:  [0, "Another system. A jump-gate trip each way."],
+        outlaw: [5, "Lawless space run by gangs. This is where the PvP is."]
+      },
+      catch: "Expect to lose ships and gear to other players. A rough place to learn or relearn the game."
+    }
+  ];
+
+  var STORE_KEY = "sc-spawn-picker-priorities";
+  var selected = PRESETS[0].axes.slice();
+
+  function validAxes(list) {
+    if (!Array.isArray(list)) { return []; }
+    return AXES.map(function (a) { return a.id; }).filter(function (id) { return list.indexOf(id) !== -1; });
+  }
+  function loadStart() {
+    var token = (window.location.hash || "").replace("#", "");
+    var preset = byId(PRESETS, token);
+    if (preset) { return preset.axes.slice(); }
+    var saved = validAxes(read(STORE_KEY, null));
+    return saved.length ? saved : PRESETS[0].axes.slice();
+  }
+  function scoreOf(place, list) {
+    var sum = 0;
+    for (var i = 0; i < list.length; i++) { sum += place.r[list[i]][0]; }
+    return Math.round((sum / (list.length * 5)) * 100);
+  }
+  function ranked(list) {
+    var use = list || selected;
+    return PLACES
+      .map(function (p, i) { return { p: p, i: i, score: scoreOf(p, use) }; })
+      .sort(function (a, b) { return b.score - a.score || a.i - b.i; });
+  }
+  function axisLabel(id) {
+    var a = byId(AXES, id);
+    return a ? a.label : id;
+  }
+  function sameSet(a, b) {
+    if (a.length !== b.length) { return false; }
+    for (var i = 0; i < a.length; i++) { if (b.indexOf(a[i]) === -1) { return false; } }
+    return true;
+  }
+
+  var presetsEl = document.getElementById("presets");
+  var chipsEl = document.getElementById("chips");
+  var boardEl = document.getElementById("board");
+  var hintEl = document.getElementById("hint");
+  var copyBtn = document.getElementById("copy");
+  var copyStatus = document.getElementById("copy-status");
+  var copyFallback = document.getElementById("copy-fallback");
+
+  function buildControls() {
+    PRESETS.forEach(function (preset) {
+      var b = el("button", "preset", preset.label);
+      b.type = "button";
+      b.id = "preset-" + preset.id;
+      b.addEventListener("click", function () {
+        selected = preset.axes.slice();
+        hintEl.textContent = "";
+        updateHome();
+      });
+      presetsEl.appendChild(b);
+    });
+    AXES.forEach(function (axis) {
+      var b = el("button", "chip");
+      b.type = "button";
+      b.id = "chip-" + axis.id;
+      b.appendChild(el("span", "box"));
+      b.appendChild(el("span", "", axis.label));
+      if (axis.tag) { b.appendChild(el("span", "tag", axis.tag)); }
+      b.addEventListener("click", function () {
+        var at = selected.indexOf(axis.id);
+        if (at === -1) {
+          selected.push(axis.id);
+          hintEl.textContent = "";
+        } else if (selected.length === 1) {
+          hintEl.textContent = "Keep at least one priority selected.";
+          return;
+        } else {
+          selected.splice(at, 1);
+          hintEl.textContent = "";
+        }
+        updateHome();
+      });
+      chipsEl.appendChild(b);
+    });
+  }
+  function syncControls() {
+    AXES.forEach(function (axis) {
+      document.getElementById("chip-" + axis.id)
+        .setAttribute("aria-pressed", selected.indexOf(axis.id) !== -1 ? "true" : "false");
+    });
+    PRESETS.forEach(function (preset) {
+      document.getElementById("preset-" + preset.id)
+        .setAttribute("aria-pressed", sameSet(preset.axes, selected) ? "true" : "false");
+    });
+  }
+  function pips(n) {
+    var wrap = el("span", "pips");
+    wrap.setAttribute("role", "img");
+    wrap.setAttribute("aria-label", n + " out of 5");
+    for (var i = 0; i < 5; i++) { wrap.appendChild(el("i", i < n ? "on" : "")); }
+    return wrap;
+  }
+  function renderBoard() {
+    var rows = ranked();
+    var order = validAxes(selected);
+    boardEl.textContent = "";
+    rows.forEach(function (row, idx) {
+      var p = row.p;
+      var li = el("li");
+      var d = el("details", "row" + (idx === 0 ? " top" : ""));
+      if (idx === 0) { d.open = true; }
+
+      var s = el("summary");
+      s.appendChild(el("span", "rank", String(idx + 1)));
+      var ident = el("span", "ident");
+      ident.appendChild(el("span", "name", p.name));
+      var where = el("span", "where");
+      where.appendChild(el("span", "sys " + p.sys, p.sysName));
+      where.appendChild(el("span", "", p.where + " · " + p.kind));
+      ident.appendChild(where);
+      s.appendChild(ident);
+      var fit = el("span", "fit");
+      fit.appendChild(el("b", "", row.score + "%"));
+      fit.appendChild(el("span", "", "fit"));
+      s.appendChild(fit);
+      var meter = el("span", "meter");
+      var fill = el("i", p.sys);
+      fill.style.width = row.score + "%";
+      meter.appendChild(fill);
+      s.appendChild(meter);
+      s.appendChild(el("span", "more"));
+      d.appendChild(s);
+
+      var detail = el("div", "detail");
+      var list = el("ul", "reasons");
+      order.forEach(function (id) {
+        var item = el("li", "reason");
+        item.appendChild(el("span", "lab", axisLabel(id)));
+        item.appendChild(pips(p.r[id][0]));
+        item.appendChild(el("p", "", p.r[id][1]));
+        list.appendChild(item);
+      });
+      detail.appendChild(list);
+      var c = el("p", "note");
+      c.appendChild(el("b", "", "The catch"));
+      c.appendChild(document.createTextNode(p.catch));
+      detail.appendChild(c);
+      if (p.estimate) {
+        detail.appendChild(el("p", "est", "Estimate: sources on " + p.sysName + " homes are thinner than on the Stanton cities."));
+      }
+      d.appendChild(detail);
+      li.appendChild(d);
+      boardEl.appendChild(li);
+    });
+  }
+  function resultText() {
+    var rows = ranked();
+    var top = rows[0];
+    var next = rows[1];
+    var order = validAxes(selected);
+    var lines = [];
+    lines.push("Star Citizen 4.10.1 home pick: " + top.p.name + " (" + top.p.where + ", " + top.p.sysName + "), " + top.score + "% fit.");
+    lines.push("Priorities: " + order.map(function (id) { return axisLabel(id).toLowerCase(); }).join("; ") + ".");
+    order.forEach(function (id) { lines.push("- " + top.p.r[id][1]); });
+    lines.push("Catch: " + top.p.catch);
+    lines.push("Runner-up: " + next.p.name + " (" + next.score + "%).");
+    return lines.join("\n");
+  }
+  function updateHome() {
+    syncControls();
+    renderBoard();
+    write(STORE_KEY, selected);
+    copyStatus.textContent = "";
+    copyFallback.hidden = true;
+  }
+  copyBtn.addEventListener("click", function () {
+    var text = resultText();
+    function fallback() {
+      copyFallback.value = text;
+      copyFallback.hidden = false;
+      copyFallback.focus();
+      copyFallback.select();
+      copyStatus.textContent = "Copying is blocked here. The text is selected below, so copy it by hand.";
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () {
+        copyStatus.textContent = "Copied. Paste it into a message.";
+      }, fallback);
+    } else {
+      fallback();
+    }
+  });
+
+  /* ---------- 2. phase checklist ---------- */
+  var CHECK_KEY = "sc-starter-checks";
+  var checks = read(CHECK_KEY, {});
+  if (!checks || typeof checks !== "object") { checks = {}; }
+
+  function updateCounts() {
+    var phases = document.querySelectorAll(".phase");
+    for (var i = 0; i < phases.length; i++) {
+      var boxes = phases[i].querySelectorAll("input[type=checkbox]");
+      var done = 0;
+      for (var j = 0; j < boxes.length; j++) { if (boxes[j].checked) { done++; } }
+      var out = document.getElementById("count-" + phases[i].getAttribute("data-phase"));
+      if (out) { out.textContent = done + " of " + boxes.length + " done"; }
+    }
+  }
+  function wireChecks() {
+    var boxes = document.querySelectorAll(".phase input[type=checkbox]");
+    for (var i = 0; i < boxes.length; i++) {
+      (function (box) {
+        if (checks[box.id]) { box.checked = true; }
+        box.addEventListener("change", function () {
+          if (box.checked) { checks[box.id] = 1; } else { delete checks[box.id]; }
+          write(CHECK_KEY, checks);
+          updateCounts();
+        });
+      })(boxes[i]);
+    }
+    updateCounts();
+  }
+
+  /* ---------- 3. careers ---------- */
+  var CAREERS = [
+    {
+      id: "hauling", name: "Hauling",
+      tagline: "Carry contract cargo between freight elevators for a fixed payout. None of your own money is in the hold.",
+      facts: [
+        ["Risk", "Low"],
+        ["Your money at risk", "None"],
+        ["Crew", "Solo"],
+        ["To start", "Any ship with a cargo grid. 10 SCU covers the first tier."]
+      ],
+      home: "Any Stanton city. Area18 has the shortest run to your ship.",
+      rungs: [
+        { stage: "1 · Start", title: "Covalex Trainee", points: [
+          "Three companies hire: Covalex Shipping, Ling Family Hauling and Red Wind Linehaul. Reputation is tracked per company.",
+          "Trainee rank gets Extra Small hauls: up to 10 SCU in 1 SCU boxes.",
+          "Sample: a 4 SCU run to four freight elevators pays 25,000 aUEC, with a 300-minute deadline."
+        ] },
+        { stage: "2 · Build up", title: "Rookie and Junior", points: [
+          "Rookie adds Small hauls (about 24 SCU, containers up to 4 SCU) and routes around one planet.",
+          "Junior adds Medium hauls: up to 126 SCU in containers up to 8 SCU.",
+          "Sample: a Rookie direct haul of 6 to 12 SCU pays 50,250 aUEC.",
+          "Commonly recommended ships for this stretch: Cutlass Black (46 SCU), C1 Spirit (64 SCU), Freelancer MAX (120 SCU)."
+        ] },
+        { stage: "3 · Specialize", title: "Member and above", points: [
+          "Member opens runs between planets and between star systems.",
+          "Experienced opens Large hauls: over 600 SCU in 32 SCU containers. Mediums grow to 200 to 600 SCU.",
+          "That is C2 Hercules and Hull C territory. Senior and Master ranks sit above it."
+        ] }
+      ],
+      watch: [
+        "Cargo not delivered by the deadline is treated as stolen, and pay is prorated by the share you delivered.",
+        "Contracts require CrimeStat 0 to 2.",
+        "Mission cargo has a history of failing to spawn. 4.10.1 fixed several cases. If a pickup is empty, abandon the contract and take another."
+      ]
+    },
+    {
+      id: "trading", name: "Trading",
+      tagline: "Buy commodities at one terminal and sell them at another. The margin is yours, and so is the loss.",
+      facts: [
+        ["Risk", "High"],
+        ["Your money at risk", "Everything in the hold"],
+        ["Crew", "Solo, safer with an escort"],
+        ["To start", "A cargo ship and a float you can lose."]
+      ],
+      home: "Any Stanton city. Each one has a trade terminal.",
+      rungs: [
+        { stage: "1 · Start", title: "Earn a float on contracts", points: [
+          "Run hauling contracts first, until you hold enough to lose a full load twice. A crash or a pirate takes all of it.",
+          "Check prices before you fly. UEX Corp and SC Trade Tools are the community price trackers the wiki points to."
+        ] },
+        { stage: "2 · Build up", title: "Small loads, short routes", points: [
+          "Prices move about every 8 to 10 minutes. Buy where a good is overstocked and sell where it is understocked.",
+          "Learn the terminals inside Stanton: the Trade and Development Division in Area18, Orison and New Babbage, and the Central Business District in Lorville."
+        ] },
+        { stage: "3 · Specialize", title: "Big holds and escorts", points: [
+          "Large cargo ships earn the most per trip and draw the most attention. Pirates wait on known quantum routes and pull ships out of travel.",
+          "Bring a gunner or an escort and agree the split yourselves. The game has no profit sharing for freelance trade."
+        ] }
+      ],
+      watch: [
+        "4.10 raised hydrogen and quantum fuel prices, which thins margins on long routes.",
+        "Claim timers now scale with ship value, so losing a big hauler keeps you grounded for longer.",
+        "A full wipe resets aUEC. Treat a large balance as temporary."
+      ]
+    },
+    {
+      id: "bounty", name: "Bounty hunting",
+      tagline: "Hunt wanted ships for the Bounty Hunters Guild, then for planetary security.",
+      facts: [
+        ["Risk", "Medium"],
+        ["Your money at risk", "Certification fees, ammunition and your ship's claim time"],
+        ["Crew", "Solo at first"],
+        ["To start", "A ship with decent guns. The first target flies a Fury or a Razor."]
+      ],
+      home: "Any Stanton city. The first certification targets are in Stanton.",
+      rungs: [
+        { stage: "1 · Start", title: "Tracker Training Permit", points: [
+          "Accept the Tracker Training Permit Certification from the Bounty Hunters Guild. The fee is 500 aUEC.",
+          "The target is a single very-low-risk ship.",
+          "Passing unlocks very-low-risk bounties, plus the Crusader and Hurston security assessments."
+        ] },
+        { stage: "2 · Build up", title: "Beginner's Permit, then Tracker License", points: [
+          "The Beginner's Permit Certification costs 1,000 aUEC and sends you after a low-risk target with a Razor LX defender.",
+          "A completed low-risk bounty is worth +1,000 Guild reputation. A failed one costs 500.",
+          "The license ladder: Training Permit, Beginner's Permit, Tracker License, Journeyman, Advanced, Master."
+        ] },
+        { stage: "3 · Specialize", title: "Journeyman and above", points: [
+          "Moderate-risk targets fly medium ships with several escorts. High-risk and very-high-risk targets are multicrew ships.",
+          "Extreme-risk targets are sub-capital ships with heavy escorts. Bring friends or a much bigger ship."
+        ] }
+      ],
+      watch: [
+        "Bounties require CrimeStat 0 to 2, and a failed bounty cannot be accepted again.",
+        "Since 4.10, fitted weapons add to a ship's claim cost.",
+        "The wiki's payout table (19,000 aUEC for the lowest tier, 99,000 for the highest) was last edited in 2025. Trust the contract."
+      ]
+    },
+    {
+      id: "merc", name: "Mercenary",
+      tagline: "Security contracts on foot and in ships: defend a post, clear a site, fly a patrol.",
+      facts: [
+        ["Risk", "Medium to high"],
+        ["Your money at risk", "The armor, weapons and meds you carry"],
+        ["Crew", "Solo to start, squads later"],
+        ["To start", "Armor, a weapon, ammunition and MedPens. Contractors bring their own."]
+      ],
+      home: "Orison. Crusader Security's intro posts are on Crusader's moons Yela and Cellin, and Siege of Orison starts in the city.",
+      rungs: [
+        { stage: "1 · Start", title: "Security Work Assessment", points: [
+          "Crusader Security's intro is on foot. You help defend Security Post Wan on Yela or Security Post Dipur on Cellin.",
+          "It pays 10,000 aUEC and 500 reputation, and unlocks the rest of Crusader Security's mercenary contracts.",
+          "Eckhart Security and Foxwell Enforcement each have their own one-time intro contract in Stanton."
+        ] },
+        { stage: "2 · Build up", title: "Eckhart sites and Foxwell patrols", points: [
+          "Eckhart's Secure Site contracts have you defend a location against a gang of about 30, including a boss.",
+          "Foxwell grades its work Yellow, Orange and Red. A Yellow Routine Patrol is all ship combat against groups of 2 to 4 light fighters, and pays 30,000 aUEC.",
+          "Foxwell ranks raise your pay: +5 percent at Security Agent, up to +20 percent at Lead Security Specialist."
+        ] },
+        { stage: "3 · Specialize", title: "Squad contracts", points: [
+          "Siege of Orison is a private on-foot instance for you and up to three friends, with respawn checkpoints.",
+          "Tactical Strike Group is an endgame contract in Nyx built for seven or more ships.",
+          "InterSec Defense Solutions hires around Nyx."
+        ] }
+      ],
+      watch: [
+        "Friendly guards fight beside you in the Crusader intro. Shooting one is a crime.",
+        "An Eckhart Secure Site win is worth +500 reputation. A failure costs 1,000.",
+        "The sampled Foxwell patrol runs in Pyro, where nobody polices other players."
+      ]
+    },
+    {
+      id: "mining", name: "Mining",
+      tagline: "Crack rocks, refine the ore and sell it. Scales from a hand tool to a crewed ship.",
+      facts: [
+        ["Risk", "Low to medium"],
+        ["Your money at risk", "The load you are carrying"],
+        ["Crew", "Solo up to the Prospector"],
+        ["To start", "A multi-tool with a mining attachment, and a backpack."]
+      ],
+      home: "New Babbage or Area18. Use the Miner preset in the home ranking.",
+      rungs: [
+        { stage: "1 · Start", title: "Hand tool, then a ROC", points: [
+          "Hand mining needs a Pyro RYT Multi-Tool with an OreBit Mining Attachment and a backpack. You work gem nodes in caves.",
+          "The mobiGlas Journal entries Mining Fundamentals #1 and #2 list where to dig.",
+          "Shubin Interstellar posts purchase orders for hand-mined gems, for example 15 Aphorite, 20 Dolivine or 5 Hadanite. The sampled order is in Pyro.",
+          "The next step is the Greycat ROC, a one-seat ground miner that fits inside a Cutlass Black."
+        ] },
+        { stage: "2 · Build up", title: "Prospector", points: [
+          "The MISC Prospector is the solo mining ship. Community trackers list it near 2,000,000 aUEC this patch, so rent one first.",
+          "The loop: scan a rock, heat it with the laser and hold the gauge in the green band until it fractures, then pull the pieces into your pods.",
+          "Raw ore sells at any refinery deck. Refined ore sells for much more at a city trade terminal."
+        ] },
+        { stage: "3 · Specialize", title: "Crew ships and Nyx", points: [
+          "The ARGO MOLE runs three mining turrets and wants a crew.",
+          "Recco Battaglia at Levski gives rock-cracking and miner-defense contracts that pay in mining modules and ore pod blueprints.",
+          "Quantanium is the top-value ore. It degrades, and it can explode if you are slow getting it to a refinery."
+        ] }
+      ],
+      watch: [
+        "Overcharge a rock and it explodes, taking the ore with it.",
+        "Refinery jobs run in real time, including while you are logged off. Queue a slow, high-yield method before you quit.",
+        "The wiki warns that the in-game tooltips for refining speed, cost and yield are wrong."
+      ]
+    },
+    {
+      id: "salvage", name: "Salvage",
+      tagline: "Strip wrecks for hull material and working parts.",
+      facts: [
+        ["Risk", "Low to medium"],
+        ["Your money at risk", "Little, if you sell before logging off"],
+        ["Crew", "Solo in a Vulture"],
+        ["To start", "A multi-tool with a Cambio-Lite SRT scraper, and a tractor beam."]
+      ],
+      home: "Any Stanton city while you learn. Adagio's intro contract delivers to Levski in Nyx.",
+      rungs: [
+        { stage: "1 · Start", title: "Hand scraping and stripping parts", points: [
+          "A Pyro RYT Multi-Tool with the Cambio-Lite SRT attachment scrapes hulls on foot. It is slow and mostly useful for repairs.",
+          "A tractor beam pulls weapons, shield generators, power plants, coolers and quantum drives off wrecks. They sell at any shop that stocks the same part."
+        ] },
+        { stage: "2 · Build up", title: "Vulture and Adagio contracts", points: [
+          "The Drake Vulture is the solo salvage ship, with a 13 SCU buffer and a 12 SCU cargo grid.",
+          "Adagio Holdings' intro contract sends you to strip an approved wreck and deliver the material and parts to Levski. The reward includes a scraper module blueprint.",
+          "After that, Salvager Needed supply orders ask for set amounts, such as 5 SCU of RMC."
+        ] },
+        { stage: "3 · Specialize", title: "Fracture and refine", points: [
+          "Structural salvage breaks a whole hull into chunks that refine into Construction Materials.",
+          "The MOTH handles ships up to 600i or Starfarer size. The Reclaimer handles anything and needs a crew."
+        ] }
+      ],
+      watch: [
+        "Scan an intact ship before you touch it. An owner reading \"Gamerules\" means it is fair game.",
+        "Scraping a ship that is not destroyed inside an armistice zone is a violation with a fine, even if the ship is abandoned.",
+        "RMC and Construction Materials sell at the trade terminal in any city."
+      ]
+    },
+    {
+      id: "medical", name: "Medical and rescue",
+      tagline: "Revive downed players and get them to a hospital.",
+      facts: [
+        ["Risk", "Medium. You fly toward trouble."],
+        ["Your money at risk", "Your ship and medical supplies"],
+        ["Crew", "Solo, safer with a gunner"],
+        ["To start", "MedPens and a ParaMed device."]
+      ],
+      home: "A central Stanton city. Beacons come from wherever players are.",
+      rungs: [
+        { stage: "1 · Start", title: "Field medic", points: [
+          "A MedPen (Hemozal) restores health, stops bleeding and gets an incapacitated player back on their feet.",
+          "The ParaMed device reads another player's vitals and carries the full drug set. The LifeGuard multi-tool attachment only carries Hemozal."
+        ] },
+        { stage: "2 · Build up", title: "Rescue beacons", points: [
+          "A downed player can send a beacon. Accept it, revive them and carry them to a hospital.",
+          "On delivery the rescuer receives 50,000 aUEC from the injured player's account, according to the wiki.",
+          "Ships with Tier 3 medical beds: C8R Pisces Rescue (one bed) and Cutlass Red (two). The Ursa Medivac rover has one."
+        ] },
+        { stage: "3 · Specialize", title: "Tier 2 and Tier 1 beds", points: [
+          "The Terrapin Medic carries a Tier 2 bed. The Apollo Medivac and Apollo Triage carry Tier 1.",
+          "Bed tier sets how far away someone can respawn in it: 50 km for Tier 3, 8,000 km for Tier 2."
+        ] }
+      ],
+      watch: [
+        "Income depends on other players going down near you. A quiet server pays nothing.",
+        "Too many drugs overdose the patient. Watch their blood drug level.",
+        "Treat every beacon as a possible ambush."
+      ]
+    }
+  ];
+
+  var CAREER_KEY = "sc-starter-career";
+  var careerId = CAREERS[0].id;
+  var careerTabs = document.getElementById("career-tabs");
+  var careerPanel = document.getElementById("career-panel");
+
+  function buildTabs(holder, items, prefix, onPick) {
+    items.forEach(function (item) {
+      var b = el("button", "tab", item.name);
+      b.type = "button";
+      b.id = prefix + item.id;
+      b.addEventListener("click", function () { onPick(item.id); });
+      holder.appendChild(b);
+    });
+  }
+  function syncTabs(items, prefix, current) {
+    items.forEach(function (item) {
+      document.getElementById(prefix + item.id).setAttribute("aria-pressed", item.id === current ? "true" : "false");
+    });
+  }
+  function renderCareer() {
+    var c = byId(CAREERS, careerId) || CAREERS[0];
+    syncTabs(CAREERS, "career-", c.id);
+    careerPanel.textContent = "";
+
+    var head = el("div");
+    head.appendChild(el("h3", "", c.name));
+    head.appendChild(el("p", "tagline", c.tagline));
+    careerPanel.appendChild(head);
+
+    var dl = el("dl", "facts");
+    c.facts.concat([["Home fit", c.home]]).forEach(function (f) {
+      var box = el("div");
+      box.appendChild(el("dt", "label", f[0]));
+      box.appendChild(el("dd", "", f[1]));
+      dl.appendChild(box);
+    });
+    careerPanel.appendChild(dl);
+
+    var ol = el("ol", "rungs");
+    c.rungs.forEach(function (r) {
+      var li = el("li", "rung");
+      li.appendChild(el("span", "stage", r.stage));
+      li.appendChild(el("h4", "", r.title));
+      var ul = el("ul");
+      r.points.forEach(function (pt) { ul.appendChild(el("li", "", pt)); });
+      li.appendChild(ul);
+      ol.appendChild(li);
+    });
+    careerPanel.appendChild(ol);
+
+    var watch = el("div", "note");
+    watch.appendChild(el("b", "", "Watch out"));
+    var wl = el("ul");
+    c.watch.forEach(function (w) { wl.appendChild(el("li", "", w)); });
+    watch.appendChild(wl);
+    careerPanel.appendChild(watch);
+  }
+
+  /* ---------- 4. training ---------- */
+  var WHERE = { ac: "Arena Commander", pu: "In the 'verse", web: "On the web", any: "Anywhere" };
+  var STAKE = {
+    safe: ["safe", "Nothing at risk"],
+    fuel: ["", "Costs fuel"],
+    cost: ["", "Costs aUEC"],
+    risk: ["risk", "Gear or ship at risk"]
+  };
+
+  var GUIDE_LINK = ["https://robertsspaceindustries.com/spectrum/guide", "Find a guide on Spectrum"];
+  var TRACKS = [
+    {
+      id: "flight", name: "Flight",
+      note: "Using a stick, throttle or pedals? Do all your binding in Free Flight. A bad axis there costs nothing.",
+      drills: [
+        { core: true, where: "pu", stake: "safe", title: "The built-in tutorial",
+          body: "Offered when you choose a home, in the four Stanton cities only. Three parts: basics in your hab, a walk to a weapons shop, then city transit to the spaceport and a first flight in a loaner C8 Pisces. The first two parts pay 15,000 aUEC each, and each part is once-only.",
+          ready: "you finish the first flight." },
+        { core: true, where: "ac", stake: "safe", title: "Free Flight",
+          body: "Runs offline, with any ship you own or have rented. Practice lifting off, hovering and setting down on a pad.",
+          ready: "ten clean landings in a row." },
+        { core: true, where: "any", stake: "safe", title: "SCM and NAV mode swaps",
+          body: "Hold B to swap. SCM is the combat mode. NAV is the fast mode, and in NAV your shields, weapons and countermeasures are off. The swap takes a moment, so drill it before you need it.",
+          ready: "you swap modes without looking down." },
+        { core: true, where: "pu", stake: "fuel", title: "The landing circuit",
+          body: "Hangar, orbit, station, then back down to a city. Ask for clearance through mobiGlas Comms each time.",
+          ready: "three circuits with no damage." },
+        { where: "ac", stake: "safe", title: "Classic Race",
+          body: "Racing against the clock, also available offline. It teaches throttle control and tight turns faster than open space does.",
+          ready: "a full lap without hitting anything." },
+        { where: "web", stake: "safe", title: "A volunteer guide",
+          body: "The Guide System pairs you with an experienced player for a live session. Choose Basics or Refresher Basics.",
+          link: GUIDE_LINK }
+      ]
+    },
+    {
+      id: "nav", name: "Navigation",
+      note: "Keys are the defaults from RSI's quantum travel guide, last updated June 2025. Rebinding changes them.",
+      drills: [
+        { core: true, where: "pu", stake: "safe", title: "Hab to hangar on foot",
+          body: "Learn your home city's transit from the habs to the spaceport, then the ASOP terminal and the elevator to your hangar. The last part of the tutorial walks this route once.",
+          ready: "you reach your hangar without reading the signs." },
+        { core: true, where: "pu", stake: "safe", title: "Plot a route",
+          body: "F2 opens the map. Search for a place by name, select it and choose Route to this Location. The panel shows the quantum fuel the trip needs and the number of jumps.",
+          ready: "you can read the fuel and jump count for a trip to another planet." },
+        { core: true, where: "pu", stake: "fuel", title: "Fly the route",
+          body: "Switch to NAV mode with B, click the middle mouse button until QT shows, point at the destination until it finishes calibrating, then left-click to jump.",
+          ready: "three jumps in a row with no fumbling." },
+        { core: true, where: "pu", stake: "fuel", title: "Surface approach",
+          body: "Near a planet, solid markers are on your side and dashed markers are on the far side. Do not jump to a dashed one. A good jump drops you about 30 km from the surface target, and you fly the rest.",
+          ready: "you land at an outpost on a moon." },
+        { where: "pu", stake: "cost", title: "Fuel stops",
+          body: "The route panel tells you what a trip burns. 4.10 shrank hydrogen tanks and raised hydrogen and quantum fuel prices, so plan a refuel into long routes.",
+          ready: "you finish a multi-jump route with fuel to spare." },
+        { where: "pu", stake: "safe", title: "Know where you wake up",
+          body: "Your regeneration point decides where you respawn. Set it at a medical facility near your work. If that place is out of reach when you die, you wake up at home." },
+        { where: "pu", stake: "risk", title: "Leave the system once",
+          body: "Pyro and Nyx are reached through gateway stations. RSI warns that other systems are risky for new players because the law is lax there. Make the first trip in a ship you can lose, with an empty hold." },
+        { where: "web", stake: "safe", title: "A volunteer guide",
+          body: "Guide System sessions cover Basics and Touring.",
+          link: GUIDE_LINK }
+      ]
+    },
+    {
+      id: "business", name: "Business",
+      note: "No aUEC-per-hour figures here. Every one published is a dated community estimate.",
+      drills: [
+        { core: true, where: "pu", stake: "safe", title: "Contract hauling as paid practice",
+          body: "Fixed payouts teach cargo grids, freight elevators and the tractor beam with none of your money in the hold.",
+          ready: "you reach Rookie rank with Covalex." },
+        { core: true, where: "any", stake: "safe", title: "Know what a loss costs",
+          body: "Since 4.10, claim timers scale with ship value, fitted weapons add to the claim price, and hydrogen and quantum fuel cost more. Price those in before you call a run profitable.",
+          ready: "you can lose ship and cargo once and keep working." },
+        { core: true, where: "any", stake: "safe", title: "Keep a session ledger",
+          body: "Write down your balance when you log in and when you log out. Subtract fuel, repairs, ammunition and claim fees. What is left is what the session earned.",
+          ready: "three sessions logged." },
+        { core: true, where: "any", stake: "safe", title: "Protect your reputation",
+          body: "A failure can cost more reputation than a win earns. Fail too many contracts for one employer and they stop offering work for 24 hours. If a contract is bugged, abandon it early." },
+        { core: true, where: "any", stake: "safe", title: "Plan for wipes",
+          body: "The 4.8.0 patch on 14 May 2026 was a full wipe. A wipe resets aUEC and ships bought in game. Ships pledged with real money stay." },
+        { where: "web", stake: "safe", title: "Price and route tools",
+          body: "UEX Corp and SC Trade Tools track commodity prices from player reports. Plan the route before you buy the cargo.",
+          link: ["https://uexcorp.space", "UEX Corp"], link2: ["https://sc-trade.tools/home", "SC Trade Tools"] },
+        { where: "pu", stake: "safe", title: "Paper trade one route",
+          body: "Prices update about every 8 to 10 minutes. Watch one buy terminal and one sell terminal across three updates and write down the spread before you risk a load.",
+          ready: "the route stays profitable across three updates." },
+        { where: "pu", stake: "cost", title: "Rent before you buy",
+          body: "Rental terminals are at major spaceports. Three days is 10 percent off, seven days is 25 percent off. The clock runs while you are logged off, and you cannot change a rental's components.",
+          ready: "you know the ship earns more than it costs." },
+        { where: "pu", stake: "cost", title: "Refinery choices",
+          body: "Each refining method trades speed, cost and yield. Dinyx Solventation is very slow, cheap and high-yield. Cormack is fast and low-yield. Jobs keep running while you are logged off, so queue the slow one before you quit." },
+        { where: "web", stake: "safe", title: "A volunteer guide",
+          body: "Guide System sessions cover Missions and Reputation, Trading, Mining and Salvaging.",
+          link: GUIDE_LINK }
+      ]
+    },
+    {
+      id: "combat", name: "Combat",
+      note: "Mode list from RSI's Arena Commander support article. Experimental modes rotate in and out.",
+      drills: [
+        { core: true, where: "ac", stake: "safe", title: "Pirate Swarm and Vanduul Swarm",
+          body: "Waves of AI ships for up to four players. Both run offline, though solo and offline runs give no rewards.",
+          ready: "you clear the early waves without losing your ship." },
+        { core: true, where: "ac", stake: "safe", title: "Elimination and Control",
+          body: "Shooting on foot. Elimination is a free-for-all for up to 12 players. Control is two teams of up to 12. Learn the guns here before you carry your own armor into a fight." },
+        { core: true, where: "pu", stake: "risk", title: "Field medicine",
+          body: "Carry MedPens and practice reviving a friend. An incapacitated player is on a countdown, and bleeding or cold shortens it." },
+        { where: "ac", stake: "safe", title: "Squadron Battle and Duel",
+          body: "Ship fights against other players: two teams of up to eight, or one on one. Public matches earn REC, which rents ships and weapons for use inside Arena Commander only." },
+        { where: "pu", stake: "cost", title: "Tracker Training Permit",
+          body: "A 500 aUEC fee and one very-low-risk ship. Your first ship kill with a contract attached.",
+          ready: "you finish it without an insurance claim." },
+        { where: "pu", stake: "risk", title: "Security Work Assessment",
+          body: "Defend a Crusader Security post on foot with friendly guards beside you. Pays 10,000 aUEC. Check your target before you fire.",
+          ready: "you finish with no CrimeStat." },
+        { where: "pu", stake: "risk", title: "Siege of Orison",
+          body: "A private on-foot instance for up to four. Respawn checkpoints are unlimited and use no MedGel, which makes it forgiving squad practice." },
+        { where: "web", stake: "safe", title: "A volunteer guide",
+          body: "Guide System sessions cover Vehicle Combat and FPS Combat.",
+          link: GUIDE_LINK }
+      ]
+    }
+  ];
+
+  var TRACK_KEY = "sc-starter-track";
+  var trackId = TRACKS[0].id;
+  var trackTabs = document.getElementById("track-tabs");
+  var drillsEl = document.getElementById("drills");
+  var trackNote = document.getElementById("track-note");
+
+  function linkNode(pair) {
+    var a = el("a", "", pair[1]);
+    a.href = pair[0];
+    return a;
+  }
+  function renderTrack() {
+    var t = byId(TRACKS, trackId) || TRACKS[0];
+    syncTabs(TRACKS, "track-", t.id);
+    drillsEl.textContent = "";
+    t.drills.forEach(function (d) {
+      var li = el("li", "drill");
+      var pills = el("div", "pills");
+      pills.appendChild(el("span", "pill", WHERE[d.where]));
+      var st = STAKE[d.stake];
+      pills.appendChild(el("span", "pill" + (st[0] ? " " + st[0] : ""), st[1]));
+      if (d.core) { pills.appendChild(el("span", "pill core", "Basics")); }
+      li.appendChild(pills);
+
+      var body = el("div", "drill-body");
+      body.appendChild(el("h3", "", d.title));
+      body.appendChild(el("p", "", d.body));
+      if (d.link) {
+        var lp = el("p");
+        lp.appendChild(linkNode(d.link));
+        if (d.link2) {
+          lp.appendChild(document.createTextNode(" · "));
+          lp.appendChild(linkNode(d.link2));
+        }
+        body.appendChild(lp);
+      }
+      if (d.ready) {
+        var rp = el("p", "ready");
+        rp.appendChild(el("b", "", "Ready when: "));
+        rp.appendChild(document.createTextNode(d.ready));
+        body.appendChild(rp);
+      }
+      li.appendChild(body);
+      drillsEl.appendChild(li);
+    });
+    trackNote.textContent = t.note;
+  }
+
+  /* ---------- 1. intake and plan ---------- */
+  var QUESTIONS = [
+    { id: "exp", label: "Where are you with Star Citizen?", opts: [["new", "Never played"], ["back", "Back after a long break"], ["cur", "Playing this patch"]] },
+    { id: "fly", label: "Flying", opts: [["0", "I have not flown yet"], ["1", "I can take off, quantum and land"], ["2", "I land anywhere and swap modes mid-fight"]] },
+    { id: "nav", label: "Finding your way", opts: [["0", "I get lost in the city"], ["1", "I can reach another planet and get back"], ["2", "I plan multi-jump routes and fuel stops"]] },
+    { id: "biz", label: "Money sense", opts: [["0", "No idea what losing my ship costs"], ["1", "I know my claim, fuel and ammo costs"], ["2", "I plan routes and margins"]] },
+    { id: "fight", label: "Fighting", opts: [["0", "I have never fought here"], ["1", "I win easy fights against AI"], ["2", "I hold my own against players"]] },
+    { id: "want", label: "What do you want to do?", opts: [["ship", "Fight in ships"], ["foot", "Fight on foot"], ["haul", "Haul and trade"], ["dig", "Mine or salvage"], ["medic", "Rescue people"], ["unsure", "Not sure yet"]] },
+    { id: "kit", label: "What are you starting with?", opts: [["starter", "A starter ship"], ["fighter", "A fighter"], ["cargo", "A cargo ship"], ["industrial", "A mining or salvage ship"], ["mixed", "Several of these"]] }
+  ];
+  var EXAMPLE = { exp: "new", fly: "0", nav: "0", biz: "0", fight: "0", want: "ship", kit: "starter" };
+  var INTAKE_KEY = "sc-starter-intake";
+  var answers = {};
+  var touched = false;
+  (function () {
+    var saved = read(INTAKE_KEY, null);
+    QUESTIONS.forEach(function (q) {
+      var ok = !!saved && typeof saved === "object" && q.opts.some(function (o) { return o[0] === saved[q.id]; });
+      answers[q.id] = ok ? saved[q.id] : EXAMPLE[q.id];
+      if (ok) { touched = true; }
+    });
+  })();
+
+  var WANT_LABEL = { ship: "ship combat", foot: "on-foot combat", haul: "hauling and trade", dig: "mining and salvage", medic: "rescue", unsure: "undecided" };
+  var WANT_CLASS = { ship: "fight", foot: "fight", haul: "haul", dig: "dig", medic: "medic", unsure: "unsure" };
+  var CAREER_FOR = { ship: "bounty", foot: "merc", haul: "hauling", dig: "mining", medic: "medical", unsure: "hauling" };
+  var HOME_PRI = {
+    ship: ["quick", "lawful", "shops"], foot: ["lawful", "siege"], haul: ["quick", "lawful", "shops"],
+    dig: ["mining", "shops", "lawful"], medic: ["quick", "lawful"], unsure: ["quick", "lawful", "shops"]
+  };
+  var PHASE_NAMES = ["Before you spawn", "Hab to orbit and back", "First paid work", "Build up", "Specialize"];
+  var COURSES = [
+    { track: "flight", skill: "fly", name: "Flight" },
+    { track: "nav", skill: "nav", name: "Navigation" },
+    { track: "business", skill: "biz", name: "Business" },
+    { track: "combat", skill: "fight", name: "Combat" }
+  ];
+  var SPECIALTY = { bounty: "combat", merc: "combat", hauling: "business", mining: "business", medical: "combat" };
+  var CORE_WHY = {
+    flight: { all: "Every career starts with getting the ship off the pad and back down in one piece." },
+    nav: {
+      fight: "You cannot fight what you cannot find. Map, routes and fuel come first.",
+      haul: "Routes and fuel are most of the job.",
+      dig: "Rocks and wrecks sit far from the cities. Learn routes and fuel before you go looking.",
+      medic: "A rescue is a race to a marker.",
+      all: "Whatever you choose, you have to get there."
+    },
+    business: {
+      fight: "Fighters lose ships. Know what each loss costs before you pick the fight.",
+      medic: "Know your fuel and claim costs before you fly out to a beacon.",
+      all: "Claims, fuel and reputation decide whether a session made money."
+    }
+  };
+  var SPEC_WHY = {
+    combat: [
+      "Start in Arena Commander, where a lost fight costs nothing. Then take your first contract.",
+      "Move on to the live drills, the Tracker permit and the security assessment.",
+      "Skip the basics. Squad contracts and player-versus-player modes are what is left."
+    ],
+    medical: [
+      "Field medicine is in this course. Take the fighting basics with it, because rescues happen where people are shooting.",
+      "Drill field medicine, then answer live beacons.",
+      "You can fight already. Drill field medicine and go."
+    ],
+    business: [
+      "Start with contract hauling and the loss-cost drills. They are the core of this course.",
+      "Add the price tools, paper trading and renting before buying.",
+      "You know this. Skim it for the 4.10 cost changes."
+    ]
+  };
+  var BRUSH_WHY = {
+    flight: "Rebind and test in Free Flight after any patch.",
+    nav: "Plot one multi-jump route with a fuel stop.",
+    business: "Read the loss-cost drill. 4.10 changed claims and fuel."
+  };
+  var FIRST_STEP = {
+    bounty: "Tracker Training Permit Certification. 500 aUEC fee, one very-low-risk ship.",
+    merc: "Security Work Assessment for Crusader Security. On foot, pays 10,000 aUEC.",
+    hauling: "A Covalex Trainee haul. The sample run pays 25,000 aUEC.",
+    mining: "A hand-mining run with a multi-tool and a backpack.",
+    medical: "Stock MedPens and a ParaMed device, then answer a rescue beacon."
+  };
+  var KIT_NOTE = {
+    bounty: {
+      starter: "A starter ship with decent guns can take the first target, a Fury or a Razor.",
+      fighter: "Your fighter covers the first tiers.",
+      cargo: "A cargo ship is a poor duelist. Rent a fighter at a spaceport terminal first.",
+      industrial: "A mining or salvage ship is no fighter. Rent one at a spaceport terminal first.",
+      mixed: "Take your most combat-capable ship."
+    },
+    merc: { all: "Any ship gets you to the post. What matters is armor, a weapon, ammunition and MedPens." },
+    hauling: {
+      starter: "Check your cargo grid. 10 SCU covers the Trainee tier.",
+      fighter: "Most fighters carry little or no cargo. Check the grid, or rent a hauler.",
+      cargo: "Your cargo ship covers the early ranks.",
+      industrial: "Check your cargo grid. 10 SCU covers the Trainee tier.",
+      mixed: "Use your cargo ship."
+    },
+    mining: {
+      industrial: "With a mining ship you can start at rung 2. If yours is a salvage ship, open the Salvage ladder instead.",
+      mixed: "If you own a mining ship, start at rung 2. If it is a salvage ship, open the Salvage ladder instead.",
+      all: "You do not need a mining ship yet. Any ship gets you to the caves."
+    },
+    medical: { all: "Any ship works to start. A medical bed comes later." }
+  };
+
+  function pick(table, key) { return table[key] !== undefined ? table[key] : table.all; }
+  function joinNames(list) {
+    if (list.length < 2) { return list.join(""); }
+    return list.slice(0, -1).join(", ") + " and " + list[list.length - 1];
+  }
+  function goTo(id) {
+    var node = document.getElementById(id);
+    if (!node) { return; }
+    var calm = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    node.scrollIntoView({ behavior: calm ? "auto" : "smooth", block: "start" });
+  }
+
+  function buildPlan(a) {
+    var fly = +a.fly, nav = +a.nav, biz = +a.biz, fight = +a.fight;
+    var total = fly + nav + biz + fight;
+    var cls = WANT_CLASS[a.want];
+    var careerPick = CAREER_FOR[a.want];
+    var spec = SPECIALTY[careerPick];
+
+    var items = COURSES.map(function (c, idx) {
+      var s = +a[c.skill];
+      var item = { track: c.track, name: c.name, idx: idx };
+      if (c.track === spec) {
+        item.group = 1; item.kind = "spec"; item.pill = "Your specialty"; item.why = (careerPick === "medical" ? SPEC_WHY.medical : SPEC_WHY[c.track])[s];
+      } else if (c.track === "combat") {
+        if (s === 0) { item.group = 2; item.kind = "side"; item.pill = "Recommended"; item.why = "Haulers and miners get jumped. Make your first fight a simulated one."; }
+        else { item.group = 3; item.kind = "skip"; item.pill = "Skip"; item.why = "You can already handle yourself."; }
+      } else if (s === 0) {
+        item.group = 0; item.kind = "core"; item.pill = "Core course"; item.why = pick(CORE_WHY[c.track], cls);
+      } else if (s === 1) {
+        item.group = 2; item.kind = "side"; item.pill = "Brush up"; item.why = BRUSH_WHY[c.track];
+      } else {
+        item.group = 3; item.kind = "skip"; item.pill = "Skip"; item.why = "You have this.";
+      }
+      return item;
+    });
+    items.sort(function (x, y) { return x.group - y.group || x.idx - y.idx; });
+    var coreNames = items.filter(function (i) { return i.kind === "core"; }).map(function (i) { return i.name; });
+
+    var lead = {
+      fight: "You want to fight.",
+      haul: "Hauling is routes, fuel and margins.",
+      dig: "Industrial work means long solo trips with a full hold.",
+      medic: "A medic flies toward trouble.",
+      unsure: "Not sure yet? Hauling costs nothing to try and teaches cargo, routes and landing, which every other career uses."
+    }[cls];
+    var summary;
+    if (!coreNames.length) {
+      summary = lead + " You have no core courses to make up, so go straight to your specialty.";
+    } else if (cls === "fight") {
+      summary = lead + " Take " + joinNames(coreNames) + " first. A fighter who cannot fly, find the fight or afford the loss does not last.";
+    } else {
+      summary = lead + " Take " + joinNames(coreNames) + " first.";
+    }
+
+    var wantsTutorial = a.exp !== "cur" || fly === 0 || nav === 0;
+    var pri = HOME_PRI[a.want].slice();
+    if (wantsTutorial) { pri.push("tutorial"); }
+    var home = ranked(pri)[0].p;
+
+    var phase, phaseWhy;
+    if (a.exp === "new") {
+      phase = 0; phaseWhy = "Do every item, and take the tutorial. It pays 15,000 aUEC for each of its first two parts.";
+    } else if (a.exp === "back") {
+      phase = 0; phaseWhy = "Rebind and test your controls in Free Flight. If the game offers the tutorial, take it as a paid refresher, then skim Phase 1.";
+    } else if (fly === 0 || nav === 0) {
+      phase = 1; phaseWhy = "You are already in the game, so skip the setup. Close the flying and route-finding gaps here.";
+    } else if (biz === 0) {
+      phase = 2; phaseWhy = "You can get around. Start earning, and learn what a loss costs before you scale up.";
+    } else {
+      phase = 3; phaseWhy = "Your basics are in place. Pick a ladder and build up.";
+    }
+
+    return {
+      rank: total <= 2 ? "Recruit" : (total <= 5 ? "Regular" : "Veteran"),
+      want: WANT_LABEL[a.want],
+      summary: summary,
+      pri: pri,
+      home: home,
+      homeWhy: byId(CAREERS, careerPick).home + (wantsTutorial ? " Only the four Stanton cities have the tutorial." : ""),
+      phase: phase,
+      phaseWhy: phaseWhy,
+      career: byId(CAREERS, careerPick),
+      firstStep: (coreNames.length ? "After your core courses: " : "First step: ") + FIRST_STEP[careerPick],
+      kitNote: pick(KIT_NOTE[careerPick], a.kit),
+      courses: items
+    };
+  }
+
+  var intakeEl = document.getElementById("intake");
+  var intakeNote = document.getElementById("intake-note");
+  var planEl = document.getElementById("plan-out");
+
+  function buildIntake() {
+    QUESTIONS.forEach(function (q) {
+      var box = el("div", "q");
+      box.setAttribute("role", "radiogroup");
+      var lab = el("p", "q-label", q.label);
+      lab.id = "ql-" + q.id;
+      box.setAttribute("aria-labelledby", lab.id);
+      box.appendChild(lab);
+      var opts = el("div", "opts");
+      q.opts.forEach(function (o) {
+        var wrap = el("label", "opt");
+        var input = document.createElement("input");
+        input.type = "radio";
+        input.name = "q-" + q.id;
+        input.id = "q-" + q.id + "-" + o[0];
+        input.value = o[0];
+        input.checked = answers[q.id] === o[0];
+        input.addEventListener("change", function () {
+          if (!input.checked) { return; }
+          answers[q.id] = o[0];
+          touched = true;
+          write(INTAKE_KEY, answers);
+          renderPlan();
+        });
+        wrap.appendChild(input);
+        wrap.appendChild(el("span", "", o[1]));
+        opts.appendChild(wrap);
+      });
+      box.appendChild(opts);
+      intakeEl.appendChild(box);
+    });
+  }
+
+  function orderBlock(label, big, lines) {
+    var li = el("li", "order");
+    li.appendChild(el("span", "label", label));
+    li.appendChild(el("span", "big", big));
+    lines.forEach(function (t) { li.appendChild(el("p", "", t)); });
+    return li;
+  }
+  function actionButton(text, fn) {
+    var b = el("button", "linkbtn", text);
+    b.type = "button";
+    b.addEventListener("click", fn);
+    return b;
+  }
+
+  function renderPlan() {
+    var p = buildPlan(answers);
+    intakeNote.textContent = touched ? "" : "Example answers are loaded. Change any of them to get your own plan.";
+    planEl.textContent = "";
+
+    var head = el("div", "plan-head");
+    head.appendChild(el("p", "eyebrow", touched ? "Your plan" : "Example plan"));
+    head.appendChild(el("h3", "", p.rank + " · " + p.want));
+    head.appendChild(el("p", "", p.summary));
+    planEl.appendChild(head);
+
+    var orders = el("ul", "orders");
+    var homeBlock = orderBlock("Home", p.home.name + ", " + p.home.where, [p.homeWhy]);
+    homeBlock.appendChild(actionButton("Rank homes this way", function () {
+      selected = p.pri.slice();
+      hintEl.textContent = "";
+      updateHome();
+      goTo("home");
+    }));
+    orders.appendChild(homeBlock);
+
+    var startBlock = orderBlock("Start at", "Phase " + p.phase + " · " + PHASE_NAMES[p.phase], [p.phaseWhy]);
+    startBlock.appendChild(actionButton("Open the phases", function () { goTo("start"); }));
+    orders.appendChild(startBlock);
+
+    var careerBlock = orderBlock("First ladder", p.career.name, [p.firstStep, p.kitNote]);
+    careerBlock.appendChild(actionButton("Open this ladder", function () {
+      careerId = p.career.id;
+      write(CAREER_KEY, careerId);
+      renderCareer();
+      goTo("careers");
+    }));
+    orders.appendChild(careerBlock);
+    planEl.appendChild(orders);
+
+    var box = el("div", "courses");
+    box.appendChild(el("h4", "label", "Course order"));
+    var ol = el("ol", "syllabus");
+    p.courses.forEach(function (c, i) {
+      var li = el("li", "course is-" + c.kind);
+      li.appendChild(el("span", "num", String(i + 1)));
+      var body = el("div", "course-body");
+      var name = el("div", "course-name");
+      name.appendChild(el("span", "", c.name));
+      name.appendChild(el("span", "pill" + (c.kind === "core" ? " core" : (c.kind === "spec" ? " spec" : "")), c.pill));
+      body.appendChild(name);
+      body.appendChild(el("p", "", c.why));
+      li.appendChild(body);
+      li.appendChild(actionButton("Open course", function () {
+        trackId = c.track;
+        write(TRACK_KEY, trackId);
+        renderTrack();
+        goTo("training");
+      }));
+      ol.appendChild(li);
+    });
+    box.appendChild(ol);
+    planEl.appendChild(box);
+  }
+
+  /* ---------- boot ---------- */
+  if (window.location.protocol === "file:") { document.getElementById("stamp-local").hidden = false; }
+
+  selected = loadStart();
+  buildControls();
+  updateHome();
+  wireChecks();
+
+  var savedCareer = read(CAREER_KEY, null);
+  if (byId(CAREERS, savedCareer)) { careerId = savedCareer; }
+  buildTabs(careerTabs, CAREERS, "career-", function (id) {
+    careerId = id;
+    write(CAREER_KEY, id);
+    renderCareer();
+  });
+  renderCareer();
+
+  var savedTrack = read(TRACK_KEY, null);
+  if (byId(TRACKS, savedTrack)) { trackId = savedTrack; }
+  buildTabs(trackTabs, TRACKS, "track-", function (id) {
+    trackId = id;
+    write(TRACK_KEY, id);
+    renderTrack();
+  });
+  renderTrack();
+
+  buildIntake();
+  renderPlan();
+})();
+</script>
+
+</body>
+</html>
