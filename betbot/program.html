@@ -1,0 +1,3409 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Broncos Betbot 2026: the program</title><style>
+:root { --navy:#002244; --orange:#FB4F14; --ink:#1d1f23; --muted:#5b616b; --line:#d9dde3; --bg:#ffffff; --soft:#f4f6f9; }
+* { box-sizing: border-box; }
+body { margin:0; font-family: Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif; color:var(--ink); background:var(--bg); line-height:1.5; font-size:15px; }
+main { max-width: 980px; margin: 0 auto; padding: 24px 28px 80px; }
+h1 { color:var(--navy); font-size:30px; margin:8px 0 4px; }
+h2 { color:#fff; background:var(--navy); padding:10px 14px; font-size:22px; margin:44px 0 16px; border-left:8px solid var(--orange); }
+h3 { color:var(--navy); font-size:18px; margin:30px 0 8px; border-bottom:2px solid var(--line); padding-bottom:4px; }
+h4 { color:var(--navy); font-size:15px; margin:18px 0 6px; }
+p { margin: 8px 0 10px; }
+.sub { color:var(--muted); font-size:14px; }
+.lede { font-size:17px; }
+table { border-collapse: collapse; width:100%; margin:10px 0 16px; font-size:14px; }
+th, td { border:1px solid var(--line); padding:6px 8px; vertical-align:top; text-align:left; }
+th { background:var(--soft); color:var(--navy); }
+td.num, th.num { text-align:right; white-space:nowrap; }
+figure { margin:18px 0 22px; padding:10px 12px 6px; border:1px solid var(--line); background:#fff; }
+figure svg { width:100%; height:auto; }
+figcaption { font-size:13px; color:var(--muted); margin-top:4px; }
+blockquote { margin:10px 0 14px; padding:8px 14px; border-left:5px solid var(--orange); background:var(--soft); }
+blockquote p { margin:4px 0; }
+code, pre { font-family: Consolas, "Courier New", monospace; font-size:13px; }
+code { background:var(--soft); padding:1px 4px; border-radius:3px; }
+pre { background:#0f1b2d; color:#e8eef7; padding:12px 14px; overflow-x:auto; border-radius:4px; }
+pre code { background:none; color:inherit; padding:0; }
+.toc { background:var(--soft); border:1px solid var(--line); padding:12px 18px; }
+.toc ol { margin:4px 0 4px 18px; padding:0; }
+.toc li { margin:2px 0; }
+.toc a { color:var(--navy); text-decoration:none; }
+.toc a:hover { text-decoration:underline; }
+.note { background:#fff8f3; border:1px solid #f6c9b4; padding:8px 12px; margin:10px 0; }
+.rule { background:var(--soft); border-left:5px solid var(--navy); padding:8px 12px; margin:10px 0; }
+dl.gloss dt { font-weight:700; color:var(--navy); margin-top:10px; }
+dl.gloss dt:target { background:#fff1e8; }
+a.gl { color:inherit; text-decoration:underline dotted #b0541f; text-underline-offset:3px; }
+a.gl:hover { background:#fff1e8; }
+a.xref { color:var(--navy); text-decoration:underline; text-underline-offset:2px; }
+h2 a.top { float:right; font-size:12px; font-weight:400; color:#cfd8e6; text-decoration:none; margin-top:6px; }
+h2 a.top:hover { color:#fff; text-decoration:underline; }
+:target { scroll-margin-top:12px; }
+figure:target { outline:3px solid var(--orange); }
+tr:target td { background:#fff1e8; }
+dl.gloss dd { margin:2px 0 0 18px; }
+.key { display:inline-block; min-width:22px; text-align:center; font-weight:700; color:#fff; background:var(--navy); border-radius:3px; padding:0 5px; font-family:Consolas, monospace; }
+.small { font-size:13px; }
+hr { border:0; border-top:1px solid var(--line); margin:28px 0; }
+
+.clock { display:flex; gap:6px; margin:14px 0 4px; }
+.clock div { flex:1 1 0; min-width:0; padding:8px 6px; border-radius:4px; background:var(--soft); border:1px solid var(--line); font-size:12.5px; line-height:1.3; }
+.clock div b { display:block; font-size:12.5px; margin-bottom:4px; }
+.clock .navy { background:var(--navy); color:#fff; border-color:var(--navy); }
+.clock .orange { background:var(--orange); color:#fff; border-color:var(--orange); }
+@media (max-width:700px) { .clock { flex-wrap:wrap; } .clock div { flex:1 1 30%; } }
+@media print { h2 { page-break-before: always; } figure { page-break-inside: avoid; } }
+</style></head><body><main>
+<h1>Broncos Betbot 2026: the program</h1>
+<p class="sub">A user manual and a guide to what the software does, why, and what it has shown. Written Mon Oct 5 2026, after the Week 4 <a class="gl" href="#g-settle" title="Monday&#x27;s two-phase tie-out (propose, apply) of the ledger to FanDuel&#x27;s record, then the grade and the report.">settle</a>;
+numbers from the ledger, the settle reports and the study notes as of that afternoon. Terms with a dotted underline link to the glossary (hover
+for the definition); figure and section references link to their targets. Repo copy: <code>docs\BETBOT_PROGRAM.html</code>.</p>
+
+<nav class="toc" id="top">
+<b>Contents</b>
+<ol>
+<li><a href="#p1">What Betbot is</a>: in one paragraph, what you get each week, the rules, who does what</li>
+<li><a href="#p2">Why it exists</a>: the objective, why a model, the money rules, calibration as the proof, the card as the only evidence, D18, what is being built next</li>
+<li><a href="#p3">Running a week</a>: Saturday, Sunday, Monday, reading the report</li>
+<li><a href="#p4">What the evidence says</a>: the 2025 season, the card's record, three studies, what would prove it wrong, the matrix</li>
+<li><a href="#p5">How it works</a>: data, models, board to card, the ledger and the settle, the runner, the paper board, cost, how the work moves</li>
+<li><a href="#gloss">Glossary</a></li>
+</ol>
+</nav>
+
+
+<h2 id="p1">Part 1. What Betbot is <a class="top" href="#top">contents</a></h2>
+
+<h3 id="s1-1">1.1 In one paragraph</h3>
+<p class="lede">Betbot is a player performance model with a betting slip attached. Every week it takes the free NFL data (play-by-play,
+usage, snap counts, injuries, Next Gen Stats, pressure and coverage charting), the weather and the referee, and predicts what each player on
+the Broncos game will do: catches, yards, carries, touchdowns, passing lines. It then reads every line FanDuel offers on the game, works out
+where its own probability beats the price by a margin, sizes those lines with a fraction of the <a class="gl" href="#g-kelly" title="The share of the growth-optimal stake actually used; 0.25 live, 0.50 behind the calibration gate.">Kelly</a> stake, and prints a <a class="gl" href="#g-card" title="The model&#x27;s priced table of staked lines for the Broncos game, with stakes, minimum prices and token suggestions; the only model evidence.">card</a>. The operator
+places the card by hand, ticks each ticket off on a local confirm page, and on Monday the whole thing is reconciled against FanDuel's own
+record to the cent and graded. The question it is built to answer is whether its probabilities are right; whether that makes money at FanDuel's
+prices is the second question, and the card's record answers it in the open.</p>
+
+<h3 id="s1-2">1.2 What you get each week</h3>
+<table>
+<tr><th style="width:22%">Output</th><th>What it is</th></tr>
+<tr><td><b>The <a class="gl" href="#g-card" title="The model&#x27;s priced table of staked lines for the Broncos game, with stakes, minimum prices and token suggestions; the only model evidence.">card</a></b></td><td>A priced table of the lines the model stakes: market, player, side and line, FanDuel's price, the model's probability, the market's <a class="gl" href="#g-no-vig" title="The market&#x27;s probability with the book&#x27;s margin removed (the two sides of a line scaled to sum to 100%).">no-vig</a> probability, the <a class="gl" href="#g-edge" title="The model&#x27;s probability minus the market&#x27;s no-vig probability, in points.">edge</a> in points, the stake, the minimum price to accept, the <a class="gl" href="#g-token" title="A FanDuel promotion (profit boost, bet reset, no-sweat, bonus bet) with its terms, inventoried and assigned after sizing.">token</a> to attach, a one-line reason. The footer shows the <a class="gl" href="#g-roll" title="The FanDuel balance as the ledger knows it; cards size on it; $496.03 today.">roll</a> it was sized on, the <a class="gl" href="#g-kelly" title="The share of the growth-optimal stake actually used; 0.25 live, 0.50 behind the calibration gate.">Kelly</a> fraction, the caps and <a class="gl" href="#g-kelly-gate" title="The coded rule (D6, read through D19) that moves the Kelly fraction from 0.25 to 0.50: largest decile gap five points or under on 1,000 or more two-way lines over four graded weeks. The card footer and the settle report print its numbers (the gate line); the report prints KELLY GATE MET the week it opens.">the gate</a> numbers.</td></tr>
+<tr><td><b>The <a class="gl" href="#g-route-page" title="The placement order for the card in FanDuel&#x27;s own layout, with the search word, the tab and the button label.">route page</a></b></td><td>The same tickets in the order FanDuel's app is laid out: biggest money first, with the search word, the market tab and the button label to tap. Rows turn red if a ticket was placed with no ledger row.</td></tr>
+<tr><td><b><a class="gl" href="#g-serve" title="The local confirm form (127.0.0.1:8787) where each placed ticket is ticked with its real stake and price.">Serve</a></b></td><td>A confirm page on <code>127.0.0.1:8787</code>. Each placed ticket is ticked with its real stake and price; <a class="gl" href="#g-ladder" title="FanDuel&#x27;s alternate lines on a stat (10+, 20+ yards); the rung label is the line (3+ is over 2.5).">ladder</a> tickets ask for the rung from the slip, because FanDuel's rung label is the line (the "3+" rung is over 2.5).</td></tr>
+<tr><td><b>Previews</b></td><td>The matchup preview (who is pressuring whom, what the secondary allows each receiving role), the injury preview (what the card would look like with the inactives' usage redistributed), and from Week 5 the <a class="gl" href="#g-paper-board" title="Every slate game, every week, priced as paper tickets and graded; the calibration evidence.">paper board</a>: every game on the slate priced <a class="gl" href="#g-paper-ticket" title="A recorded prediction with no money on it; evidence in grading and calibration, excluded from the roll and every cap.">as paper</a>, the model's <a class="gl" href="#g-calibration" title="Whether lines the model calls x% win x% of the time, measured by decile; the largest gap between predicted and realised is the gate&#x27;s number.">calibration</a> evidence.</td></tr>
+<tr><td><b>The Monday report</b></td><td>The card graded against what happened and against the <a class="gl" href="#g-close" title="The board at kickoff minus nine minutes, taken by the scheduled task or the runner; the market&#x27;s last price.">closing price</a>; the card by side; the calibration table; the gate line that says whether the Kelly step is earned; one reconciling cash line so the roll ties to FanDuel's balance.</td></tr>
+</table>
+
+<h3 id="s1-3">1.3 The rules, on one screen</h3>
+<ul>
+<li><b>One <a class="gl" href="#g-roll" title="The FanDuel balance as the ledger knows it; cards size on it; $496.03 today.">roll</a>.</b> $400 in once, no refills, in play every week until the season ends or it is gone. No all-in tickets.</li>
+<li><b>Broncos games only.</b> The models train on the whole league; the money goes on Denver's game.</li>
+<li><b>FanDuel only, and never by robot.</b> Pages are saved by hand from Chrome; prices come from <a class="gl" href="#g-odds-api" title="The licensed price feed that carries FanDuel&#x27;s board and closes; costs credits, carries no account risk; the only paid data source.">The Odds API</a>, a licensed feed of FanDuel's <a class="gl" href="#g-board" title="Every selection FanDuel offers on a game at one moment, as stored from The Odds API (about 1,500 selections) or from saved pages.">board</a>. Nothing automated touches the account.</li>
+<li><b>Before <a class="gl" href="#g-close" title="The board at kickoff minus nine minutes, taken by the scheduled task or the runner; the market&#x27;s last price.">the close</a>.</b> Every <a class="gl" href="#g-card" title="The model&#x27;s priced table of staked lines for the Broncos game, with stakes, minimum prices and token suggestions; the only model evidence.">card</a> ticket goes in before the model's own closing <a class="gl" href="#g-snapshot" title="One pull of a board into odds_snapshots; every row carries its batch id and, since schema v10, the feed&#x27;s own timestamp.">snapshot</a> at kickoff minus nine, so every ticket has a closing price to be measured against.</li>
+<li><b>The card is the only evidence.</b> Card tickets at the card's stake and price, judged against what happened and against the close. Anything else on the account is recorded for the cash tie-out and goes no further (<a class="xref" href="#d17">D17</a>).</li>
+<li><b>Money and doctrine are the operator's.</b> The model recommends; the operator decides, at the Monday <a class="gl" href="#g-settle" title="Monday&#x27;s two-phase tie-out (propose, apply) of the ledger to FanDuel&#x27;s record, then the grade and the report.">settle</a>, in writing, with the evidence beside the decision.</li>
+<li><b>Additive records, preview before execute.</b> Nothing is deleted from the ledger; every operation proposes before it writes.</li>
+<li><b>Sunday freeze.</b> From noon on game day until the close lands: no code changes, no ledger writes.</li>
+</ul>
+
+<h3 id="s1-4">1.4 Who does what</h3>
+<p><b>The operator</b> presses the keys, saves the pages, types what the system cannot see (<a class="gl" href="#g-token" title="A FanDuel promotion (profit boost, bet reset, no-sweat, bonus bet) with its terms, inventoried and assigned after sizing.">tokens</a>, inactives, the referee, shadow matchups, the rung on a
+<a class="gl" href="#g-ladder" title="FanDuel&#x27;s alternate lines on a stat (10+, 20+ yards); the rung label is the line (3+ is over 2.5).">ladder</a> ticket), places and confirms every ticket, and makes every money and doctrine decision. <b>Code</b> (Claude Code) builds the software from
+written, numbered <a class="gl" href="#g-paste" title="A numbered instruction file the reviewer writes for Code (ops\pastes\paste_NN_name.md); Code works it in order and reports back.">pastes</a>, one commit per step with the tests green, and reports back. <b>The reviewer</b> reads the reports and the logs, writes the
+next paste, keeps the state page and the tracker current, and tells the operator what to press. <b>The <a class="gl" href="#g-runner" title="The GitHub Actions jobs: nightly refresh, closing snapshots at kickoff minus eight, paper-board snapshots. Downloads to the PC as artifacts; never writes the ledger.">runner</a></b> (GitHub Actions) refreshes the data
+every night and takes the closing and paper-board <a class="gl" href="#g-snapshot" title="One pull of a board into odds_snapshots; every row carries its batch id and, since schema v10, the feed&#x27;s own timestamp.">snapshots</a> on schedule.</p>
+
+<h2 id="p2">Part 2. Why it exists <a class="top" href="#top">contents</a></h2>
+
+<h3 id="s2-1">2.1 The objective, in the operator's words</h3>
+<blockquote><p>"I'm ok with high percentage bets - even if the margin isn't wide. I want a <i>player performance prediction model</i> more than I want
+a 'book-beater'. I'm ok with aggregate consistency, or high percentage parlays with the boosts they offer. The idea is narrowing the guesswork on
+each individual player's performance given the conditions and matchups - and how that equates to the team's performance."</p>
+<p class="small">Steve, Oct 5 2026</p></blockquote>
+<p>That sets the bar. A book-beater is judged on dollars against <a class="gl" href="#g-close" title="The board at kickoff minus nine minutes, taken by the scheduled task or the runner; the market&#x27;s last price.">the close</a>, a few tickets a week, and takes a season to say anything. A performance
+model is judged on whether its probabilities are right on every line it prices, hundreds a week across the league, and says something in a month.
+Betbot is built for the second test and keeps the first as a diagnostic.</p>
+
+<h3 id="s2-2">2.2 Why a model at all</h3>
+<p>The 2025 season was a manual system with AI help. Its 52 recorded picks beat FanDuel's <a class="gl" href="#g-close" title="The board at kickoff minus nine minutes, taken by the scheduled task or the runner; the market&#x27;s last price.">closing price</a> by +5.05% on raw prices and +0.57% after the
+book's margin, with 19 of 52 beating the close: a coin flip, on a sample that could not be told from luck because nothing recorded a probability
+before the game. In 2026 every line on the <a class="gl" href="#g-board" title="Every selection FanDuel offers on a game at one moment, as stored from The Odds API (about 1,500 selections) or from saved pages.">board</a> gets a probability before kickoff, every ticket is recorded with the price taken, the model's
+number, the market's number, the closing price and the result, and Monday ties the lot to FanDuel's record. "Is the model any good" becomes a
+table, and from Week 5 the table grows by about 490 lines a week.</p>
+
+<h3 id="s2-3">2.3 Why the money rules look like this</h3>
+<table>
+<tr><th style="width:24%">Rule</th><th>Setting</th><th>Why</th></tr>
+<tr><td><a class="gl" href="#g-kelly" title="The share of the growth-optimal stake actually used; 0.25 live, 0.50 behind the calibration gate.">Kelly</a> at a quarter</td><td>0.25 of the growth-optimal stake</td><td>The standard discount for a probability that is estimated rather than known; a bad week stays a bad week. The step to a half is a <a class="gl" href="#g-kelly-gate" title="The coded rule (D6, read through D19) that moves the Kelly fraction from 0.25 to 0.50: largest decile gap five points or under on 1,000 or more two-way lines over four graded weeks. The card footer and the settle report print its numbers (the gate line); the report prints KELLY GATE MET the week it opens.">coded gate</a> (<a class="xref" href="#d6">D6</a>): it opens only when <a class="gl" href="#g-calibration" title="Whether lines the model calls x% win x% of the time, measured by decile; the largest gap between predicted and realised is the gate&#x27;s number.">calibration</a> has been measured on enough lines, and the report prints <code>KELLY GATE MET</code> the week it does.</td></tr>
+<tr><td>Caps</td><td>4% a ticket, 80% a week, 10% on <a class="gl" href="#g-one-sided" title="A line with no opposite side to remove the margin from (anytime TD, ladder rungs, sacks); priced against a market-fair reference.">one-sided</a> markets, <a class="gl" href="#g-sgp" title="Same-game parlay; the price is read from FanDuel&#x27;s slip and typed by hand; nothing is scraped.">SGPs</a> at half the fraction and $10</td><td>The operator's own activity is not scored here; the weekly report carries one aggregate line for it (paste 53).</td></tr>
+<tr><td>The band and the <a class="gl" href="#g-edge" title="The model&#x27;s probability minus the market&#x27;s no-vig probability, in points.">edge</a></td><td>Both probabilities between 25% and 75%; the model at least one point over the market</td><td>The model has no record on longshots and FanDuel's margin is widest there.</td></tr>
+<tr><td>The blend</td><td>Sizing on the average of the model's and the market's probability, edge capped at eight points</td><td>The 2025 study showed the raw model is overconfident on <a class="gl" href="#g-two-way" title="A line with an over and an under at posted prices; the unit the gate counts.">two-way lines</a> (<a class="xref" href="#fig-3">figure 3</a>); a <a class="gl" href="#g-card" title="The model&#x27;s priced table of staked lines for the Broncos game, with stakes, minimum prices and token suggestions; the only model evidence.">card</a> sized on it would have sat 14 to 25 points above the market in Week 1.</td></tr>
+<tr><td>The <a class="gl" href="#g-gate" title="Usage thresholds a player must clear before his line is staked: three targets in the last three games, 10% target share, 40% snap share.">stake gate</a></td><td>Three targets in the last three games, 10% target share, 40% snap share</td><td>Week 2 priced a tight end on his 2025 starter role two weeks after he lost it.</td></tr>
+<tr><td>One-sided markets</td><td>Priced against a market-fair reference, shrunk 70% toward it, withheld past +400</td><td>Anytime TD and <a class="gl" href="#g-ladder" title="FanDuel&#x27;s alternate lines on a stat (10+, 20+ yards); the rung label is the line (3+ is over 2.5).">ladder</a> rungs have no opposite side to remove the margin from (<a class="xref" href="#d16">D16</a>).</td></tr>
+</table>
+
+<h3 id="s2-4">2.4 Why calibration is the proof (D19)</h3>
+<p><a class="gl" href="#g-clv" title="How much better the price taken was than the closing price, raw or with the book&#x27;s margin removed; a diagnostic since D19.">Closing-line value</a> is the bettor's classic test: did the price you took beat the price at <a class="gl" href="#g-close" title="The board at kickoff minus nine minutes, taken by the scheduled task or the runner; the market&#x27;s last price.">the close</a>. It has two problems here. The <a class="gl" href="#g-card" title="The model&#x27;s priced table of staked lines for the Broncos game, with stakes, minimum prices and token suggestions; the only model evidence.">card</a> places eight
+to ten tickets a week, so four weeks are forty measurements and a yes or no at that count is <a class="gl" href="#g-se" title="How far a measured rate can sit from the truth by chance alone: about 50 divided by the square root of n, in points, for a hit rate on n sides. A result inside two standard errors of zero is reported as noise.">noise</a>. And FanDuel's props <a class="gl" href="#g-board" title="Every selection FanDuel offers on a game at one moment, as stored from The Odds API (about 1,500 selections) or from saved pages.">board</a> often does not move at all
+in the last hours: in Week 4 none of the 1,496 selections moved between the card and the close (<a class="xref" href="#fig-10">figure 10</a>), so every ticket's CLV was exactly zero,
+which says nothing about the model either way.</p>
+<p><a class="gl" href="#g-calibration" title="Whether lines the model calls x% win x% of the time, measured by decile; the largest gap between predicted and realised is the gate&#x27;s number.">Calibration</a> asks a better question of a performance model: when it says 60%, does it win 60% of the time? <a class="gl" href="#g-kelly-gate" title="The coded rule (D6, read through D19) that moves the Kelly fraction from 0.25 to 0.50: largest decile gap five points or under on 1,000 or more two-way lines over four graded weeks. The card footer and the settle report print its numbers (the gate line); the report prints KELLY GATE MET the week it opens.">The gate</a> to half <a class="gl" href="#g-kelly" title="The share of the growth-optimal stake actually used; 0.25 live, 0.50 behind the calibration gate.">Kelly</a> reads exactly
+that, by <a class="gl" href="#g-decile" title="One of ten probability buckets (50-60%, 60-70% ...) that the calibration table is read by; each bucket needs enough lines for its gap to mean anything.">decile</a>, on every line the model prices league-wide: largest gap five points or under on 1,000 or more <a class="gl" href="#g-two-way" title="A line with an over and an under at posted prices; the unit the gate counts.">two-way lines</a> over four graded weeks.
+The <a class="gl" href="#g-paper-board" title="Every slate game, every week, priced as paper tickets and graded; the calibration evidence.">paper board</a> (<a class="xref" href="#s5-6">section 5.6</a>) supplies the lines; the first reading comes around the Week 7 <a class="gl" href="#g-settle" title="Monday&#x27;s two-phase tie-out (propose, apply) of the ledger to FanDuel&#x27;s record, then the grade and the report.">settle</a>. CLV stays in the report as a diagnostic.</p>
+
+<h3 id="s2-5">2.5 Why the card is the only evidence (D17)</h3>
+<p>A FanDuel account carries more than the <a class="gl" href="#g-card" title="The model&#x27;s priced table of staked lines for the Broncos game, with stakes, minimum prices and token suggestions; the only model evidence.">card</a>: a substitution when a line moved, a parlay built by hand, an in-play ticket. In one pile with the
+card's tickets, the model's record would be unreadable after a season. So the card's own tickets at the card's stake and price are the evidence;
+everything else is recorded in the ledger because the <a class="gl" href="#g-roll" title="The FanDuel balance as the ledger knows it; cards size on it; $496.03 today.">roll</a> has to tie, is capped by a rule of the operator's own, and appears in the report as one
+cash line. A card ticket placed after <a class="gl" href="#g-close" title="The board at kickoff minus nine minutes, taken by the scheduled task or the runner; the market&#x27;s last price.">the close</a> or after kickoff leaves the pre-close record for the same reason: it has no close to be judged against.</p>
+
+<h3 id="s2-6">2.6 Why nothing changed at Week 5 (D18)</h3>
+<p>The 2025 study (<a class="xref" href="#fig-2">figure 2</a>) says the model's favoured overs lose at <a class="gl" href="#g-close" title="The board at kickoff minus nine minutes, taken by the scheduled task or the runner; the market&#x27;s last price.">the close</a> and its unders hold, and the reviewer recommended unstaking the overs.
+The operator declined: <i>"The model is what it is. Without long-term statistical proof that overs are a bad choice, there is no reason to change
+them."</i> One season of backtest is one sample and 44 live tickets are <a class="gl" href="#g-se" title="How far a measured rate can sit from the truth by chance alone: about 50 divided by the square root of n, in points, for a hit rate on n sides. A result inside two standard errors of zero is reported as noise.">noise</a>; a settings change on that would be the over-fitting the project exists to
+avoid. The live by-side table in every report is the running test, and the question re-opens at the Week 9 <a class="gl" href="#g-settle" title="Monday&#x27;s two-phase tie-out (propose, apply) of the ledger to FanDuel&#x27;s record, then the grade and the report.">settle</a>.</p>
+
+<h3 id="s2-7">2.7 What is being built next, and why</h3>
+<ul>
+<li><b>The <a class="gl" href="#g-paper-board" title="Every slate game, every week, priced as paper tickets and graded; the calibration evidence.">paper board</a>.</b> Every game on the slate, every week, snapshotted early and late, priced by the same model and settings, graded Monday. It
+turns about ten evidence tickets a week into about 490 <a class="gl" href="#g-two-way" title="A line with an over and an under at posted prices; the unit the gate counts.">two-way lines</a> a week, for about $1.10 of API <a class="gl" href="#g-credits" title="The Odds API&#x27;s unit of spend: one per market per region per request for live boards, ten for historical.">credits</a> a week.</li>
+<li><b>The backfill.</b> FanDuel's historical closes for 2024 and 2023 are being bought in batches (2025 is on disk: 284 games, 8,172 two-way lines), so
+the model is tested on three seasons of real prices and so that the operator's four-year point holds: four years is about an NFL career and twice as
+good as two at telling a pattern from a fluke.</li>
+<li><b>Matchups and Next Gen Stats.</b> Expected pressure rate, expected line yards, what each defence allows each receiving role, each corner's own
+coverage numbers, separation and air yards. Built nightly into their own tables, joined only by study rows, adopted only when a backtest with its
+sentence written beforehand says so. The Week 5 preview already reads:</li>
+</ul>
+<pre><code>Bo Nix vs LAC pass rush: LAC pressure 27.6% (10th), DEN allows 22.6% (17th), expected 28.9%
+DEN run game vs LAC front: DEN line yards 2.99 (15th), LAC allows 3.06 (20th), expected 3.14
+DEN passing vs LAC secondary: LAC allows 7.64 (26th) yards an attempt; its defensive backs allow 9.55 (28th) yards a target
+LAC against WR2 (Courtland Sutton): 69 yards on 6.7 targets a game (28th fewest)
+Justin Herbert vs DEN pass rush: DEN pressure 22.2% (21st), LAC allows 30.1% (31st), expected 31.0%</code></pre>
+<ul>
+<li><b>The regression matrix.</b> Every open model question in one harness with fixed <a class="gl" href="#g-fold" title="A fit on weeks 1 to k, scored on week k+1; eight fixed folds inside 2025 for the matrix (weeks 7 to 14 scored).">folds</a>, an untouched <a class="gl" href="#g-holdout" title="Data never used to choose anything, scored once at the end: 2025 weeks 15-18, the playoffs, 2024 as it lands.">holdout</a> and pre-registered pass sentences
+(<a class="xref" href="#s4-5">section 4.5</a>); decisions at the Oct 12 <a class="gl" href="#g-settle" title="Monday&#x27;s two-phase tie-out (propose, apply) of the ledger to FanDuel&#x27;s record, then the grade and the report.">settle</a> for anything that passes with margin.</li>
+<li><b>The boost lane.</b> Two- and three-leg parlays of the highest-probability legs, with FanDuel's parlay-only boosts in the expected value, backtested
+first; a preview inside the Sunday run if it passes.</li>
+</ul>
+<h3 id="s2-8">2.8 The decisions that shape it</h3>
+<table>
+<tr><th style="width:10%">Decision</th><th style="width:14%">When</th><th>What it says</th></tr>
+<tr id="d3"><td><a class="xref" href="#d3">D3</a></td><td>Aug 25</td><td>No browser automation against FanDuel. Saved pages and typed inputs only; <a class="gl" href="#g-odds-api" title="The licensed price feed that carries FanDuel&#x27;s board and closes; costs credits, carries no account risk; the only paid data source.">The Odds API</a> for prices.</td></tr>
+<tr id="d6"><td><a class="xref" href="#d6">D6</a></td><td>Aug 25, amended Oct 5</td><td>The <a class="gl" href="#g-kelly" title="The share of the growth-optimal stake actually used; 0.25 live, 0.50 behind the calibration gate.">Kelly</a> step from 0.25 to 0.50 is a <a class="gl" href="#g-kelly-gate" title="The coded rule (D6, read through D19) that moves the Kelly fraction from 0.25 to 0.50: largest decile gap five points or under on 1,000 or more two-way lines over four graded weeks. The card footer and the settle report print its numbers (the gate line); the report prints KELLY GATE MET the week it opens.">coded gate</a> rather than a judgment call; it now reads <a class="gl" href="#g-calibration" title="Whether lines the model calls x% win x% of the time, measured by decile; the largest gap between predicted and realised is the gate&#x27;s number.">calibration</a>.</td></tr>
+<tr id="d7"><td><a class="xref" href="#d7">D7</a></td><td>Aug 25, amended Oct 5</td><td>What counts as proof: calibration and accuracy on every priced line; <a class="gl" href="#g-clv" title="How much better the price taken was than the closing price, raw or with the book&#x27;s margin removed; a diagnostic since D19.">CLV</a> a diagnostic.</td></tr>
+<tr id="d16"><td><a class="xref" href="#d16">D16</a></td><td>Sep 10</td><td><a class="gl" href="#g-one-sided" title="A line with no opposite side to remove the margin from (anytime TD, ladder rungs, sacks); priced against a market-fair reference.">One-sided</a> markets priced against a market-fair reference and shrunk toward it; longshots withheld; matchup features ship one at a time with a backtest against the market baseline.</td></tr>
+<tr id="d17"><td><a class="xref" href="#d17">D17</a></td><td>Sep 28</td><td>The <a class="gl" href="#g-card" title="The model&#x27;s priced table of staked lines for the Broncos game, with stakes, minimum prices and token suggestions; the only model evidence.">card</a> is the only model evidence; other tickets on the account are recorded for the cash tie-out and go no further.</td></tr>
+<tr id="d18"><td><a class="xref" href="#d18">D18</a></td><td>Oct 5</td><td>No settings change for Week 5; overs, passing markets and the <a class="gl" href="#g-gate" title="Usage thresholds a player must clear before his line is staked: three targets in the last three games, 10% target share, 40% snap share.">stake gate</a> stay as live all season; review at the Week 9 <a class="gl" href="#g-settle" title="Monday&#x27;s two-phase tie-out (propose, apply) of the ledger to FanDuel&#x27;s record, then the grade and the report.">settle</a>.</td></tr>
+<tr id="d19"><td><a class="xref" href="#d19">D19</a></td><td>Oct 5</td><td>Proof is calibration. The league-wide <a class="gl" href="#g-paper-board" title="Every slate game, every week, priced as paper tickets and graded; the calibration evidence.">paper board</a>; the multi-season backfill; a pattern search on the whole history.</td></tr>
+</table>
+
+<h2 id="p3">Part 3. Running a week <a class="top" href="#top">contents</a></h2>
+<p>Everything is a key on one menu, <code>ops\Betbot.cmd</code>. The header shows the next game, the countdown, the newest <a class="gl" href="#g-card" title="The model&#x27;s priced table of staked lines for the Broncos game, with stakes, minimum prices and token suggestions; the only model evidence.">card</a>, open tickets, <a class="gl" href="#g-token" title="A FanDuel promotion (profit boost, bet reset, no-sweat, bonus bet) with its terms, inventoried and assigned after sizing.">tokens</a>,
+whether <a class="gl" href="#g-close" title="The board at kickoff minus nine minutes, taken by the scheduled task or the runner; the market&#x27;s last price.">the close</a> task is scheduled and whether the feature table is fresh. Every key leaves a dated transcript in <code>ops\logs</code>; the
+quick-start card is <span class="key">H</span> and the full manual is <span class="key">M</span>.</p>
+<figure id="fig-1"><div class="clock"><div class="navy"><b>Mon</b><a class="gl" href="#g-settle" title="Monday&#x27;s two-phase tie-out (propose, apply) of the ledger to FanDuel&#x27;s record, then the grade and the report.">Settle</a>: 7 then 8. The report, the decisions.</div><div class=""><b>Tue to Fri</b>Code works the <a class="gl" href="#g-paste" title="A numbered instruction file the reviewer writes for Code (ops\pastes\paste_NN_name.md); Code works it in order and reports back.">pastes</a>; the <a class="gl" href="#g-runner" title="The GitHub Actions jobs: nightly refresh, closing snapshots at kickoff minus eight, paper-board snapshots. Downloads to the PC as artifacts; never writes the ledger.">runner</a> refreshes nightly.</div><div class=""><b>Wed 6:15 PM</b>Runner: <a class="gl" href="#g-paper-board" title="Every slate game, every week, priced as paper tickets and graded; the calibration evidence.">paper board</a> for the Thursday game.</div><div class="navy"><b>Sat</b>P: refresh, close task, referee, matchups, paper <a class="gl" href="#g-board" title="Every selection FanDuel offers on a game at one moment, as stored from The Odds API (about 1,500 selections) or from saved pages.">board</a>, the clock.</div><div class=""><b>Sat 6 PM, Sun 9 AM</b>Runner: paper boards for the slate.</div><div class=""><b>Sun T-90</b>Inactives post; save the Rewards page.</div><div class="orange"><b>Sun T-70</b>G: tokens, inactives, matchups, card, previews.</div><div class="orange"><b>Sun T-60 to T-20</b>Place from the <a class="gl" href="#g-route-page" title="The placement order for the card in FanDuel&#x27;s own layout, with the search word, the tab and the button label.">route page</a>; confirm each ticket on <a class="gl" href="#g-serve" title="The local confirm form (127.0.0.1:8787) where each placed ticket is ticked with its real stake and price.">serve</a>; 5 at T-20.</div><div class="orange"><b>Sun T-9</b>The close (scheduled task; 6 is the fallback).</div><div class=""><b>Kickoff on</b>No card tickets. The model's week is over; the grade is Monday.</div></div><figcaption>Figure 1. One week by the clock. Orange is the Sunday sequence that puts money at risk; navy is what the operator presses alone (Monday settle, Saturday prep); the rest is Code and the runner. T-70 means kickoff minus 70 minutes.</figcaption></figure>
+
+<h3 id="s3-1">3.1 Saturday: prep</h3>
+<p>Find the week's referee on footballzebras.com, then press <span class="key">P</span>. It refreshes the feature table through the current week,
+checks <a class="gl" href="#g-close" title="The board at kickoff minus nine minutes, taken by the scheduled task or the runner; the market&#x27;s last price.">the close</a> task is scheduled for kickoff minus nine (press <span class="key">2</span> if the header says otherwise), asks for the referee
+(Enter skips; game lines stay unquoted without one), opens the shadow-matchup file in Notepad (one line per pairing, <code>CB &lt;defender&gt; shadows
+WR &lt;receiver&gt;</code>; close it if none), prices the <a class="gl" href="#g-paper-board" title="Every slate game, every week, priced as paper tickets and graded; the calibration evidence.">paper board</a> for the games already snapshotted, makes the capture folder and prints the
+Sunday clock.</p>
+
+<h3 id="s3-2">3.2 Sunday: the card</h3>
+<ol>
+<li><b>Kickoff minus 90.</b> The inactives post. Save FanDuel's Rewards page into <code>data\exports</code> (Ctrl+S, "Webpage, Single File").</li>
+<li><b>Kickoff minus 70.</b> Press <span class="key">G</span>. It runs the status check, refreshes only if the table is stale, takes the <a class="gl" href="#g-token" title="A FanDuel promotion (profit boost, bet reset, no-sweat, bonus bet) with its terms, inventoried and assigned after sizing.">tokens</a>
+(Notepad: one <code>add</code> line per boost, or the saved Rewards page once <a class="xref" href="#s2-7">paste 52</a> lands), the referee, the inactives file, the matchups file,
+then builds the <a class="gl" href="#g-board" title="Every selection FanDuel offers on a game at one moment, as stored from The Odds API (about 1,500 selections) or from saved pages.">board</a>, the <a class="gl" href="#g-card" title="The model&#x27;s priced table of staked lines for the Broncos game, with stakes, minimum prices and token suggestions; the only model evidence.">card</a>, the <a class="gl" href="#g-route-page" title="The placement order for the card in FanDuel&#x27;s own layout, with the search word, the tab and the button label.">route page</a> and <a class="gl" href="#g-serve" title="The local confirm form (127.0.0.1:8787) where each placed ticket is ticked with its real stake and price.">serve</a>, prints the injury preview and the <a class="gl" href="#g-paper-board" title="Every slate game, every week, priced as paper tickets and graded; the calibration evidence.">paper board</a>, and shows the clock. It refuses after the
+close and asks before the inactives are out.</li>
+<li><b>Placing.</b> Work the route page in its order. After FanDuel confirms a ticket, tick it on serve before starting the next. Tap exactly the
+button the route page names; read the side back from the slip before Place Bets. Line moved: skip it, never the neighbouring line. <a class="gl" href="#g-ladder" title="FanDuel&#x27;s alternate lines on a stat (10+, 20+ yards); the rung label is the line (3+ is over 2.5).">Ladder</a> lines:
+FanDuel's rung label is the line. A token whose minimum stake is above the card stake stays unused. <a class="gl" href="#g-sgp" title="Same-game parlay; the price is read from FanDuel&#x27;s slip and typed by hand; nothing is scraped.">SGP</a> only at or above the ladder's first
+non-zero price.</li>
+<li><b>Kickoff minus 20.</b> Press <span class="key">5</span>: every placed ticket has a ledger row, by name; nothing on the wrong side; <a class="gl" href="#g-close" title="The board at kickoff minus nine minutes, taken by the scheduled task or the runner; the market&#x27;s last price.">the close</a>
+task is Ready.</li>
+<li><b>Kickoff minus 9.</b> The close lands by itself; <span class="key">L</span> shows <code>CLOSE LANDED</code> with the feed's own timestamp.
+If it did not, <span class="key">6</span> runs the fallback loop. From here, no card tickets.</li>
+<li><b>After the game.</b> Save My Bets (settled) and Transaction History (from its own URL, one save per page) into <code>data\exports</code> with
+the names <span class="key">7</span> prints.</li>
+</ol>
+
+<h3 id="s3-3">3.3 Monday: settle</h3>
+<p>Press <span class="key">7</span>. It reads the two saved pages, proposes every ledger change (tickets matched by FanDuel id, voids, the cash rows,
+the <a class="gl" href="#g-runner" title="The GitHub Actions jobs: nightly refresh, closing snapshots at kickoff minus eight, paper-board snapshots. Downloads to the PC as artifacts; never writes the ledger.">runner</a>'s <a class="gl" href="#g-close" title="The board at kickoff minus nine minutes, taken by the scheduled task or the runner; the market&#x27;s last price.">closing snapshot</a>, the <a class="gl" href="#g-paper-board" title="Every slate game, every week, priced as paper tickets and graded; the calibration evidence.">paper board</a>) and writes nothing. Send the log to the reviewer; on a yes press <span class="key">8</span>: the same
+with apply, then the grade, the report in <code>docs\reports</code>, the <a class="gl" href="#g-roll" title="The FanDuel balance as the ledger knows it; cards size on it; $496.03 today.">roll</a> tied to FanDuel's balance, the spent close task removed. Decisions, if
+any are due, are made here and recorded in <code>docs\DECISIONS.md</code>.</p>
+
+<h3 id="s3-4">3.4 Reading the report</h3>
+<table>
+<tr><th style="width:26%">Block</th><th>What to look at</th></tr>
+<tr><td><a class="gl" href="#g-card" title="The model&#x27;s priced table of staked lines for the Broncos game, with stakes, minimum prices and token suggestions; the only model evidence.">Card</a> as built, card as placed</td><td>The model's result at card prices, and what the operator's placement did to it. The gap between the two is execution, and every gap so far has produced a rule or a tool.</td></tr>
+<tr><td>By side</td><td>Overs and unders separately: the running test of <a class="xref" href="#d18">D18</a>.</td></tr>
+<tr><td>Evidence tickets and <a class="gl" href="#g-clv" title="How much better the price taken was than the closing price, raw or with the book&#x27;s margin removed; a diagnostic since D19.">CLV</a></td><td>Tickets placed before <a class="gl" href="#g-close" title="The board at kickoff minus nine minutes, taken by the scheduled task or the runner; the market&#x27;s last price.">the close</a>, with the price movement to the close. Zero movement is a measurement.</td></tr>
+<tr><td><a class="gl" href="#g-calibration" title="Whether lines the model calls x% win x% of the time, measured by decile; the largest gap between predicted and realised is the gate&#x27;s number.">Calibration</a></td><td>Predicted against realised by <a class="gl" href="#g-decile" title="One of ten probability buckets (50-60%, 60-70% ...) that the calibration table is read by; each bucket needs enough lines for its gap to mean anything.">decile</a>, with n, for the card and (from Week 5) the <a class="gl" href="#g-paper-board" title="Every slate game, every week, priced as paper tickets and graded; the calibration evidence.">paper board</a>; both counts shown, priced rows and <a class="gl" href="#g-two-way" title="A line with an over and an under at posted prices; the unit the gate counts.">two-way lines</a>.</td></tr>
+<tr><td><a class="gl" href="#g-kelly-gate" title="The coded rule (D6, read through D19) that moves the Kelly fraction from 0.25 to 0.50: largest decile gap five points or under on 1,000 or more two-way lines over four graded weeks. The card footer and the settle report print its numbers (the gate line); the report prints KELLY GATE MET the week it opens.">The gate</a> line</td><td>Where the <a class="gl" href="#g-kelly" title="The share of the growth-optimal stake actually used; 0.25 live, 0.50 behind the calibration gate.">Kelly</a> step stands against its numbers.</td></tr>
+<tr><td>Other account activity</td><td>One cash line so the <a class="gl" href="#g-roll" title="The FanDuel balance as the ledger knows it; cards size on it; $496.03 today.">roll</a> ties; nothing else.</td></tr>
+</table>
+
+<h2 id="p4">Part 4. What the evidence says <a class="top" href="#top">contents</a></h2>
+<p>Every number below is <a class="gl" href="#g-fold" title="A fit on weeks 1 to k, scored on week k+1; eight fixed folds inside 2025 for the matrix (weeks 7 to 14 scored).">walk-forward</a> (the model never sees the game it is scored on), scored against what happened and against FanDuel's closing
+price with the margin removed, reported with its count, and produced under a pass sentence written before the run. Noise is stated with the number:
+the <a class="gl" href="#g-se" title="How far a measured rate can sit from the truth by chance alone: about 50 divided by the square root of n, in points, for a hit rate on n sides. A result inside two standard errors of zero is reported as noise.">standard error</a> of a hit rate on n sides is about 50/&radic;n points.</p>
+
+<h3 id="s4-1">4.1 The 2025 season against FanDuel's closes</h3>
+<figure id="fig-2"><svg xmlns:xlink="http://www.w3.org/1999/xlink" width="517.3775pt" height="222.954219pt" viewBox="0 0 517.3775 222.954219" xmlns="http://www.w3.org/2000/svg" version="1.1">
+ <metadata>
+  <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+   <cc:Work>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:date>2026-10-08T08:01:22.230663</dc:date>
+    <dc:format>image/svg+xml</dc:format>
+    <dc:creator>
+     <cc:Agent>
+      <dc:title>Matplotlib v3.10.9, https://matplotlib.org/</dc:title>
+     </cc:Agent>
+    </dc:creator>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <defs>
+  <style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+ </defs>
+ <g id="figure_1">
+  <g id="patch_1">
+   <path d="M 0 222.954219 
+L 517.3775 222.954219 
+L 517.3775 -0 
+L 0 -0 
+z
+" style="fill: #ffffff"/>
+  </g>
+  <g id="axes_1">
+   <g id="patch_2">
+    <path d="M 50.14375 187.878281 
+L 463.06375 187.878281 
+L 463.06375 21.558281 
+L 50.14375 21.558281 
+z
+" style="fill: #ffffff"/>
+   </g>
+   <g id="patch_3">
+    <path d="M 68.912841 520.518281 
+L 118.595729 520.518281 
+L 118.595729 117.192281 
+L 68.912841 117.192281 
+z
+" clip-path="url(#pdb950f88d3)" style="fill: #002244"/>
+   </g>
+   <g id="patch_4">
+    <path d="M 206.920862 520.518281 
+L 256.60375 520.518281 
+L 256.60375 78.107081 
+L 206.920862 78.107081 
+z
+" clip-path="url(#pdb950f88d3)" style="fill: #002244"/>
+   </g>
+   <g id="patch_5">
+    <path d="M 344.928884 520.518281 
+L 394.611771 520.518281 
+L 394.611771 71.454281 
+L 344.928884 71.454281 
+z
+" clip-path="url(#pdb950f88d3)" style="fill: #002244"/>
+   </g>
+   <g id="patch_6">
+    <path d="M 118.595729 520.518281 
+L 168.278616 520.518281 
+L 168.278616 93.907481 
+L 118.595729 93.907481 
+z
+" clip-path="url(#pdb950f88d3)" style="fill: #d9dde3; stroke: #8a8f98; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_7">
+    <path d="M 256.60375 520.518281 
+L 306.286638 520.518281 
+L 306.286638 78.107081 
+L 256.60375 78.107081 
+z
+" clip-path="url(#pdb950f88d3)" style="fill: #d9dde3; stroke: #8a8f98; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_8">
+    <path d="M 394.611771 520.518281 
+L 444.294659 520.518281 
+L 444.294659 81.433481 
+L 394.611771 81.433481 
+z
+" clip-path="url(#pdb950f88d3)" style="fill: #d9dde3; stroke: #8a8f98; stroke-linejoin: miter"/>
+   </g>
+   <g id="matplotlib.axis_1">
+    <g id="xtick_1">
+     <g id="line2d_1">
+      <defs>
+       <path id="mfa7ce3ba5a" d="M 0 0 
+L 0 3.5 
+" style="stroke: #000000; stroke-width: 0.8"/>
+      </defs>
+      <g>
+       <use xlink:href="#mfa7ce3ba5a" x="118.595729" y="187.878281" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_1">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'" transform="translate(104.84026 202.476719)">overs</text>
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'" transform="translate(85.941822 213.674531)">(1,898 sides)</text>
+     </g>
+    </g>
+    <g id="xtick_2">
+     <g id="line2d_2">
+      <g>
+       <use xlink:href="#mfa7ce3ba5a" x="256.60375" y="187.878281" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_2">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'" transform="translate(239.355313 202.476719)">unders</text>
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'" transform="translate(223.949844 213.674531)">(6,276 sides)</text>
+     </g>
+    </g>
+    <g id="xtick_3">
+     <g id="line2d_3">
+      <g>
+       <use xlink:href="#mfa7ce3ba5a" x="394.611771" y="187.878281" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_3">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'" transform="translate(352.72349 202.476719)">unders, edge 5+</text>
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'" transform="translate(361.957865 213.674531)">(3,559 sides)</text>
+     </g>
+    </g>
+   </g>
+   <g id="matplotlib.axis_2">
+    <g id="ytick_1">
+     <g id="line2d_4">
+      <defs>
+       <path id="ma120bfcca6" d="M 0 0 
+L -3.5 0 
+" style="stroke: #000000; stroke-width: 0.8"/>
+      </defs>
+      <g>
+       <use xlink:href="#ma120bfcca6" x="50.14375" y="187.878281" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_4">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end" x="43.14375" y="191.6775" transform="rotate(-0 43.14375 191.6775)">40.0</text>
+     </g>
+    </g>
+    <g id="ytick_2">
+     <g id="line2d_5">
+      <g>
+       <use xlink:href="#ma120bfcca6" x="50.14375" y="167.088281" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_5">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end" x="43.14375" y="170.8875" transform="rotate(-0 43.14375 170.8875)">42.5</text>
+     </g>
+    </g>
+    <g id="ytick_3">
+     <g id="line2d_6">
+      <g>
+       <use xlink:href="#ma120bfcca6" x="50.14375" y="146.298281" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_6">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end" x="43.14375" y="150.0975" transform="rotate(-0 43.14375 150.0975)">45.0</text>
+     </g>
+    </g>
+    <g id="ytick_4">
+     <g id="line2d_7">
+      <g>
+       <use xlink:href="#ma120bfcca6" x="50.14375" y="125.508281" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_7">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end" x="43.14375" y="129.3075" transform="rotate(-0 43.14375 129.3075)">47.5</text>
+     </g>
+    </g>
+    <g id="ytick_5">
+     <g id="line2d_8">
+      <g>
+       <use xlink:href="#ma120bfcca6" x="50.14375" y="104.718281" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_8">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end" x="43.14375" y="108.5175" transform="rotate(-0 43.14375 108.5175)">50.0</text>
+     </g>
+    </g>
+    <g id="ytick_6">
+     <g id="line2d_9">
+      <g>
+       <use xlink:href="#ma120bfcca6" x="50.14375" y="83.928281" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_9">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end" x="43.14375" y="87.7275" transform="rotate(-0 43.14375 87.7275)">52.5</text>
+     </g>
+    </g>
+    <g id="ytick_7">
+     <g id="line2d_10">
+      <g>
+       <use xlink:href="#ma120bfcca6" x="50.14375" y="63.138281" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_10">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end" x="43.14375" y="66.9375" transform="rotate(-0 43.14375 66.9375)">55.0</text>
+     </g>
+    </g>
+    <g id="ytick_8">
+     <g id="line2d_11">
+      <g>
+       <use xlink:href="#ma120bfcca6" x="50.14375" y="42.348281" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_11">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end" x="43.14375" y="46.1475" transform="rotate(-0 43.14375 46.1475)">57.5</text>
+     </g>
+    </g>
+    <g id="ytick_9">
+     <g id="line2d_12">
+      <g>
+       <use xlink:href="#ma120bfcca6" x="50.14375" y="21.558281" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_12">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end" x="43.14375" y="25.3575" transform="rotate(-0 43.14375 25.3575)">60.0</text>
+     </g>
+    </g>
+    <g id="text_13">
+     <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: middle" x="14.798438" y="104.718281" transform="rotate(-90 14.798438 104.718281)">%</text>
+    </g>
+   </g>
+   <g id="patch_9">
+    <path d="M 50.14375 187.878281 
+L 50.14375 21.558281 
+" style="fill: none; stroke: #444444; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
+   </g>
+   <g id="patch_10">
+    <path d="M 50.14375 187.878281 
+L 463.06375 187.878281 
+" style="fill: none; stroke: #444444; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
+   </g>
+   <g id="text_14">
+    <text style="font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: middle" x="93.754285" y="114.192281" transform="rotate(-0 93.754285 114.192281)">48.5%</text>
+   </g>
+   <g id="text_15">
+    <text style="font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #555555" x="143.437172" y="90.907481" transform="rotate(-0 143.437172 90.907481)">51.3%</text>
+   </g>
+   <g id="text_16">
+    <text style="font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: middle" x="231.762306" y="75.107081" transform="rotate(-0 231.762306 75.107081)">53.2%</text>
+   </g>
+   <g id="text_17">
+    <text style="font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #555555" x="281.445194" y="75.107081" transform="rotate(-0 281.445194 75.107081)">53.2%</text>
+   </g>
+   <g id="text_18">
+    <text style="font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: middle" x="369.770328" y="68.454281" transform="rotate(-0 369.770328 68.454281)">54.0%</text>
+   </g>
+   <g id="text_19">
+    <text style="font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #555555" x="419.453215" y="78.433481" transform="rotate(-0 419.453215 78.433481)">52.8%</text>
+   </g>
+   <g id="text_20">
+    <text style="font-weight: 700; font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: start" x="50.14375" y="15.558281" transform="rotate(-0 50.14375 15.558281)">2025 walk-forward, 284 games against FanDuel's closes, by favoured side</text>
+   </g>
+   <g id="legend_1">
+    <g id="patch_11">
+     <path d="M 59.14375 38.156719 
+L 79.14375 38.156719 
+L 79.14375 31.156719 
+L 59.14375 31.156719 
+z
+" style="fill: #002244"/>
+    </g>
+    <g id="text_21">
+     <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: start" x="87.14375" y="38.156719" transform="rotate(-0 87.14375 38.156719)">hit rate</text>
+    </g>
+    <g id="patch_12">
+     <path d="M 59.14375 52.834844 
+L 79.14375 52.834844 
+L 79.14375 45.834844 
+L 59.14375 45.834844 
+z
+" style="fill: #d9dde3; stroke: #8a8f98; stroke-linejoin: miter"/>
+    </g>
+    <g id="text_22">
+     <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: start" x="87.14375" y="52.834844" transform="rotate(-0 87.14375 52.834844)">break-even at the close</text>
+    </g>
+   </g>
+  </g>
+ </g>
+ <defs>
+  <clipPath id="pdb950f88d3">
+   <rect x="50.14375" y="21.558281" width="412.92" height="166.32"/>
+  </clipPath>
+ </defs>
+</svg>
+
+<figcaption>Figure 2. 284 games, 8,174 two-way lines. Hit rate against break-even at the closing price, by the side the model favoured: the overs fall 2.8 points short (2.4 standard errors), the unders sit on break-even, and the unders with a claimed edge of five points or more clear it by 1.2 points (1.4 standard errors on 3,559 sides).</figcaption></figure>
+<figure id="fig-3"><svg xmlns:xlink="http://www.w3.org/1999/xlink" width="462.740313pt" height="189.580406pt" viewBox="0 0 462.740313 189.580406" xmlns="http://www.w3.org/2000/svg" version="1.1">
+ <metadata>
+  <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+   <cc:Work>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:date>2026-10-05T20:39:49.115589</dc:date>
+    <dc:format>image/svg+xml</dc:format>
+    <dc:creator>
+     <cc:Agent>
+      <dc:title>Matplotlib v3.10.9, https://matplotlib.org/</dc:title>
+     </cc:Agent>
+    </dc:creator>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <defs>
+  <style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+ </defs>
+ <g id="figure_1">
+  <g id="patch_1">
+   <path d="M 0 189.580406 
+L 462.740313 189.580406 
+L 462.740313 0 
+L 0 0 
+z
+" style="fill: #ffffff"/>
+  </g>
+  <g id="axes_1">
+   <g id="patch_2">
+    <path d="M 42.620313 165.702281 
+L 455.540313 165.702281 
+L 455.540313 21.558281 
+L 42.620313 21.558281 
+z
+" style="fill: #ffffff"/>
+   </g>
+   <g id="patch_3">
+    <path d="M 61.389403 79.215881 
+L 136.465767 79.215881 
+L 136.465767 136.873481 
+L 61.389403 136.873481 
+z
+" clip-path="url(#p977910ec01)" style="fill: #c62828"/>
+   </g>
+   <g id="patch_4">
+    <path d="M 211.542131 79.215881 
+L 286.618494 79.215881 
+L 286.618494 70.567241 
+L 211.542131 70.567241 
+z
+" clip-path="url(#p977910ec01)" style="fill: #2e7d32"/>
+   </g>
+   <g id="patch_5">
+    <path d="M 361.694858 79.215881 
+L 436.771222 79.215881 
+L 436.771222 59.035721 
+L 361.694858 59.035721 
+z
+" clip-path="url(#p977910ec01)" style="fill: #2e7d32"/>
+   </g>
+   <g id="matplotlib.axis_1">
+    <g id="xtick_1">
+     <g id="line2d_1">
+      <defs>
+       <path id="m933d3e9a91" d="M 0 0 
+L 0 3.5 
+" style="stroke: #000000; stroke-width: 0.8"/>
+      </defs>
+      <g>
+       <use xlink:href="#m933d3e9a91" x="98.927585" y="165.702281" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_1">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: middle" x="98.927585" y="180.300719" transform="rotate(-0 98.927585 180.300719)">under 5 pts</text>
+     </g>
+    </g>
+    <g id="xtick_2">
+     <g id="line2d_2">
+      <g>
+       <use xlink:href="#m933d3e9a91" x="249.080313" y="165.702281" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_2">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: middle" x="249.080313" y="180.300719" transform="rotate(-0 249.080313 180.300719)">5-8 pts</text>
+     </g>
+    </g>
+    <g id="xtick_3">
+     <g id="line2d_3">
+      <g>
+       <use xlink:href="#m933d3e9a91" x="399.23304" y="165.702281" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_3">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: middle" x="399.23304" y="180.300719" transform="rotate(-0 399.23304 180.300719)">8+ pts</text>
+     </g>
+    </g>
+   </g>
+   <g id="matplotlib.axis_2">
+    <g id="ytick_1">
+     <g id="line2d_4">
+      <defs>
+       <path id="mb8fb151563" d="M 0 0 
+L -3.5 0 
+" style="stroke: #000000; stroke-width: 0.8"/>
+      </defs>
+      <g>
+       <use xlink:href="#mb8fb151563" x="42.620313" y="165.702281" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_4">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end" x="35.620313" y="169.5015" transform="rotate(-0 35.620313 169.5015)">−6</text>
+     </g>
+    </g>
+    <g id="ytick_2">
+     <g id="line2d_5">
+      <g>
+       <use xlink:href="#mb8fb151563" x="42.620313" y="136.873481" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_5">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end" x="35.620313" y="140.6727" transform="rotate(-0 35.620313 140.6727)">−4</text>
+     </g>
+    </g>
+    <g id="ytick_3">
+     <g id="line2d_6">
+      <g>
+       <use xlink:href="#mb8fb151563" x="42.620313" y="108.044681" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_6">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end" x="35.620313" y="111.8439" transform="rotate(-0 35.620313 111.8439)">−2</text>
+     </g>
+    </g>
+    <g id="ytick_4">
+     <g id="line2d_7">
+      <g>
+       <use xlink:href="#mb8fb151563" x="42.620313" y="79.215881" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_7">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end" x="35.620313" y="83.0151" transform="rotate(-0 35.620313 83.0151)">0</text>
+     </g>
+    </g>
+    <g id="ytick_5">
+     <g id="line2d_8">
+      <g>
+       <use xlink:href="#mb8fb151563" x="42.620313" y="50.387081" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_8">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end" x="35.620313" y="54.1863" transform="rotate(-0 35.620313 54.1863)">2</text>
+     </g>
+    </g>
+    <g id="ytick_6">
+     <g id="line2d_9">
+      <g>
+       <use xlink:href="#mb8fb151563" x="42.620313" y="21.558281" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_9">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end" x="35.620313" y="25.3575" transform="rotate(-0 35.620313 25.3575)">4</text>
+     </g>
+    </g>
+    <g id="text_10">
+     <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: middle" x="14.798438" y="93.630281" transform="rotate(-90 14.798438 93.630281)">flat ROI at the close</text>
+    </g>
+   </g>
+   <g id="line2d_10">
+    <path d="M 42.620313 79.215881 
+L 455.540313 79.215881 
+" clip-path="url(#p977910ec01)" style="fill: none; stroke: #444444; stroke-width: 0.8; stroke-linecap: square"/>
+   </g>
+   <g id="patch_6">
+    <path d="M 42.620313 165.702281 
+L 42.620313 21.558281 
+" style="fill: none; stroke: #444444; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
+   </g>
+   <g id="patch_7">
+    <path d="M 42.620313 165.702281 
+L 455.540313 165.702281 
+" style="fill: none; stroke: #444444; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
+   </g>
+   <g id="text_11">
+    <text style="font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: middle" x="98.927585" y="148.873481" transform="rotate(-0 98.927585 148.873481)">-4.0%</text>
+   </g>
+   <g id="text_12">
+    <text style="font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: middle" x="249.080313" y="66.567241" transform="rotate(-0 249.080313 66.567241)">+0.6%</text>
+   </g>
+   <g id="text_13">
+    <text style="font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: middle" x="399.23304" y="55.035721" transform="rotate(-0 399.23304 55.035721)">+1.4%</text>
+   </g>
+   <g id="text_14">
+    <text style="font-weight: 700; font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: start" x="42.620313" y="15.558281" transform="rotate(-0 42.620313 15.558281)">Return per dollar by claimed edge (2025, 8,174 two-way lines)</text>
+   </g>
+  </g>
+ </g>
+ <defs>
+  <clipPath id="p977910ec01">
+   <rect x="42.620313" y="21.558281" width="412.92" height="144.144"/>
+  </clipPath>
+ </defs>
+</svg>
+<figcaption>Figure 3. Flat return per dollar at the close by the model's claimed edge. Under five points the claim is noise; above it the claim is roughly honest.</figcaption></figure>
+<figure id="fig-4"><svg xmlns:xlink="http://www.w3.org/1999/xlink" width="628.974375pt" height="258.698531pt" viewBox="0 0 628.974375 258.698531" xmlns="http://www.w3.org/2000/svg" version="1.1">
+ <metadata>
+  <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+   <cc:Work>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:date>2026-10-05T20:39:49.180564</dc:date>
+    <dc:format>image/svg+xml</dc:format>
+    <dc:creator>
+     <cc:Agent>
+      <dc:title>Matplotlib v3.10.9, https://matplotlib.org/</dc:title>
+     </cc:Agent>
+    </dc:creator>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <defs>
+  <style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+ </defs>
+ <g id="figure_1">
+  <g id="patch_1">
+   <path d="M 0 258.698531 
+L 628.974375 258.698531 
+L 628.974375 0 
+L 0 0 
+z
+" style="fill: #ffffff"/>
+  </g>
+  <g id="axes_1">
+   <g id="patch_2">
+    <path d="M 197.129687 221.142281 
+L 610.049688 221.142281 
+L 610.049688 21.558281 
+L 197.129687 21.558281 
+z
+" style="fill: #ffffff"/>
+   </g>
+   <g id="patch_3">
+    <path d="M 403.589688 212.070281 
+L 248.744688 212.070281 
+L 248.744688 197.746071 
+L 403.589688 197.746071 
+z
+" clip-path="url(#p09d3e70a07)" style="fill: #c62828"/>
+   </g>
+   <g id="patch_4">
+    <path d="M 403.589688 188.196597 
+L 372.620688 188.196597 
+L 372.620688 173.872387 
+L 403.589688 173.872387 
+z
+" clip-path="url(#p09d3e70a07)" style="fill: #c62828"/>
+   </g>
+   <g id="patch_5">
+    <path d="M 403.589688 164.322913 
+L 331.328688 164.322913 
+L 331.328688 149.998702 
+L 403.589688 149.998702 
+z
+" clip-path="url(#p09d3e70a07)" style="fill: #c62828"/>
+   </g>
+   <g id="patch_6">
+    <path d="M 403.589688 140.449229 
+L 364.878438 140.449229 
+L 364.878438 126.125018 
+L 403.589688 126.125018 
+z
+" clip-path="url(#p09d3e70a07)" style="fill: #c62828"/>
+   </g>
+   <g id="patch_7">
+    <path d="M 403.589688 116.575544 
+L 395.847438 116.575544 
+L 395.847438 102.251334 
+L 403.589688 102.251334 
+z
+" clip-path="url(#p09d3e70a07)" style="fill: #c62828"/>
+   </g>
+   <g id="patch_8">
+    <path d="M 403.589688 92.70186 
+L 548.111688 92.70186 
+L 548.111688 78.37765 
+L 403.589688 78.37765 
+z
+" clip-path="url(#p09d3e70a07)" style="fill: #2e7d32"/>
+   </g>
+   <g id="patch_9">
+    <path d="M 403.589688 68.828176 
+L 388.105188 68.828176 
+L 388.105188 54.503965 
+L 403.589688 54.503965 
+z
+" clip-path="url(#p09d3e70a07)" style="fill: #c62828"/>
+   </g>
+   <g id="patch_10">
+    <path d="M 403.589688 44.954492 
+L 475.850688 44.954492 
+L 475.850688 30.630281 
+L 403.589688 30.630281 
+z
+" clip-path="url(#p09d3e70a07)" style="fill: #2e7d32"/>
+   </g>
+   <g id="matplotlib.axis_1">
+    <g id="xtick_1">
+     <g id="line2d_1">
+      <defs>
+       <path id="m306d86ed12" d="M 0 0 
+L 0 3.5 
+" style="stroke: #000000; stroke-width: 0.8"/>
+      </defs>
+      <g>
+       <use xlink:href="#m306d86ed12" x="197.129688" y="221.142281" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_1">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: middle" x="197.129688" y="235.740719" transform="rotate(-0 197.129688 235.740719)">−8</text>
+     </g>
+    </g>
+    <g id="xtick_2">
+     <g id="line2d_2">
+      <g>
+       <use xlink:href="#m306d86ed12" x="248.744688" y="221.142281" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_2">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: middle" x="248.744688" y="235.740719" transform="rotate(-0 248.744688 235.740719)">−6</text>
+     </g>
+    </g>
+    <g id="xtick_3">
+     <g id="line2d_3">
+      <g>
+       <use xlink:href="#m306d86ed12" x="300.359688" y="221.142281" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_3">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: middle" x="300.359688" y="235.740719" transform="rotate(-0 300.359688 235.740719)">−4</text>
+     </g>
+    </g>
+    <g id="xtick_4">
+     <g id="line2d_4">
+      <g>
+       <use xlink:href="#m306d86ed12" x="351.974688" y="221.142281" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_4">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: middle" x="351.974688" y="235.740719" transform="rotate(-0 351.974688 235.740719)">−2</text>
+     </g>
+    </g>
+    <g id="xtick_5">
+     <g id="line2d_5">
+      <g>
+       <use xlink:href="#m306d86ed12" x="403.589688" y="221.142281" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_5">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: middle" x="403.589688" y="235.740719" transform="rotate(-0 403.589688 235.740719)">0</text>
+     </g>
+    </g>
+    <g id="xtick_6">
+     <g id="line2d_6">
+      <g>
+       <use xlink:href="#m306d86ed12" x="455.204688" y="221.142281" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_6">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: middle" x="455.204688" y="235.740719" transform="rotate(-0 455.204688 235.740719)">2</text>
+     </g>
+    </g>
+    <g id="xtick_7">
+     <g id="line2d_7">
+      <g>
+       <use xlink:href="#m306d86ed12" x="506.819688" y="221.142281" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_7">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: middle" x="506.819688" y="235.740719" transform="rotate(-0 506.819688 235.740719)">4</text>
+     </g>
+    </g>
+    <g id="xtick_8">
+     <g id="line2d_8">
+      <g>
+       <use xlink:href="#m306d86ed12" x="558.434688" y="221.142281" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_8">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: middle" x="558.434688" y="235.740719" transform="rotate(-0 558.434688 235.740719)">6</text>
+     </g>
+    </g>
+    <g id="xtick_9">
+     <g id="line2d_9">
+      <g>
+       <use xlink:href="#m306d86ed12" x="610.049688" y="221.142281" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_9">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: middle" x="610.049688" y="235.740719" transform="rotate(-0 610.049688 235.740719)">8</text>
+     </g>
+    </g>
+    <g id="text_10">
+     <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: middle" x="403.589688" y="249.418844" transform="rotate(-0 403.589688 249.418844)">season ROI on the simulated cards (2025 closes)</text>
+    </g>
+   </g>
+   <g id="matplotlib.axis_2">
+    <g id="ytick_1">
+     <g id="line2d_10">
+      <defs>
+       <path id="m36080bf115" d="M 0 0 
+L -3.5 0 
+" style="stroke: #000000; stroke-width: 0.8"/>
+      </defs>
+      <g>
+       <use xlink:href="#m36080bf115" x="197.129687" y="204.908176" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_11">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end" x="190.129687" y="208.707395" transform="rotate(-0 190.129687 208.707395)">all four loosenings, DEN</text>
+     </g>
+    </g>
+    <g id="ytick_2">
+     <g id="line2d_11">
+      <g>
+       <use xlink:href="#m36080bf115" x="197.129687" y="181.034492" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_12">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end" x="190.129687" y="184.833711" transform="rotate(-0 190.129687 184.833711)">model alone (no market blend), DEN</text>
+     </g>
+    </g>
+    <g id="ytick_3">
+     <g id="line2d_12">
+      <g>
+       <use xlink:href="#m36080bf115" x="197.129687" y="157.160808" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_13">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end" x="190.129687" y="160.960026" transform="rotate(-0 190.129687 160.960026)">stake gate off, DEN</text>
+     </g>
+    </g>
+    <g id="ytick_4">
+     <g id="line2d_13">
+      <g>
+       <use xlink:href="#m36080bf115" x="197.129687" y="133.287123" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_14">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end" x="190.129687" y="137.086342" transform="rotate(-0 190.129687 137.086342)">min_edge 5, DEN</text>
+     </g>
+    </g>
+    <g id="ytick_5">
+     <g id="line2d_14">
+      <g>
+       <use xlink:href="#m36080bf115" x="197.129687" y="109.413439" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_15">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end" x="190.129687" y="113.212658" transform="rotate(-0 190.129687 113.212658)">overs unstaked, league-wide</text>
+     </g>
+    </g>
+    <g id="ytick_6">
+     <g id="line2d_15">
+      <g>
+       <use xlink:href="#m36080bf115" x="197.129687" y="85.539755" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_16">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end" x="190.129687" y="89.338974" transform="rotate(-0 190.129687 89.338974)">overs unstaked, DEN</text>
+     </g>
+    </g>
+    <g id="ytick_7">
+     <g id="line2d_16">
+      <g>
+       <use xlink:href="#m36080bf115" x="197.129687" y="61.666071" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_17">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end" x="190.129687" y="65.465289" transform="rotate(-0 190.129687 65.465289)">live settings, league-wide (284)</text>
+     </g>
+    </g>
+    <g id="ytick_8">
+     <g id="line2d_17">
+      <g>
+       <use xlink:href="#m36080bf115" x="197.129687" y="37.792387" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_18">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end" x="190.129687" y="41.591605" transform="rotate(-0 190.129687 41.591605)">live settings, DEN (19 games)</text>
+     </g>
+    </g>
+   </g>
+   <g id="line2d_18">
+    <path d="M 403.589688 221.142281 
+L 403.589688 21.558281 
+" clip-path="url(#p09d3e70a07)" style="fill: none; stroke: #444444; stroke-width: 0.8; stroke-linecap: square"/>
+   </g>
+   <g id="patch_11">
+    <path d="M 197.129687 221.142281 
+L 197.129687 21.558281 
+" style="fill: none; stroke: #444444; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
+   </g>
+   <g id="patch_12">
+    <path d="M 197.129688 221.142281 
+L 610.049688 221.142281 
+" style="fill: none; stroke: #444444; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
+   </g>
+   <g id="text_19">
+    <text style="font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: start" x="218.744688" y="207.908176" transform="rotate(-0 218.744688 207.908176)">-6.0%</text>
+   </g>
+   <g id="text_20">
+    <text style="font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: start" x="342.620688" y="184.034492" transform="rotate(-0 342.620688 184.034492)">-1.2%</text>
+   </g>
+   <g id="text_21">
+    <text style="font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: start" x="301.328688" y="160.160808" transform="rotate(-0 301.328688 160.160808)">-2.8%</text>
+   </g>
+   <g id="text_22">
+    <text style="font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: start" x="334.878438" y="136.287123" transform="rotate(-0 334.878438 136.287123)">-1.5%</text>
+   </g>
+   <g id="text_23">
+    <text style="font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: start" x="365.847438" y="112.413439" transform="rotate(-0 365.847438 112.413439)">-0.3%</text>
+   </g>
+   <g id="text_24">
+    <text style="font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: start" x="554.111688" y="88.539755" transform="rotate(-0 554.111688 88.539755)">+5.6%</text>
+   </g>
+   <g id="text_25">
+    <text style="font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: start" x="358.105188" y="64.666071" transform="rotate(-0 358.105188 64.666071)">-0.6%</text>
+   </g>
+   <g id="text_26">
+    <text style="font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: start" x="481.850688" y="40.792387" transform="rotate(-0 481.850688 40.792387)">+2.8%</text>
+   </g>
+   <g id="text_27">
+    <text style="font-weight: 700; font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: start" x="197.129687" y="15.558281" transform="rotate(-0 197.129687 15.558281)">The 2025 cards re-simulated under each setting, scored at the close</text>
+   </g>
+  </g>
+ </g>
+ <defs>
+  <clipPath id="p09d3e70a07">
+   <rect x="197.129687" y="21.558281" width="412.92" height="199.584"/>
+  </clipPath>
+ </defs>
+</svg>
+<figcaption>Figure 4. The 2025 cards re-simulated under each setting. No setting makes the league-wide card positive at the close; unstaking the overs helps the Broncos slice; every loosening loses.</figcaption></figure>
+<p><b>What it means.</b> The model's probabilities are useful on unders and on claimed edges above five points, and nothing in the settings makes it a
+book-beater at <a class="gl" href="#g-close" title="The board at kickoff minus nine minutes, taken by the scheduled task or the runner; the market&#x27;s last price.">the close</a>. Passing markets lose on both sides. The dollars, if they come, come from placing at kickoff minus 70 against a close that
+rarely moves, or from a better model, which the matrix in <a class="xref" href="#s4-5">section 4.5</a> is testing now.</p>
+
+<h3 id="s4-2">4.2 The card's record, Weeks 1-4</h3>
+<figure id="fig-5"><svg xmlns:xlink="http://www.w3.org/1999/xlink" width="519.310312pt" height="222.954219pt" viewBox="0 0 519.310312 222.954219" xmlns="http://www.w3.org/2000/svg" version="1.1">
+ <metadata>
+  <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+   <cc:Work>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:date>2026-10-05T20:39:49.232358</dc:date>
+    <dc:format>image/svg+xml</dc:format>
+    <dc:creator>
+     <cc:Agent>
+      <dc:title>Matplotlib v3.10.9, https://matplotlib.org/</dc:title>
+     </cc:Agent>
+    </dc:creator>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <defs>
+  <style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+ </defs>
+ <g id="figure_1">
+  <g id="patch_1">
+   <path d="M 0 222.954219 
+L 519.310312 222.954219 
+L 519.310312 -0 
+L 0 -0 
+z
+" style="fill: #ffffff"/>
+  </g>
+  <g id="axes_1">
+   <g id="patch_2">
+    <path d="M 48.982813 187.878281 
+L 461.902813 187.878281 
+L 461.902813 21.558281 
+L 48.982813 21.558281 
+z
+" style="fill: #ffffff"/>
+   </g>
+   <g id="matplotlib.axis_1">
+    <g id="xtick_1">
+     <g id="line2d_1">
+      <defs>
+       <path id="m3070d1df09" d="M 0 0 
+L 0 3.5 
+" style="stroke: #000000; stroke-width: 0.8"/>
+      </defs>
+      <g>
+       <use xlink:href="#m3070d1df09" x="67.751903" y="187.878281" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_1">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: middle" x="67.751903" y="202.476719" transform="rotate(-0 67.751903 202.476719)">start</text>
+     </g>
+    </g>
+    <g id="xtick_2">
+     <g id="line2d_2">
+      <g>
+       <use xlink:href="#m3070d1df09" x="161.597358" y="187.878281" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_2">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'" transform="translate(148.987983 202.476719)">Wk 1</text>
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'" transform="translate(148.488764 213.674531)">at KC</text>
+     </g>
+    </g>
+    <g id="xtick_3">
+     <g id="line2d_3">
+      <g>
+       <use xlink:href="#m3070d1df09" x="255.442813" y="187.878281" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_3">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'" transform="translate(242.833438 202.476719)">Wk 2</text>
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'" transform="translate(240.056875 213.674531)">vs JAX</text>
+     </g>
+    </g>
+    <g id="xtick_4">
+     <g id="line2d_4">
+      <g>
+       <use xlink:href="#m3070d1df09" x="349.288267" y="187.878281" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_4">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'" transform="translate(336.678892 202.476719)">Wk 3</text>
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'" transform="translate(335.816392 213.674531)">vs LA</text>
+     </g>
+    </g>
+    <g id="xtick_5">
+     <g id="line2d_5">
+      <g>
+       <use xlink:href="#m3070d1df09" x="443.133722" y="187.878281" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_5">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'" transform="translate(430.524347 202.476719)">Wk 4</text>
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'" transform="translate(430.47044 213.674531)">at SF</text>
+     </g>
+    </g>
+   </g>
+   <g id="matplotlib.axis_2">
+    <g id="ytick_1">
+     <g id="line2d_6">
+      <defs>
+       <path id="m37b02a61ac" d="M 0 0 
+L -3.5 0 
+" style="stroke: #000000; stroke-width: 0.8"/>
+      </defs>
+      <g>
+       <use xlink:href="#m37b02a61ac" x="48.982813" y="187.878281" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_6">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end" x="41.982813" y="191.6775" transform="rotate(-0 41.982813 191.6775)">−80</text>
+     </g>
+    </g>
+    <g id="ytick_2">
+     <g id="line2d_7">
+      <g>
+       <use xlink:href="#m37b02a61ac" x="48.982813" y="157.638281" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_7">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end" x="41.982813" y="161.4375" transform="rotate(-0 41.982813 161.4375)">−60</text>
+     </g>
+    </g>
+    <g id="ytick_3">
+     <g id="line2d_8">
+      <g>
+       <use xlink:href="#m37b02a61ac" x="48.982813" y="127.398281" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_8">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end" x="41.982813" y="131.1975" transform="rotate(-0 41.982813 131.1975)">−40</text>
+     </g>
+    </g>
+    <g id="ytick_4">
+     <g id="line2d_9">
+      <g>
+       <use xlink:href="#m37b02a61ac" x="48.982813" y="97.158281" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_9">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end" x="41.982813" y="100.9575" transform="rotate(-0 41.982813 100.9575)">−20</text>
+     </g>
+    </g>
+    <g id="ytick_5">
+     <g id="line2d_10">
+      <g>
+       <use xlink:href="#m37b02a61ac" x="48.982813" y="66.918281" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_10">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end" x="41.982813" y="70.7175" transform="rotate(-0 41.982813 70.7175)">0</text>
+     </g>
+    </g>
+    <g id="ytick_6">
+     <g id="line2d_11">
+      <g>
+       <use xlink:href="#m37b02a61ac" x="48.982813" y="36.678281" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_11">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end" x="41.982813" y="40.4775" transform="rotate(-0 41.982813 40.4775)">20</text>
+     </g>
+    </g>
+    <g id="text_12">
+     <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: middle" x="14.798438" y="104.718281" transform="rotate(-90 14.798438 104.718281)">cumulative net, $</text>
+    </g>
+   </g>
+   <g id="line2d_12">
+    <path d="M 67.751903 66.918281 
+L 161.597358 116.965481 
+L 255.442813 155.491241 
+L 349.288267 151.635641 
+L 443.133722 131.102681 
+" clip-path="url(#p47959e130a)" style="fill: none; stroke: #002244; stroke-width: 2; stroke-linecap: square"/>
+    <defs>
+     <path id="m10f307abc6" d="M 0 3 
+C 0.795609 3 1.55874 2.683901 2.12132 2.12132 
+C 2.683901 1.55874 3 0.795609 3 0 
+C 3 -0.795609 2.683901 -1.55874 2.12132 -2.12132 
+C 1.55874 -2.683901 0.795609 -3 0 -3 
+C -0.795609 -3 -1.55874 -2.683901 -2.12132 -2.12132 
+C -2.683901 -1.55874 -3 -0.795609 -3 0 
+C -3 0.795609 -2.683901 1.55874 -2.12132 2.12132 
+C -1.55874 2.683901 -0.795609 3 0 3 
+z
+" style="stroke: #002244"/>
+    </defs>
+    <g clip-path="url(#p47959e130a)">
+     <use xlink:href="#m10f307abc6" x="67.751903" y="66.918281" style="fill: #002244; stroke: #002244"/>
+     <use xlink:href="#m10f307abc6" x="161.597358" y="116.965481" style="fill: #002244; stroke: #002244"/>
+     <use xlink:href="#m10f307abc6" x="255.442813" y="155.491241" style="fill: #002244; stroke: #002244"/>
+     <use xlink:href="#m10f307abc6" x="349.288267" y="151.635641" style="fill: #002244; stroke: #002244"/>
+     <use xlink:href="#m10f307abc6" x="443.133722" y="131.102681" style="fill: #002244; stroke: #002244"/>
+    </g>
+   </g>
+   <g id="line2d_13">
+    <path d="M 48.982813 66.918281 
+L 461.902813 66.918281 
+" clip-path="url(#p47959e130a)" style="fill: none; stroke-dasharray: 3.7,1.6; stroke-dashoffset: 0; stroke: #8a8f98"/>
+   </g>
+   <g id="patch_3">
+    <path d="M 48.982813 187.878281 
+L 48.982813 21.558281 
+" style="fill: none; stroke: #444444; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
+   </g>
+   <g id="patch_4">
+    <path d="M 48.982813 187.878281 
+L 461.902813 187.878281 
+" style="fill: none; stroke: #444444; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
+   </g>
+   <g id="text_13">
+    <text style="font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: middle" x="67.751903" y="58.918281" transform="rotate(-0 67.751903 58.918281)">$0</text>
+   </g>
+   <g id="text_14">
+    <text style="font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: middle" x="161.597358" y="108.965481" transform="rotate(-0 161.597358 108.965481)">-33.10</text>
+   </g>
+   <g id="text_15">
+    <text style="font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: middle" x="255.442813" y="147.491241" transform="rotate(-0 255.442813 147.491241)">-58.58</text>
+   </g>
+   <g id="text_16">
+    <text style="font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: middle" x="349.288267" y="143.635641" transform="rotate(-0 349.288267 143.635641)">-56.03</text>
+   </g>
+   <g id="text_17">
+    <text style="font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: middle" x="443.133722" y="123.102681" transform="rotate(-0 443.133722 123.102681)">-42.45</text>
+   </g>
+   <g id="text_18">
+    <text style="font-weight: 700; font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: start" x="48.982813" y="15.558281" transform="rotate(-0 48.982813 15.558281)">The card's record: cumulative net of card tickets at card prices, Weeks 1-4</text>
+   </g>
+  </g>
+ </g>
+ <defs>
+  <clipPath id="p47959e130a">
+   <rect x="48.982813" y="21.558281" width="412.92" height="166.32"/>
+  </clipPath>
+ </defs>
+</svg>
+<figcaption>Figure 5. The card's own record, cumulative: card lines at card prices on pre-close tickets, with lines the operator did not place carried as paper evidence. 46 tickets, 16-28 with one void, -$42.45 on $553.50 (-7.7%): noise-sized either way.</figcaption></figure>
+<figure id="fig-6"><svg xmlns:xlink="http://www.w3.org/1999/xlink" width="475.465313pt" height="217.410219pt" viewBox="0 0 475.465313 217.410219" xmlns="http://www.w3.org/2000/svg" version="1.1">
+ <metadata>
+  <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+   <cc:Work>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:date>2026-10-05T20:39:49.274616</dc:date>
+    <dc:format>image/svg+xml</dc:format>
+    <dc:creator>
+     <cc:Agent>
+      <dc:title>Matplotlib v3.10.9, https://matplotlib.org/</dc:title>
+     </cc:Agent>
+    </dc:creator>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <defs>
+  <style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+ </defs>
+ <g id="figure_1">
+  <g id="patch_1">
+   <path d="M 0 217.410219 
+L 475.465313 217.410219 
+L 475.465313 0 
+L 0 0 
+z
+" style="fill: #ffffff"/>
+  </g>
+  <g id="axes_1">
+   <g id="patch_2">
+    <path d="M 55.345313 182.334281 
+L 468.265313 182.334281 
+L 468.265313 21.558281 
+L 55.345313 21.558281 
+z
+" style="fill: #ffffff"/>
+   </g>
+   <g id="patch_3">
+    <path d="M 74.114403 98.346819 
+L 155.079109 98.346819 
+L 155.079109 153.053852 
+L 74.114403 153.053852 
+z
+" clip-path="url(#p728267ad16)" style="fill: #c62828"/>
+   </g>
+   <g id="patch_4">
+    <path d="M 221.32296 98.346819 
+L 302.287665 98.346819 
+L 302.287665 46.735323 
+L 221.32296 46.735323 
+z
+" clip-path="url(#p728267ad16)" style="fill: #2e7d32"/>
+   </g>
+   <g id="patch_5">
+    <path d="M 368.531516 98.346819 
+L 449.496222 98.346819 
+L 449.496222 115.624239 
+L 368.531516 115.624239 
+z
+" clip-path="url(#p728267ad16)" style="fill: #c62828"/>
+   </g>
+   <g id="matplotlib.axis_1">
+    <g id="xtick_1">
+     <g id="line2d_1">
+      <defs>
+       <path id="mda83625343" d="M 0 0 
+L 0 3.5 
+" style="stroke: #000000; stroke-width: 0.8"/>
+      </defs>
+      <g>
+       <use xlink:href="#mda83625343" x="114.596756" y="182.334281" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_1">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'" transform="translate(79.703788 196.932719)">model's overs</text>
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'" transform="translate(79.190506 208.130531)">(incl. alt lines)</text>
+     </g>
+    </g>
+    <g id="xtick_2">
+     <g id="line2d_2">
+      <g>
+       <use xlink:href="#mda83625343" x="261.805313" y="182.334281" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_2">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: middle" x="261.805313" y="196.932719" transform="rotate(-0 261.805313 196.932719)">model's unders</text>
+     </g>
+    </g>
+    <g id="xtick_3">
+     <g id="line2d_3">
+      <g>
+       <use xlink:href="#mda83625343" x="409.013869" y="182.334281" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_3">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'" transform="translate(369.57715 196.932719)">one-sided other</text>
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'" transform="translate(365.166994 208.130531)">(anytime TD etc.)</text>
+     </g>
+    </g>
+   </g>
+   <g id="matplotlib.axis_2">
+    <g id="ytick_1">
+     <g id="line2d_4">
+      <defs>
+       <path id="m022a557d95" d="M 0 0 
+L -3.5 0 
+" style="stroke: #000000; stroke-width: 0.8"/>
+      </defs>
+      <g>
+       <use xlink:href="#m022a557d95" x="55.345313" y="170.336072" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_4">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end" x="48.345313" y="174.135291" transform="rotate(-0 48.345313 174.135291)">−150</text>
+     </g>
+    </g>
+    <g id="ytick_2">
+     <g id="line2d_5">
+      <g>
+       <use xlink:href="#m022a557d95" x="55.345313" y="146.339654" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_5">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end" x="48.345313" y="150.138873" transform="rotate(-0 48.345313 150.138873)">−100</text>
+     </g>
+    </g>
+    <g id="ytick_3">
+     <g id="line2d_6">
+      <g>
+       <use xlink:href="#m022a557d95" x="55.345313" y="122.343236" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_6">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end" x="48.345313" y="126.142455" transform="rotate(-0 48.345313 126.142455)">−50</text>
+     </g>
+    </g>
+    <g id="ytick_4">
+     <g id="line2d_7">
+      <g>
+       <use xlink:href="#m022a557d95" x="55.345313" y="98.346819" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_7">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end" x="48.345313" y="102.146037" transform="rotate(-0 48.345313 102.146037)">0</text>
+     </g>
+    </g>
+    <g id="ytick_5">
+     <g id="line2d_8">
+      <g>
+       <use xlink:href="#m022a557d95" x="55.345313" y="74.350401" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_8">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end" x="48.345313" y="78.149619" transform="rotate(-0 48.345313 78.149619)">50</text>
+     </g>
+    </g>
+    <g id="ytick_6">
+     <g id="line2d_9">
+      <g>
+       <use xlink:href="#m022a557d95" x="55.345313" y="50.353983" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_9">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end" x="48.345313" y="54.153201" transform="rotate(-0 48.345313 54.153201)">100</text>
+     </g>
+    </g>
+    <g id="ytick_7">
+     <g id="line2d_10">
+      <g>
+       <use xlink:href="#m022a557d95" x="55.345313" y="26.357565" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_10">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end" x="48.345313" y="30.156784" transform="rotate(-0 48.345313 30.156784)">150</text>
+     </g>
+    </g>
+    <g id="text_11">
+     <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: middle" x="14.798438" y="101.946281" transform="rotate(-90 14.798438 101.946281)">net, $</text>
+    </g>
+   </g>
+   <g id="line2d_11">
+    <path d="M 55.345313 98.346819 
+L 468.265313 98.346819 
+" clip-path="url(#p728267ad16)" style="fill: none; stroke: #444444; stroke-width: 0.8; stroke-linecap: square"/>
+   </g>
+   <g id="patch_6">
+    <path d="M 55.345313 182.334281 
+L 55.345313 21.558281 
+" style="fill: none; stroke: #444444; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
+   </g>
+   <g id="patch_7">
+    <path d="M 55.345313 182.334281 
+L 468.265313 182.334281 
+" style="fill: none; stroke: #444444; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
+   </g>
+   <g id="text_12">
+    <text style="font-size: 9px; font-family: 'DejaVu Sans'" transform="translate(97.227459 168.975821)">-113.99</text>
+    <text style="font-size: 9px; font-family: 'DejaVu Sans'" transform="translate(84.465741 179.053852)">6-19 on $327</text>
+   </g>
+   <g id="text_13">
+    <text style="font-size: 9px; font-family: 'DejaVu Sans'" transform="translate(242.288672 30.657292)">+107.54</text>
+    <text style="font-size: 9px; font-family: 'DejaVu Sans'" transform="translate(224.517891 40.735323)">10-4 on $190.50</text>
+   </g>
+   <g id="text_14">
+    <text style="font-size: 9px; font-family: 'DejaVu Sans'" transform="translate(394.507697 131.546208)">-36.00</text>
+    <text style="font-size: 9px; font-family: 'DejaVu Sans'" transform="translate(384.609103 141.624239)">0-5 on $36</text>
+   </g>
+   <g id="text_15">
+    <text style="font-weight: 700; font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: start" x="55.345313" y="15.558281" transform="rotate(-0 55.345313 15.558281)">2026 card tickets by side, Weeks 1-4 (44 settled)</text>
+   </g>
+  </g>
+ </g>
+ <defs>
+  <clipPath id="p728267ad16">
+   <rect x="55.345313" y="21.558281" width="412.92" height="160.776"/>
+  </clipPath>
+ </defs>
+</svg>
+<figcaption>Figure 6. The same tickets by side. Unders 10-4, overs 6-19: the split the 2025 study predicted, at a count (7.5 points of standard error) that agrees in sign and proves nothing yet.</figcaption></figure>
+<figure id="fig-7"><svg xmlns:xlink="http://www.w3.org/1999/xlink" width="467.085625pt" height="239.696031pt" viewBox="0 0 467.085625 239.696031" xmlns="http://www.w3.org/2000/svg" version="1.1">
+ <metadata>
+  <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+   <cc:Work>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:date>2026-10-05T20:39:49.321460</dc:date>
+    <dc:format>image/svg+xml</dc:format>
+    <dc:creator>
+     <cc:Agent>
+      <dc:title>Matplotlib v3.10.9, https://matplotlib.org/</dc:title>
+     </cc:Agent>
+    </dc:creator>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <defs>
+  <style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+ </defs>
+ <g id="figure_1">
+  <g id="patch_1">
+   <path d="M 0 239.696031 
+L 467.085625 239.696031 
+L 467.085625 0 
+L 0 0 
+z
+" style="fill: #ffffff"/>
+  </g>
+  <g id="axes_1">
+   <g id="patch_2">
+    <path d="M 46.965625 193.422281 
+L 459.885625 193.422281 
+L 459.885625 21.558281 
+L 46.965625 21.558281 
+z
+" style="fill: #ffffff"/>
+   </g>
+   <g id="patch_3">
+    <path d="M 65.734716 193.422281 
+L 102.061989 193.422281 
+L 102.061989 148.222049 
+L 65.734716 148.222049 
+z
+" clip-path="url(#pa3dbe99b75)" style="fill: #d9dde3; stroke: #8a8f98; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_4">
+    <path d="M 166.643807 193.422281 
+L 202.97108 193.422281 
+L 202.97108 86.007281 
+L 166.643807 86.007281 
+z
+" clip-path="url(#pa3dbe99b75)" style="fill: #d9dde3; stroke: #8a8f98; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_5">
+    <path d="M 267.552898 193.422281 
+L 303.88017 193.422281 
+L 303.88017 76.554761 
+L 267.552898 76.554761 
+z
+" clip-path="url(#pa3dbe99b75)" style="fill: #d9dde3; stroke: #8a8f98; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_6">
+    <path d="M 368.461989 193.422281 
+L 404.789261 193.422281 
+L 404.789261 69.164609 
+L 368.461989 69.164609 
+z
+" clip-path="url(#pa3dbe99b75)" style="fill: #d9dde3; stroke: #8a8f98; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_7">
+    <path d="M 102.061989 193.422281 
+L 138.389261 193.422281 
+L 138.389261 176.235881 
+L 102.061989 176.235881 
+z
+" clip-path="url(#pa3dbe99b75)" style="fill: #002244"/>
+   </g>
+   <g id="patch_8">
+    <path d="M 202.97108 193.422281 
+L 239.298352 193.422281 
+L 239.298352 107.490281 
+L 202.97108 107.490281 
+z
+" clip-path="url(#pa3dbe99b75)" style="fill: #002244"/>
+   </g>
+   <g id="patch_9">
+    <path d="M 303.88017 193.422281 
+L 340.207443 193.422281 
+L 340.207443 107.490281 
+L 303.88017 107.490281 
+z
+" clip-path="url(#pa3dbe99b75)" style="fill: #002244"/>
+   </g>
+   <g id="patch_10">
+    <path d="M 404.789261 193.422281 
+L 441.116534 193.422281 
+L 441.116534 78.788993 
+L 404.789261 78.788993 
+z
+" clip-path="url(#pa3dbe99b75)" style="fill: #002244"/>
+   </g>
+   <g id="matplotlib.axis_1">
+    <g id="xtick_1">
+     <g id="line2d_1">
+      <defs>
+       <path id="m4f906897d9" d="M 0 0 
+L 0 3.5 
+" style="stroke: #000000; stroke-width: 0.8"/>
+      </defs>
+      <g>
+       <use xlink:href="#m4f906897d9" x="102.061989" y="193.422281" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_1">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'" transform="translate(86.758864 208.020719)">&lt;55%</text>
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'" transform="translate(75.583864 219.218531)">(one-sided</text>
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'" transform="translate(75.922145 230.416344)">longshots)</text>
+     </g>
+    </g>
+    <g id="xtick_2">
+     <g id="line2d_2">
+      <g>
+       <use xlink:href="#m4f906897d9" x="202.97108" y="193.422281" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_2">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: middle" x="202.97108" y="208.020719" transform="rotate(-0 202.97108 208.020719)">60-65%</text>
+     </g>
+    </g>
+    <g id="xtick_3">
+     <g id="line2d_3">
+      <g>
+       <use xlink:href="#m4f906897d9" x="303.88017" y="193.422281" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_3">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: middle" x="303.88017" y="208.020719" transform="rotate(-0 303.88017 208.020719)">65-70%</text>
+     </g>
+    </g>
+    <g id="xtick_4">
+     <g id="line2d_4">
+      <g>
+       <use xlink:href="#m4f906897d9" x="404.789261" y="193.422281" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_4">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: middle" x="404.789261" y="208.020719" transform="rotate(-0 404.789261 208.020719)">70%+</text>
+     </g>
+    </g>
+   </g>
+   <g id="matplotlib.axis_2">
+    <g id="ytick_1">
+     <g id="line2d_5">
+      <defs>
+       <path id="m7023e042b6" d="M 0 0 
+L -3.5 0 
+" style="stroke: #000000; stroke-width: 0.8"/>
+      </defs>
+      <g>
+       <use xlink:href="#m7023e042b6" x="46.965625" y="193.422281" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_5">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end" x="39.965625" y="197.2215" transform="rotate(-0 39.965625 197.2215)">0</text>
+     </g>
+    </g>
+    <g id="ytick_2">
+     <g id="line2d_6">
+      <g>
+       <use xlink:href="#m7023e042b6" x="46.965625" y="159.049481" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_6">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end" x="39.965625" y="162.8487" transform="rotate(-0 39.965625 162.8487)">20</text>
+     </g>
+    </g>
+    <g id="ytick_3">
+     <g id="line2d_7">
+      <g>
+       <use xlink:href="#m7023e042b6" x="46.965625" y="124.676681" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_7">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end" x="39.965625" y="128.4759" transform="rotate(-0 39.965625 128.4759)">40</text>
+     </g>
+    </g>
+    <g id="ytick_4">
+     <g id="line2d_8">
+      <g>
+       <use xlink:href="#m7023e042b6" x="46.965625" y="90.303881" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_8">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end" x="39.965625" y="94.1031" transform="rotate(-0 39.965625 94.1031)">60</text>
+     </g>
+    </g>
+    <g id="ytick_5">
+     <g id="line2d_9">
+      <g>
+       <use xlink:href="#m7023e042b6" x="46.965625" y="55.931081" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_9">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end" x="39.965625" y="59.7303" transform="rotate(-0 39.965625 59.7303)">80</text>
+     </g>
+    </g>
+    <g id="ytick_6">
+     <g id="line2d_10">
+      <g>
+       <use xlink:href="#m7023e042b6" x="46.965625" y="21.558281" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_10">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end" x="39.965625" y="25.3575" transform="rotate(-0 39.965625 25.3575)">100</text>
+     </g>
+    </g>
+    <g id="text_11">
+     <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: middle" x="14.798438" y="107.490281" transform="rotate(-90 14.798438 107.490281)">%</text>
+    </g>
+   </g>
+   <g id="LineCollection_1">
+    <path d="M 120.225625 203.409966 
+L 120.225625 149.061797 
+" clip-path="url(#pa3dbe99b75)" style="fill: none; stroke: #555555; stroke-width: 1.5"/>
+    <path d="M 221.134716 142.571873 
+L 221.134716 72.408689 
+" clip-path="url(#pa3dbe99b75)" style="fill: none; stroke: #555555; stroke-width: 1.5"/>
+    <path d="M 322.043807 150.456281 
+L 322.043807 64.524281 
+" clip-path="url(#pa3dbe99b75)" style="fill: none; stroke: #555555; stroke-width: 1.5"/>
+    <path d="M 422.952898 128.401857 
+L 422.952898 29.17613 
+" clip-path="url(#pa3dbe99b75)" style="fill: none; stroke: #555555; stroke-width: 1.5"/>
+   </g>
+   <g id="line2d_11">
+    <defs>
+     <path id="mbf901c83db" d="M 3 0 
+L -3 -0 
+" style="stroke: #555555"/>
+    </defs>
+    <g clip-path="url(#pa3dbe99b75)">
+     <use xlink:href="#mbf901c83db" x="120.225625" y="203.409966" style="fill: #1f77b4; stroke: #555555"/>
+     <use xlink:href="#mbf901c83db" x="221.134716" y="142.571873" style="fill: #1f77b4; stroke: #555555"/>
+     <use xlink:href="#mbf901c83db" x="322.043807" y="150.456281" style="fill: #1f77b4; stroke: #555555"/>
+     <use xlink:href="#mbf901c83db" x="422.952898" y="128.401857" style="fill: #1f77b4; stroke: #555555"/>
+    </g>
+   </g>
+   <g id="line2d_12">
+    <g clip-path="url(#pa3dbe99b75)">
+     <use xlink:href="#mbf901c83db" x="120.225625" y="149.061797" style="fill: #1f77b4; stroke: #555555"/>
+     <use xlink:href="#mbf901c83db" x="221.134716" y="72.408689" style="fill: #1f77b4; stroke: #555555"/>
+     <use xlink:href="#mbf901c83db" x="322.043807" y="64.524281" style="fill: #1f77b4; stroke: #555555"/>
+     <use xlink:href="#mbf901c83db" x="422.952898" y="29.17613" style="fill: #1f77b4; stroke: #555555"/>
+    </g>
+   </g>
+   <g id="patch_11">
+    <path d="M 46.965625 193.422281 
+L 46.965625 21.558281 
+" style="fill: none; stroke: #444444; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
+   </g>
+   <g id="patch_12">
+    <path d="M 46.965625 193.422281 
+L 459.885625 193.422281 
+" style="fill: none; stroke: #444444; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
+   </g>
+   <g id="text_12">
+    <text style="font-size: 8px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #555555" x="102.061989" y="189.985001" transform="rotate(-0 102.061989 189.985001)">n=10</text>
+   </g>
+   <g id="text_13">
+    <text style="font-size: 8px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #555555" x="202.97108" y="189.985001" transform="rotate(-0 202.97108 189.985001)">n=6</text>
+   </g>
+   <g id="text_14">
+    <text style="font-size: 8px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #555555" x="303.88017" y="189.985001" transform="rotate(-0 303.88017 189.985001)">n=4</text>
+   </g>
+   <g id="text_15">
+    <text style="font-size: 8px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #555555" x="404.789261" y="189.985001" transform="rotate(-0 404.789261 189.985001)">n=3</text>
+   </g>
+   <g id="text_16">
+    <text style="font-weight: 700; font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: start" x="46.965625" y="15.558281" transform="rotate(-0 46.965625 15.558281)">Live calibration, 23 settled card tickets with a model probability</text>
+   </g>
+   <g id="legend_1">
+    <g id="patch_13">
+     <path d="M 55.965625 38.156719 
+L 75.965625 38.156719 
+L 75.965625 31.156719 
+L 55.965625 31.156719 
+z
+" style="fill: #d9dde3; stroke: #8a8f98; stroke-linejoin: miter"/>
+    </g>
+    <g id="text_17">
+     <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: start" x="83.965625" y="38.156719" transform="rotate(-0 83.965625 38.156719)">model said</text>
+    </g>
+    <g id="patch_14">
+     <path d="M 55.965625 52.834844 
+L 75.965625 52.834844 
+L 75.965625 45.834844 
+L 55.965625 45.834844 
+z
+" style="fill: #002244"/>
+    </g>
+    <g id="text_18">
+     <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: start" x="83.965625" y="52.834844" transform="rotate(-0 83.965625 52.834844)">actually won</text>
+    </g>
+   </g>
+  </g>
+ </g>
+ <defs>
+  <clipPath id="pa3dbe99b75">
+   <rect x="46.965625" y="21.558281" width="412.92" height="171.864"/>
+  </clipPath>
+ </defs>
+</svg>
+<figcaption>Figure 7. Calibration on the 23 card tickets that carry a model probability. Every bucket won less often than the model said; the error bars show how little 23 tickets can say. The paper board replaces this with hundreds of lines a week.</figcaption></figure>
+
+<h3 id="s4-3">4.3 Three studies the card is waiting on</h3>
+<figure id="fig-8"><svg xmlns:xlink="http://www.w3.org/1999/xlink" width="535.121931pt" height="216.42875pt" viewBox="0 0 535.121931 216.42875" xmlns="http://www.w3.org/2000/svg" version="1.1">
+ <metadata>
+  <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+   <cc:Work>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:date>2026-10-05T20:39:49.447373</dc:date>
+    <dc:format>image/svg+xml</dc:format>
+    <dc:creator>
+     <cc:Agent>
+      <dc:title>Matplotlib v3.10.9, https://matplotlib.org/</dc:title>
+     </cc:Agent>
+    </dc:creator>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <defs>
+  <style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+ </defs>
+ <g id="figure_1">
+  <g id="patch_1">
+   <path d="M 0 216.42875 
+L 535.121931 216.42875 
+L 535.121931 0 
+L 0 0 
+z
+" style="fill: #ffffff"/>
+  </g>
+  <g id="axes_1">
+   <g id="patch_2">
+    <path d="M 55.892 185.528 
+L 289.909431 185.528 
+L 289.909431 49.92 
+L 55.892 49.92 
+z
+" style="fill: #ffffff"/>
+   </g>
+   <g id="patch_3">
+    <path d="M 66.529156 2084.04 
+L 94.686333 2084.04 
+L 94.686333 124.5044 
+L 66.529156 124.5044 
+z
+" clip-path="url(#p834f642813)" style="fill: #d9dde3; stroke: #8a8f98; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_4">
+    <path d="M 144.743538 2084.04 
+L 172.900715 2084.04 
+L 172.900715 133.725744 
+L 144.743538 133.725744 
+z
+" clip-path="url(#p834f642813)" style="fill: #d9dde3; stroke: #8a8f98; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_5">
+    <path d="M 222.95792 2084.04 
+L 251.115097 2084.04 
+L 251.115097 134.810608 
+L 222.95792 134.810608 
+z
+" clip-path="url(#p834f642813)" style="fill: #d9dde3; stroke: #8a8f98; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_6">
+    <path d="M 94.686333 2084.04 
+L 122.843511 2084.04 
+L 122.843511 76.770384 
+L 94.686333 76.770384 
+z
+" clip-path="url(#p834f642813)" style="fill: #002244"/>
+   </g>
+   <g id="patch_7">
+    <path d="M 172.900715 2084.04 
+L 201.057893 2084.04 
+L 201.057893 108.23144 
+L 172.900715 108.23144 
+z
+" clip-path="url(#p834f642813)" style="fill: #002244"/>
+   </g>
+   <g id="patch_8">
+    <path d="M 251.115097 2084.04 
+L 279.272275 2084.04 
+L 279.272275 111.757248 
+L 251.115097 111.757248 
+z
+" clip-path="url(#p834f642813)" style="fill: #002244"/>
+   </g>
+   <g id="matplotlib.axis_1">
+    <g id="xtick_1">
+     <g id="line2d_1">
+      <defs>
+       <path id="me198b72d7c" d="M 0 0 
+L 0 3.5 
+" style="stroke: #000000; stroke-width: 0.8"/>
+      </defs>
+      <g>
+       <use xlink:href="#me198b72d7c" x="94.686333" y="185.528" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_1">
+      <text style="font-size: 8px; font-family: 'DejaVu Sans'; text-anchor: middle" x="94.686333" y="198.60675" transform="rotate(-0 94.686333 198.60675)">as fitted (live)</text>
+     </g>
+    </g>
+    <g id="xtick_2">
+     <g id="line2d_2">
+      <g>
+       <use xlink:href="#me198b72d7c" x="172.900715" y="185.528" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_2">
+      <text style="font-size: 8px; font-family: 'DejaVu Sans'" transform="translate(148.50384 198.60675)">proportional</text>
+      <text style="font-size: 8px; font-family: 'DejaVu Sans'" transform="translate(146.090715 207.565)">redistribution</text>
+     </g>
+    </g>
+    <g id="xtick_3">
+     <g id="line2d_3">
+      <g>
+       <use xlink:href="#me198b72d7c" x="251.115097" y="185.528" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_3">
+      <text style="font-size: 8px; font-family: 'DejaVu Sans'" transform="translate(221.638847 198.60675)">position-aware</text>
+      <text style="font-size: 8px; font-family: 'DejaVu Sans'" transform="translate(224.305097 207.565)">redistribution</text>
+     </g>
+    </g>
+   </g>
+   <g id="matplotlib.axis_2">
+    <g id="ytick_1">
+     <g id="line2d_4">
+      <defs>
+       <path id="mbba1b30ef6" d="M 0 0 
+L -3.5 0 
+" style="stroke: #000000; stroke-width: 0.8"/>
+      </defs>
+      <g>
+       <use xlink:href="#mbba1b30ef6" x="55.892" y="185.528" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_4">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end" x="48.892" y="189.327219" transform="rotate(-0 48.892 189.327219)">0.70</text>
+     </g>
+    </g>
+    <g id="ytick_2">
+     <g id="line2d_5">
+      <g>
+       <use xlink:href="#mbba1b30ef6" x="55.892" y="158.4064" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_5">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end" x="48.892" y="162.205619" transform="rotate(-0 48.892 162.205619)">0.71</text>
+     </g>
+    </g>
+    <g id="ytick_3">
+     <g id="line2d_6">
+      <g>
+       <use xlink:href="#mbba1b30ef6" x="55.892" y="131.2848" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_6">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end" x="48.892" y="135.084019" transform="rotate(-0 48.892 135.084019)">0.72</text>
+     </g>
+    </g>
+    <g id="ytick_4">
+     <g id="line2d_7">
+      <g>
+       <use xlink:href="#mbba1b30ef6" x="55.892" y="104.1632" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_7">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end" x="48.892" y="107.962419" transform="rotate(-0 48.892 107.962419)">0.73</text>
+     </g>
+    </g>
+    <g id="ytick_5">
+     <g id="line2d_8">
+      <g>
+       <use xlink:href="#mbba1b30ef6" x="55.892" y="77.0416" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_8">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end" x="48.892" y="80.840819" transform="rotate(-0 48.892 80.840819)">0.74</text>
+     </g>
+    </g>
+    <g id="ytick_6">
+     <g id="line2d_9">
+      <g>
+       <use xlink:href="#mbba1b30ef6" x="55.892" y="49.92" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_9">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end" x="48.892" y="53.719219" transform="rotate(-0 48.892 53.719219)">0.75</text>
+     </g>
+    </g>
+    <g id="text_10">
+     <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: middle" x="20.546688" y="117.724" transform="rotate(-90 20.546688 117.724)">log-loss (lower is better)</text>
+    </g>
+   </g>
+   <g id="patch_9">
+    <path d="M 55.892 185.528 
+L 55.892 49.92 
+" style="fill: none; stroke: #444444; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
+   </g>
+   <g id="patch_10">
+    <path d="M 55.892 185.528 
+L 289.909431 185.528 
+" style="fill: none; stroke: #444444; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
+   </g>
+   <g id="text_11">
+    <text style="font-weight: 700; font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: start" x="55.892" y="43.92" transform="rotate(-0 55.892 43.92)">Probabilities improve</text>
+   </g>
+   <g id="legend_1">
+    <g id="patch_11">
+     <path d="M 158.398181 63.19875 
+L 174.398181 63.19875 
+L 174.398181 57.59875 
+L 158.398181 57.59875 
+z
+" style="fill: #d9dde3; stroke: #8a8f98; stroke-linejoin: miter"/>
+    </g>
+    <g id="text_12">
+     <text style="font-size: 8px; font-family: 'DejaVu Sans'; text-anchor: start" x="180.798181" y="63.19875" transform="rotate(-0 180.798181 63.19875)">all 8,172 lines</text>
+    </g>
+    <g id="patch_12">
+     <path d="M 158.398181 80.25225 
+L 174.398181 80.25225 
+L 174.398181 74.65225 
+L 158.398181 74.65225 
+z
+" style="fill: #002244"/>
+    </g>
+    <g id="text_13">
+     <text style="font-size: 8px; font-family: 'DejaVu Sans'" transform="translate(180.798181 74.94125)">2,429 lines a teammate's</text>
+     <text style="font-size: 8px; font-family: 'DejaVu Sans'" transform="translate(180.798181 83.8995)">absence moved</text>
+    </g>
+   </g>
+  </g>
+  <g id="axes_2">
+   <g id="patch_13">
+    <path d="M 336.549431 185.528 
+L 516.562839 185.528 
+L 516.562839 49.92 
+L 336.549431 49.92 
+z
+" style="fill: #ffffff"/>
+   </g>
+   <g id="patch_14">
+    <path d="M 344.731858 77.0416 
+L 377.461569 77.0416 
+L 377.461569 104.1632 
+L 344.731858 104.1632 
+z
+" clip-path="url(#p8a360d0cec)" style="fill: #c62828"/>
+   </g>
+   <g id="patch_15">
+    <path d="M 410.19128 77.0416 
+L 442.92099 77.0416 
+L 442.92099 123.14832 
+L 410.19128 123.14832 
+z
+" clip-path="url(#p8a360d0cec)" style="fill: #c62828"/>
+   </g>
+   <g id="patch_16">
+    <path d="M 475.650701 77.0416 
+L 508.380411 77.0416 
+L 508.380411 128.57264 
+L 475.650701 128.57264 
+z
+" clip-path="url(#p8a360d0cec)" style="fill: #c62828"/>
+   </g>
+   <g id="matplotlib.axis_3">
+    <g id="xtick_4">
+     <g id="line2d_10">
+      <g>
+       <use xlink:href="#me198b72d7c" x="361.096714" y="185.528" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_14">
+      <text style="font-size: 8px; font-family: 'DejaVu Sans'; text-anchor: middle" x="361.096714" y="198.60675" transform="rotate(-0 361.096714 198.60675)">as fitted (live)</text>
+     </g>
+    </g>
+    <g id="xtick_5">
+     <g id="line2d_11">
+      <g>
+       <use xlink:href="#me198b72d7c" x="426.556135" y="185.528" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_15">
+      <text style="font-size: 8px; font-family: 'DejaVu Sans'" transform="translate(402.15926 198.60675)">proportional</text>
+      <text style="font-size: 8px; font-family: 'DejaVu Sans'" transform="translate(399.746135 207.565)">redistribution</text>
+     </g>
+    </g>
+    <g id="xtick_6">
+     <g id="line2d_12">
+      <g>
+       <use xlink:href="#me198b72d7c" x="492.015556" y="185.528" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_16">
+      <text style="font-size: 8px; font-family: 'DejaVu Sans'" transform="translate(462.539306 198.60675)">position-aware</text>
+      <text style="font-size: 8px; font-family: 'DejaVu Sans'" transform="translate(465.205556 207.565)">redistribution</text>
+     </g>
+    </g>
+   </g>
+   <g id="matplotlib.axis_4">
+    <g id="ytick_7">
+     <g id="line2d_13">
+      <g>
+       <use xlink:href="#mbba1b30ef6" x="336.549431" y="185.528" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_17">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end" x="329.549431" y="189.327219" transform="rotate(-0 329.549431 189.327219)">−4</text>
+     </g>
+    </g>
+    <g id="ytick_8">
+     <g id="line2d_14">
+      <g>
+       <use xlink:href="#mbba1b30ef6" x="336.549431" y="158.4064" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_18">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end" x="329.549431" y="162.205619" transform="rotate(-0 329.549431 162.205619)">−3</text>
+     </g>
+    </g>
+    <g id="ytick_9">
+     <g id="line2d_15">
+      <g>
+       <use xlink:href="#mbba1b30ef6" x="336.549431" y="131.2848" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_19">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end" x="329.549431" y="135.084019" transform="rotate(-0 329.549431 135.084019)">−2</text>
+     </g>
+    </g>
+    <g id="ytick_10">
+     <g id="line2d_16">
+      <g>
+       <use xlink:href="#mbba1b30ef6" x="336.549431" y="104.1632" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_20">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end" x="329.549431" y="107.962419" transform="rotate(-0 329.549431 107.962419)">−1</text>
+     </g>
+    </g>
+    <g id="ytick_11">
+     <g id="line2d_17">
+      <g>
+       <use xlink:href="#mbba1b30ef6" x="336.549431" y="77.0416" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_21">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end" x="329.549431" y="80.840819" transform="rotate(-0 329.549431 80.840819)">0</text>
+     </g>
+    </g>
+    <g id="ytick_12">
+     <g id="line2d_18">
+      <g>
+       <use xlink:href="#mbba1b30ef6" x="336.549431" y="49.92" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_22">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end" x="329.549431" y="53.719219" transform="rotate(-0 329.549431 53.719219)">1</text>
+     </g>
+    </g>
+    <g id="text_23">
+     <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: middle" x="308.727556" y="117.724" transform="rotate(-90 308.727556 117.724)">flat ROI on the moved lines</text>
+    </g>
+   </g>
+   <g id="line2d_19">
+    <path d="M 336.549431 77.0416 
+L 516.562839 77.0416 
+" clip-path="url(#p8a360d0cec)" style="fill: none; stroke: #444444; stroke-width: 0.8; stroke-linecap: square"/>
+   </g>
+   <g id="patch_17">
+    <path d="M 336.549431 185.528 
+L 336.549431 49.92 
+" style="fill: none; stroke: #444444; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
+   </g>
+   <g id="patch_18">
+    <path d="M 336.549431 185.528 
+L 516.562839 185.528 
+" style="fill: none; stroke: #444444; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
+   </g>
+   <g id="text_24">
+    <text style="font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: middle" x="361.096714" y="116.1632" transform="rotate(-0 361.096714 116.1632)">-1.0%</text>
+   </g>
+   <g id="text_25">
+    <text style="font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: middle" x="426.556135" y="135.14832" transform="rotate(-0 426.556135 135.14832)">-1.7%</text>
+   </g>
+   <g id="text_26">
+    <text style="font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: middle" x="492.015556" y="140.57264" transform="rotate(-0 492.015556 140.57264)">-1.9%</text>
+   </g>
+   <g id="text_27">
+    <text style="font-weight: 700; font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: start" x="336.549431" y="43.92" transform="rotate(-0 336.549431 43.92)">The bets do not (noise 1.1 pts)</text>
+   </g>
+  </g>
+  <g id="text_28">
+   <text style="font-weight: 700; font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: start" x="7.2" y="15.558281" transform="rotate(-0 7.2 15.558281)">Injury-aware usage, 2025 walk-forward (paste 44)</text>
+  </g>
+ </g>
+ <defs>
+  <clipPath id="p834f642813">
+   <rect x="55.892" y="49.92" width="234.017431" height="135.608"/>
+  </clipPath>
+  <clipPath id="p8a360d0cec">
+   <rect x="336.549431" y="49.92" width="180.013408" height="135.608"/>
+  </clipPath>
+ </defs>
+</svg>
+<figcaption>Figure 8. Injury-aware usage: redistributing an absent starter's targets and carries before pricing improves the probabilities on the lines it moves (left) and leaves the money within noise (right). Passes its sentence thinly; decision at the Oct 12 settle.</figcaption></figure>
+<figure id="fig-9"><svg xmlns:xlink="http://www.w3.org/1999/xlink" width="557.303539pt" height="214.411937pt" viewBox="0 0 557.303539 214.411937" xmlns="http://www.w3.org/2000/svg" version="1.1">
+ <metadata>
+  <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+   <cc:Work>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:date>2026-10-05T20:39:49.591810</dc:date>
+    <dc:format>image/svg+xml</dc:format>
+    <dc:creator>
+     <cc:Agent>
+      <dc:title>Matplotlib v3.10.9, https://matplotlib.org/</dc:title>
+     </cc:Agent>
+    </dc:creator>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <defs>
+  <style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+ </defs>
+ <g id="figure_1">
+  <g id="patch_1">
+   <path d="M 0 214.411937 
+L 557.303539 214.411937 
+L 557.303539 0 
+L 0 0 
+z
+" style="fill: #ffffff"/>
+  </g>
+  <g id="axes_1">
+   <g id="patch_2">
+    <path d="M 46.442 179.336 
+L 253.366711 179.336 
+L 253.366711 60.864 
+L 46.442 60.864 
+z
+" style="fill: #ffffff"/>
+   </g>
+   <g id="patch_3">
+    <path d="M 55.847669 179.336 
+L 118.552126 179.336 
+L 118.552126 85.084942 
+L 55.847669 85.084942 
+z
+" clip-path="url(#p67d9fdf049)" style="fill: #d9dde3; stroke: #8a8f98; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_4">
+    <path d="M 181.256584 179.336 
+L 243.961042 179.336 
+L 243.961042 113.781493 
+L 181.256584 113.781493 
+z
+" clip-path="url(#p67d9fdf049)" style="fill: #002244; stroke: #002244; stroke-linejoin: miter"/>
+   </g>
+   <g id="matplotlib.axis_1">
+    <g id="xtick_1">
+     <g id="line2d_1">
+      <defs>
+       <path id="mb06cea89f5" d="M 0 0 
+L 0 3.5 
+" style="stroke: #000000; stroke-width: 0.8"/>
+      </defs>
+      <g>
+       <use xlink:href="#mb06cea89f5" x="87.199898" y="179.336" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_1">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: middle" x="87.199898" y="193.934438" transform="rotate(-0 87.199898 193.934438)">price implied</text>
+     </g>
+    </g>
+    <g id="xtick_2">
+     <g id="line2d_2">
+      <g>
+       <use xlink:href="#mb06cea89f5" x="212.608813" y="179.336" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_2">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: middle" x="212.608813" y="193.934438" transform="rotate(-0 212.608813 193.934438)">actually happened</text>
+     </g>
+    </g>
+   </g>
+   <g id="matplotlib.axis_2">
+    <g id="ytick_1">
+     <g id="line2d_3">
+      <defs>
+       <path id="mdecec2fe9c" d="M 0 0 
+L -3.5 0 
+" style="stroke: #000000; stroke-width: 0.8"/>
+      </defs>
+      <g>
+       <use xlink:href="#mdecec2fe9c" x="46.442" y="179.336" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_3">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end" x="39.442" y="183.135219" transform="rotate(-0 39.442 183.135219)">0</text>
+     </g>
+    </g>
+    <g id="ytick_2">
+     <g id="line2d_4">
+      <g>
+       <use xlink:href="#mdecec2fe9c" x="46.442" y="153.008889" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_4">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end" x="39.442" y="156.808108" transform="rotate(-0 39.442 156.808108)">10</text>
+     </g>
+    </g>
+    <g id="ytick_3">
+     <g id="line2d_5">
+      <g>
+       <use xlink:href="#mdecec2fe9c" x="46.442" y="126.681778" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_5">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end" x="39.442" y="130.480997" transform="rotate(-0 39.442 130.480997)">20</text>
+     </g>
+    </g>
+    <g id="ytick_4">
+     <g id="line2d_6">
+      <g>
+       <use xlink:href="#mdecec2fe9c" x="46.442" y="100.354667" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_6">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end" x="39.442" y="104.153885" transform="rotate(-0 39.442 104.153885)">30</text>
+     </g>
+    </g>
+    <g id="ytick_5">
+     <g id="line2d_7">
+      <g>
+       <use xlink:href="#mdecec2fe9c" x="46.442" y="74.027556" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_7">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end" x="39.442" y="77.826774" transform="rotate(-0 39.442 77.826774)">40</text>
+     </g>
+    </g>
+    <g id="text_8">
+     <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: middle" x="20.637313" y="120.1" transform="rotate(-90 20.637313 120.1)">%</text>
+    </g>
+   </g>
+   <g id="patch_5">
+    <path d="M 46.442 179.336 
+L 46.442 60.864 
+" style="fill: none; stroke: #444444; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
+   </g>
+   <g id="patch_6">
+    <path d="M 46.442 179.336 
+L 253.366711 179.336 
+" style="fill: none; stroke: #444444; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
+   </g>
+   <g id="text_9">
+    <text style="font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: middle" x="87.199898" y="82.084942" transform="rotate(-0 87.199898 82.084942)">35.8%</text>
+   </g>
+   <g id="text_10">
+    <text style="font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: middle" x="212.608813" y="110.781493" transform="rotate(-0 212.608813 110.781493)">24.9%</text>
+   </g>
+   <g id="text_11">
+    <text style="font-weight: 700; font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: start" x="46.442" y="54.864" transform="rotate(-0 46.442 54.864)">"To record a sack", 2,021 closes</text>
+   </g>
+  </g>
+  <g id="axes_2">
+   <g id="patch_7">
+    <path d="M 316.947289 179.336 
+L 523.872 179.336 
+L 523.872 60.864 
+L 316.947289 60.864 
+z
+" style="fill: #ffffff"/>
+   </g>
+   <g id="patch_8">
+    <path d="M 326.352958 919.786 
+L 389.057416 919.786 
+L 389.057416 97.73841 
+L 326.352958 97.73841 
+z
+" clip-path="url(#pdc4e0fa0b2)" style="fill: #d9dde3; stroke: #8a8f98; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_9">
+    <path d="M 451.761874 919.786 
+L 514.466331 919.786 
+L 514.466331 104.25437 
+L 451.761874 104.25437 
+z
+" clip-path="url(#pdc4e0fa0b2)" style="fill: #002244; stroke: #002244; stroke-linejoin: miter"/>
+   </g>
+   <g id="matplotlib.axis_3">
+    <g id="xtick_3">
+     <g id="line2d_8">
+      <g>
+       <use xlink:href="#mb06cea89f5" x="357.705187" y="179.336" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_12">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'" transform="translate(339.964562 193.934438)">market</text>
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'" transform="translate(328.707531 205.13225)">(calibrated)</text>
+     </g>
+    </g>
+    <g id="xtick_4">
+     <g id="line2d_9">
+      <g>
+       <use xlink:href="#mb06cea89f5" x="483.114102" y="179.336" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_13">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: middle" x="483.114102" y="193.934438" transform="rotate(-0 483.114102 193.934438)">model 1.2.0</text>
+     </g>
+    </g>
+   </g>
+   <g id="matplotlib.axis_4">
+    <g id="ytick_6">
+     <g id="line2d_10">
+      <g>
+       <use xlink:href="#mdecec2fe9c" x="316.947289" y="179.336" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_14">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end" x="309.947289" y="183.135219" transform="rotate(-0 309.947289 183.135219)">0.50</text>
+     </g>
+    </g>
+    <g id="ytick_7">
+     <g id="line2d_11">
+      <g>
+       <use xlink:href="#mdecec2fe9c" x="316.947289" y="149.718" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_15">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end" x="309.947289" y="153.517219" transform="rotate(-0 309.947289 153.517219)">0.52</text>
+     </g>
+    </g>
+    <g id="ytick_8">
+     <g id="line2d_12">
+      <g>
+       <use xlink:href="#mdecec2fe9c" x="316.947289" y="120.1" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_16">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end" x="309.947289" y="123.899219" transform="rotate(-0 309.947289 123.899219)">0.54</text>
+     </g>
+    </g>
+    <g id="ytick_9">
+     <g id="line2d_13">
+      <g>
+       <use xlink:href="#mdecec2fe9c" x="316.947289" y="90.482" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_17">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end" x="309.947289" y="94.281219" transform="rotate(-0 309.947289 94.281219)">0.56</text>
+     </g>
+    </g>
+    <g id="ytick_10">
+     <g id="line2d_14">
+      <g>
+       <use xlink:href="#mdecec2fe9c" x="316.947289" y="60.864" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_18">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end" x="309.947289" y="64.663219" transform="rotate(-0 309.947289 64.663219)">0.58</text>
+     </g>
+    </g>
+    <g id="text_19">
+     <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: middle" x="281.601977" y="120.1" transform="rotate(-90 281.601977 120.1)">log-loss, 809 held-out closes</text>
+    </g>
+   </g>
+   <g id="patch_10">
+    <path d="M 316.947289 179.336 
+L 316.947289 60.864 
+" style="fill: none; stroke: #444444; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
+   </g>
+   <g id="patch_11">
+    <path d="M 316.947289 179.336 
+L 523.872 179.336 
+" style="fill: none; stroke: #444444; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
+   </g>
+   <g id="text_20">
+    <text style="font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: middle" x="357.705187" y="94.73841" transform="rotate(-0 357.705187 94.73841)">0.5551</text>
+   </g>
+   <g id="text_21">
+    <text style="font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: middle" x="483.114102" y="101.25437" transform="rotate(-0 483.114102 101.25437)">0.5507</text>
+   </g>
+   <g id="text_22">
+    <text style="font-weight: 700; font-size: 10px; font-family: 'DejaVu Sans'" transform="translate(316.947289 43.588063)">Model beats the price slightly; its largest</text>
+    <text style="font-weight: 700; font-size: 10px; font-family: 'DejaVu Sans'" transform="translate(316.947289 54.864)">calibration gap is 14.5 pts (limit 5)</text>
+   </g>
+  </g>
+  <g id="text_23">
+   <text style="font-weight: 700; font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: start" x="7.2" y="15.558281" transform="rotate(-0 7.2 15.558281)">Sacks, 2025 closes (paste 36)</text>
+  </g>
+ </g>
+ <defs>
+  <clipPath id="p67d9fdf049">
+   <rect x="46.442" y="60.864" width="206.924711" height="118.472"/>
+  </clipPath>
+  <clipPath id="pdc4e0fa0b2">
+   <rect x="316.947289" y="60.864" width="206.924711" height="118.472"/>
+  </clipPath>
+ </defs>
+</svg>
+<figcaption>Figure 9. Sacks: FanDuel charges about 11 points of margin (price says 35.8%, it happens 24.9%), and the sacks model beats the price slightly while being badly calibrated (largest gap 14.5 points against a limit of 5). No sack line reaches the card until a re-fit passes.</figcaption></figure>
+<figure id="fig-10"><svg xmlns:xlink="http://www.w3.org/1999/xlink" width="466.808755pt" height="211.866219pt" viewBox="0 0 466.808755 211.866219" xmlns="http://www.w3.org/2000/svg" version="1.1">
+ <metadata>
+  <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+   <cc:Work>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:date>2026-10-05T20:39:49.657670</dc:date>
+    <dc:format>image/svg+xml</dc:format>
+    <dc:creator>
+     <cc:Agent>
+      <dc:title>Matplotlib v3.10.9, https://matplotlib.org/</dc:title>
+     </cc:Agent>
+    </dc:creator>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <defs>
+  <style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+ </defs>
+ <g id="figure_1">
+  <g id="patch_1">
+   <path d="M 0 211.866219 
+L 466.808755 211.866219 
+L 466.808755 0 
+L 0 0 
+z
+" style="fill: #ffffff"/>
+  </g>
+  <g id="axes_1">
+   <g id="patch_2">
+    <path d="M 40.603125 176.790281 
+L 453.523125 176.790281 
+L 453.523125 21.558281 
+L 40.603125 21.558281 
+z
+" style="fill: #ffffff"/>
+   </g>
+   <g id="patch_3">
+    <path d="M 59.372216 176.790281 
+L 117.529962 176.790281 
+L 117.529962 77.452524 
+L 59.372216 77.452524 
+z
+" clip-path="url(#pf5cf02c7bc)" style="fill: #8a8f98"/>
+   </g>
+   <g id="patch_4">
+    <path d="M 165.113573 176.790281 
+L 223.27132 176.790281 
+L 223.27132 176.790281 
+L 165.113573 176.790281 
+z
+" clip-path="url(#pf5cf02c7bc)" style="fill: #fb4f14"/>
+   </g>
+   <g id="patch_5">
+    <path d="M 270.85493 176.790281 
+L 329.012677 176.790281 
+L 329.012677 155.166071 
+L 270.85493 155.166071 
+z
+" clip-path="url(#pf5cf02c7bc)" style="fill: #8a8f98"/>
+   </g>
+   <g id="patch_6">
+    <path d="M 376.596288 176.790281 
+L 434.754034 176.790281 
+L 434.754034 52.492622 
+L 376.596288 52.492622 
+z
+" clip-path="url(#pf5cf02c7bc)" style="fill: #8a8f98"/>
+   </g>
+   <g id="matplotlib.axis_1">
+    <g id="xtick_1">
+     <g id="line2d_1">
+      <defs>
+       <path id="m8f0d4dd7d8" d="M 0 0 
+L 0 3.5 
+" style="stroke: #000000; stroke-width: 0.8"/>
+      </defs>
+      <g>
+       <use xlink:href="#m8f0d4dd7d8" x="88.451089" y="176.790281" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_1">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'" transform="translate(36.374527 191.388719)">11:36 AM to 2:01 PM</text>
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'" transform="translate(35.97062 202.586531)">(145 min, card build)</text>
+     </g>
+    </g>
+    <g id="xtick_2">
+     <g id="line2d_2">
+      <g>
+       <use xlink:href="#m8f0d4dd7d8" x="194.192446" y="176.790281" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_2">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'" transform="translate(145.702603 191.388719)">2:01 PM to 2:17 PM</text>
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'" transform="translate(156.854165 202.586531)">(16 min, close)</text>
+     </g>
+    </g>
+    <g id="xtick_3">
+     <g id="line2d_3">
+      <g>
+       <use xlink:href="#m8f0d4dd7d8" x="299.933804" y="176.790281" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_3">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'" transform="translate(246.438491 191.388719)">Week 3 close window</text>
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'" transform="translate(278.652554 202.586531)">(41 min)</text>
+     </g>
+    </g>
+    <g id="xtick_4">
+     <g id="line2d_4">
+      <g>
+       <use xlink:href="#m8f0d4dd7d8" x="405.675161" y="176.790281" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_4">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: middle" x="405.675161" y="191.388719" transform="rotate(-0 405.675161 191.388719)">Week 1, 10 min apart</text>
+     </g>
+    </g>
+   </g>
+   <g id="matplotlib.axis_2">
+    <g id="ytick_1">
+     <g id="line2d_5">
+      <defs>
+       <path id="mb1c7ce8875" d="M 0 0 
+L -3.5 0 
+" style="stroke: #000000; stroke-width: 0.8"/>
+      </defs>
+      <g>
+       <use xlink:href="#mb1c7ce8875" x="40.603125" y="176.790281" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_5">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end" x="33.603125" y="180.5895" transform="rotate(-0 33.603125 180.5895)">0</text>
+     </g>
+    </g>
+    <g id="ytick_2">
+     <g id="line2d_6">
+      <g>
+       <use xlink:href="#mb1c7ce8875" x="40.603125" y="154.614281" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_6">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end" x="33.603125" y="158.4135" transform="rotate(-0 33.603125 158.4135)">10</text>
+     </g>
+    </g>
+    <g id="ytick_3">
+     <g id="line2d_7">
+      <g>
+       <use xlink:href="#mb1c7ce8875" x="40.603125" y="132.438281" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_7">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end" x="33.603125" y="136.2375" transform="rotate(-0 33.603125 136.2375)">20</text>
+     </g>
+    </g>
+    <g id="ytick_4">
+     <g id="line2d_8">
+      <g>
+       <use xlink:href="#mb1c7ce8875" x="40.603125" y="110.262281" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_8">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end" x="33.603125" y="114.0615" transform="rotate(-0 33.603125 114.0615)">30</text>
+     </g>
+    </g>
+    <g id="ytick_5">
+     <g id="line2d_9">
+      <g>
+       <use xlink:href="#mb1c7ce8875" x="40.603125" y="88.086281" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_9">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end" x="33.603125" y="91.8855" transform="rotate(-0 33.603125 91.8855)">40</text>
+     </g>
+    </g>
+    <g id="ytick_6">
+     <g id="line2d_10">
+      <g>
+       <use xlink:href="#mb1c7ce8875" x="40.603125" y="65.910281" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_10">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end" x="33.603125" y="69.7095" transform="rotate(-0 33.603125 69.7095)">50</text>
+     </g>
+    </g>
+    <g id="ytick_7">
+     <g id="line2d_11">
+      <g>
+       <use xlink:href="#mb1c7ce8875" x="40.603125" y="43.734281" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_11">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end" x="33.603125" y="47.5335" transform="rotate(-0 33.603125 47.5335)">60</text>
+     </g>
+    </g>
+    <g id="ytick_8">
+     <g id="line2d_12">
+      <g>
+       <use xlink:href="#mb1c7ce8875" x="40.603125" y="21.558281" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_12">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end" x="33.603125" y="25.3575" transform="rotate(-0 33.603125 25.3575)">70</text>
+     </g>
+    </g>
+    <g id="text_13">
+     <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: middle" x="14.798438" y="99.174281" transform="rotate(-90 14.798438 99.174281)">% of selections that moved</text>
+    </g>
+   </g>
+   <g id="patch_7">
+    <path d="M 40.603125 176.790281 
+L 40.603125 21.558281 
+" style="fill: none; stroke: #444444; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
+   </g>
+   <g id="patch_8">
+    <path d="M 40.603125 176.790281 
+L 453.523125 176.790281 
+" style="fill: none; stroke: #444444; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
+   </g>
+   <g id="text_14">
+    <text style="font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: middle" x="88.451089" y="74.452524" transform="rotate(-0 88.451089 74.452524)">667 of 1,489</text>
+   </g>
+   <g id="text_15">
+    <text style="font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: middle" x="194.192446" y="173.790281" transform="rotate(-0 194.192446 173.790281)">0 of 1,496</text>
+   </g>
+   <g id="text_16">
+    <text style="font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: middle" x="299.933804" y="152.166071" transform="rotate(-0 299.933804 152.166071)">145 of 1,487</text>
+   </g>
+   <g id="text_17">
+    <text style="font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: middle" x="405.675161" y="49.492622" transform="rotate(-0 405.675161 49.492622)">843 of 1,504</text>
+   </g>
+   <g id="text_18">
+    <text style="font-weight: 700; font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: start" x="40.603125" y="15.558281" transform="rotate(-0 40.603125 15.558281)">Share of the board that moved between two snapshots</text>
+   </g>
+  </g>
+ </g>
+ <defs>
+  <clipPath id="pf5cf02c7bc">
+   <rect x="40.603125" y="21.558281" width="412.92" height="155.232"/>
+  </clipPath>
+ </defs>
+</svg>
+<figcaption>Figure 10. How much of the board moved between two snapshots. Week 4's close window moved nothing; the feed had refreshed (checked for 80 credits). This is why CLV alone cannot be the proof.</figcaption></figure>
+
+<h3 id="s4-4">4.4 What would prove the reasoning wrong</h3>
+<ul>
+<li>A paper-board <a class="gl" href="#g-calibration" title="Whether lines the model calls x% win x% of the time, measured by decile; the largest gap between predicted and realised is the gate&#x27;s number.">calibration</a> table whose largest <a class="gl" href="#g-decile" title="One of ten probability buckets (50-60%, 60-70% ...) that the calibration table is read by; each bucket needs enough lines for its gap to mean anything.">decile</a> gap stays above five points after four graded weeks and 1,000 lines: the probabilities are not usable at face value and <a class="gl" href="#g-kelly-gate" title="The coded rule (D6, read through D19) that moves the Kelly fraction from 0.25 to 0.50: largest decile gap five points or under on 1,000 or more two-way lines over four graded weeks. The card footer and the settle report print its numbers (the gate line); the report prints KELLY GATE MET the week it opens.">the gate</a> stays shut, whatever the <a class="gl" href="#g-roll" title="The FanDuel balance as the ledger knows it; cards size on it; $496.03 today.">roll</a> does.</li>
+<li>The unders <a class="gl" href="#g-edge" title="The model&#x27;s probability minus the market&#x27;s no-vig probability, in points.">edge</a> (<a class="xref" href="#fig-2">figure 2</a>) failing on the <a class="gl" href="#g-holdout" title="Data never used to choose anything, scored once at the end: 2025 weeks 15-18, the playoffs, 2024 as it lands.">holdout</a> and on the <a class="gl" href="#g-paper-board" title="Every slate game, every week, priced as paper tickets and graded; the calibration evidence.">paper board</a>: the one finding the <a class="gl" href="#g-card" title="The model&#x27;s priced table of staked lines for the Broncos game, with stakes, minimum prices and token suggestions; the only model evidence.">cards</a> lean on was a 2025 artefact.</li>
+<li>The live split (<a class="xref" href="#fig-6">figure 6</a>) reversing over a season: the overs finding does not transfer to 2026 prices.</li>
+<li>The roll reaching zero before the evidence does: the experiment ends on money, which is what the caps are for.</li>
+</ul>
+
+<h3 id="s4-5">4.5 Being tested now: the regression matrix</h3>
+<p>One harness, eight fixed <a class="gl" href="#g-fold" title="A fit on weeks 1 to k, scored on week k+1; eight fixed folds inside 2025 for the matrix (weeks 7 to 14 scored).">folds</a> inside 2025 (weeks 7 to 14 scored), a <a class="gl" href="#g-holdout" title="Data never used to choose anything, scored once at the end: 2025 weeks 15-18, the playoffs, 2024 as it lands.">holdout</a> nobody chose anything with (2025 weeks 15-18, the playoffs, 2024 as it
+lands), and a pass sentence written before each run. Rows: the persistence of each stat year over year (which picks the model's windows); injury
+usage; Next Gen Stats; FTN tendencies; the matchup features, each and cumulative; the live LightGBM against a tuned one and an automated ensemble
+with SHAP so the patterns have names; the market-anchored refit; sacks re-fitted on posted players; the boost lane. A feature row is adopted if
+<a class="gl" href="#g-log-loss" title="Scores of a probability against what happened; lower is better; both are reported against the market&#x27;s no-vig number.">log-loss</a> beats the base on every market it feeds, its largest <a class="gl" href="#g-calibration" title="Whether lines the model calls x% win x% of the time, measured by decile; the largest gap between predicted and realised is the gate&#x27;s number.">reliability</a> gap is no worse, and the holdout agrees in sign. A row that passes the
+folds and fails the holdout fails. Verdict in <code>docs\REGRESSION_MATRIX_2025.md</code>; decisions at the Oct 12 <a class="gl" href="#g-settle" title="Monday&#x27;s two-phase tie-out (propose, apply) of the ledger to FanDuel&#x27;s record, then the grade and the report.">settle</a>.</p>
+
+<h2 id="p5">Part 5. How it works <a class="top" href="#top">contents</a></h2>
+<figure id="fig-11"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 436" font-family="Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif"><defs><marker id="ah" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#444"/></marker></defs><rect x="16" y="16" width="224" height="92" rx="4" fill="#f4f6f9" stroke="#444" stroke-width="1"/><text x="128.0" y="36" text-anchor="middle" font-size="13" font-weight="700" fill="#1d1f23">Free data (nflverse)</text><text x="128.0" y="56" text-anchor="middle" font-size="11.5" fill="#1d1f23">play-by-play, usage, snaps, injuries,</text><text x="128.0" y="71" text-anchor="middle" font-size="11.5" fill="#1d1f23">Next Gen Stats, PFR, FTN charting</text><text x="128.0" y="86" text-anchor="middle" font-size="11.5" fill="#1d1f23">nightly, 2016-2026, $0</text><rect x="16" y="134" width="224" height="92" rx="4" fill="#f4f6f9" stroke="#444" stroke-width="1"/><text x="128.0" y="154" text-anchor="middle" font-size="13" font-weight="700" fill="#1d1f23">The Odds API (credits)</text><text x="128.0" y="174" text-anchor="middle" font-size="11.5" fill="#1d1f23">FanDuel boards and closes</text><text x="128.0" y="189" text-anchor="middle" font-size="11.5" fill="#1d1f23">live: about 65 credits a board</text><text x="128.0" y="204" text-anchor="middle" font-size="11.5" fill="#1d1f23">history: props 2023-25, lines 2020-</text><rect x="16" y="252" width="224" height="92" rx="4" fill="#f4f6f9" stroke="#444" stroke-width="1"/><text x="128.0" y="272" text-anchor="middle" font-size="13" font-weight="700" fill="#1d1f23">FanDuel pages, saved by hand</text><text x="128.0" y="292" text-anchor="middle" font-size="11.5" fill="#1d1f23">My Bets, Transaction History,</text><text x="128.0" y="307" text-anchor="middle" font-size="11.5" fill="#1d1f23">Rewards, market tabs, D/ST</text><text x="128.0" y="322" text-anchor="middle" font-size="11.5" fill="#1d1f23">Ctrl+S in Chrome; no automation</text><rect x="296" y="96" width="236" height="140" rx="4" fill="#e9eef5" stroke="#444" stroke-width="1"/><text x="414.0" y="116" text-anchor="middle" font-size="13" font-weight="700" fill="#1d1f23">Feature table + models</text><text x="414.0" y="136" text-anchor="middle" font-size="11.5" fill="#1d1f23">player_game (55 inputs, live)</text><text x="414.0" y="151" text-anchor="middle" font-size="11.5" fill="#1d1f23">ngs_player, ftn_team, matchup_*</text><text x="414.0" y="166" text-anchor="middle" font-size="11.5" fill="#1d1f23">(study only until a row passes)</text><text x="414.0" y="181" text-anchor="middle" font-size="11.5" fill="#1d1f23">LightGBM props 1.1.0, game lines,</text><text x="414.0" y="196" text-anchor="middle" font-size="11.5" fill="#1d1f23">market-fair references, calibrations</text><rect x="588" y="40" width="196" height="104" rx="4" fill="#FB4F14" stroke="#FB4F14" stroke-width="1"/><text x="686.0" y="60" text-anchor="middle" font-size="13" font-weight="700" fill="#ffffff">The Broncos card</text><text x="686.0" y="80" text-anchor="middle" font-size="11.5" fill="#ffffff">every line priced; gates, band,</text><text x="686.0" y="95" text-anchor="middle" font-size="11.5" fill="#ffffff">blend, Kelly 0.25, caps, tokens,</text><text x="686.0" y="110" text-anchor="middle" font-size="11.5" fill="#ffffff">SGP; route page; serve</text><rect x="588" y="196" width="196" height="104" rx="4" fill="#e9eef5" stroke="#444" stroke-width="1"/><text x="686.0" y="216" text-anchor="middle" font-size="13" font-weight="700" fill="#1d1f23">The paper board</text><text x="686.0" y="236" text-anchor="middle" font-size="11.5" fill="#1d1f23">every slate game, every week,</text><text x="686.0" y="251" text-anchor="middle" font-size="11.5" fill="#1d1f23">two snapshots, priced as paper,</text><text x="686.0" y="266" text-anchor="middle" font-size="11.5" fill="#1d1f23">graded: the calibration evidence</text><rect x="836" y="100" width="108" height="140" rx="4" fill="#002244" stroke="#002244" stroke-width="1"/><text x="890.0" y="120" text-anchor="middle" font-size="13" font-weight="700" fill="#ffffff">Ledger (SQLite)</text><text x="890.0" y="140" text-anchor="middle" font-size="11.5" fill="#ffffff">bets, legs, cards,</text><text x="890.0" y="155" text-anchor="middle" font-size="11.5" fill="#ffffff">card_lines, tokens,</text><text x="890.0" y="170" text-anchor="middle" font-size="11.5" fill="#ffffff">snapshots, activity,</text><text x="890.0" y="185" text-anchor="middle" font-size="11.5" fill="#ffffff">bankroll; additive</text><text x="890.0" y="200" text-anchor="middle" font-size="11.5" fill="#ffffff">only; tied Monday</text><rect x="16" y="352" width="928" height="72" rx="4" fill="#f4f6f9" stroke="#444" stroke-width="1"/><text x="480.0" y="372" text-anchor="middle" font-size="13" font-weight="700" fill="#1d1f23">Ops layer: the Betbot.cmd menu (P, G, 1 to 8, I, L ...), the scheduled close, the GitHub nightly, closing-snapshot and paper-board jobs</text><text x="480.0" y="392" text-anchor="middle" font-size="11.5" fill="#1d1f23">the operator presses keys and types the inputs (tokens, inactives, referee, matchups, rungs); every run leaves a transcript in ops\logs;</text><text x="480.0" y="407" text-anchor="middle" font-size="11.5" fill="#1d1f23">Code builds from numbered pastes, one commit per step with the suite green; the reviewer reads the logs and writes the next paste</text><line x1="240" y1="62" x2="296" y2="130" stroke="#444" stroke-width="1.2" marker-end="url(#ah)"/><line x1="240" y1="180" x2="296" y2="170" stroke="#444" stroke-width="1.2" marker-end="url(#ah)"/><path d="M240,322 L900,322 L900,246" fill="none" stroke="#444" stroke-width="1.2" marker-end="url(#ah)"/><line x1="532" y1="140" x2="588" y2="100" stroke="#444" stroke-width="1.2" marker-end="url(#ah)"/><line x1="532" y1="200" x2="588" y2="240" stroke="#444" stroke-width="1.2" marker-end="url(#ah)"/><line x1="784" y1="92" x2="836" y2="140" stroke="#444" stroke-width="1.2" marker-end="url(#ah)"/><line x1="784" y1="248" x2="836" y2="200" stroke="#444" stroke-width="1.2" marker-end="url(#ah)"/></svg><figcaption>Figure 11. Three inputs (free stats, paid prices, saved FanDuel pages), one feature table and model set, two outputs (the Broncos card, the paper board), one ledger, and an ops layer the operator drives by key.</figcaption></figure>
+
+<h3 id="s5-1">5.1 Data</h3>
+<figure id="fig-12"><svg xmlns:xlink="http://www.w3.org/1999/xlink" width="484.216506pt" height="233.932406pt" viewBox="0 0 484.216506 233.932406" xmlns="http://www.w3.org/2000/svg" version="1.1">
+ <metadata>
+  <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+   <cc:Work>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:date>2026-10-05T20:39:49.705780</dc:date>
+    <dc:format>image/svg+xml</dc:format>
+    <dc:creator>
+     <cc:Agent>
+      <dc:title>Matplotlib v3.10.9, https://matplotlib.org/</dc:title>
+     </cc:Agent>
+    </dc:creator>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <defs>
+  <style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+ </defs>
+ <g id="figure_1">
+  <g id="patch_1">
+   <path d="M 0 233.932406 
+L 484.216506 233.932406 
+L 484.216506 0 
+L 0 0 
+z
+" style="fill: #ffffff"/>
+  </g>
+  <g id="axes_1">
+   <g id="patch_2">
+    <path d="M 64.096506 210.054281 
+L 477.016506 210.054281 
+L 477.016506 21.558281 
+L 64.096506 21.558281 
+z
+" style="fill: #ffffff"/>
+   </g>
+   <g id="patch_3">
+    <path d="M 377.311433 201.486281 
+L 435.724506 201.486281 
+L 435.724506 189.003102 
+L 377.311433 189.003102 
+z
+" clip-path="url(#p3c08b89f5b)" style="fill: #d9dde3; stroke: #444444; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_4">
+    <path d="M 417.596311 178.789593 
+L 455.866945 178.789593 
+L 455.866945 166.306414 
+L 417.596311 166.306414 
+z
+" clip-path="url(#p3c08b89f5b)" style="fill: #fb4f14; stroke: #fb4f14; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_5">
+    <path d="M 316.884116 156.092904 
+L 455.866945 156.092904 
+L 455.866945 143.609725 
+L 316.884116 143.609725 
+z
+" clip-path="url(#p3c08b89f5b)" style="fill: #d9dde3; stroke: #444444; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_6">
+    <path d="M 236.31436 133.396215 
+L 415.582067 133.396215 
+L 415.582067 120.913036 
+L 236.31436 120.913036 
+z
+" clip-path="url(#p3c08b89f5b)" style="fill: #8a8f98; stroke: #8a8f98; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_7">
+    <path d="M 357.168994 110.699526 
+L 455.866945 110.699526 
+L 455.866945 98.216347 
+L 357.168994 98.216347 
+z
+" clip-path="url(#p3c08b89f5b)" style="fill: #002244; stroke: #002244; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_8">
+    <path d="M 276.599238 88.002838 
+L 455.866945 88.002838 
+L 455.866945 75.519659 
+L 276.599238 75.519659 
+z
+" clip-path="url(#p3c08b89f5b)" style="fill: #002244; stroke: #002244; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_9">
+    <path d="M 236.31436 65.306149 
+L 455.866945 65.306149 
+L 455.866945 52.82297 
+L 236.31436 52.82297 
+z
+" clip-path="url(#p3c08b89f5b)" style="fill: #002244; stroke: #002244; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_10">
+    <path d="M 236.31436 42.60946 
+L 455.866945 42.60946 
+L 455.866945 30.126281 
+L 236.31436 30.126281 
+z
+" clip-path="url(#p3c08b89f5b)" style="fill: #002244; stroke: #002244; stroke-linejoin: miter"/>
+   </g>
+   <g id="matplotlib.axis_1">
+    <g id="xtick_1">
+     <g id="line2d_1">
+      <defs>
+       <path id="mb872294c97" d="M 0 0 
+L 0 3.5 
+" style="stroke: #000000; stroke-width: 0.8"/>
+      </defs>
+      <g>
+       <use xlink:href="#mb872294c97" x="245.378457" y="210.054281" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_1">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: middle" x="245.378457" y="224.652719" transform="rotate(-0 245.378457 224.652719)">2016</text>
+     </g>
+    </g>
+    <g id="xtick_2">
+     <g id="line2d_2">
+      <g>
+       <use xlink:href="#mb872294c97" x="285.663335" y="210.054281" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_2">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: middle" x="285.663335" y="224.652719" transform="rotate(-0 285.663335 224.652719)">2018</text>
+     </g>
+    </g>
+    <g id="xtick_3">
+     <g id="line2d_3">
+      <g>
+       <use xlink:href="#mb872294c97" x="325.948213" y="210.054281" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_3">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: middle" x="325.948213" y="224.652719" transform="rotate(-0 325.948213 224.652719)">2020</text>
+     </g>
+    </g>
+    <g id="xtick_4">
+     <g id="line2d_4">
+      <g>
+       <use xlink:href="#mb872294c97" x="366.233091" y="210.054281" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_4">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: middle" x="366.233091" y="224.652719" transform="rotate(-0 366.233091 224.652719)">2022</text>
+     </g>
+    </g>
+    <g id="xtick_5">
+     <g id="line2d_5">
+      <g>
+       <use xlink:href="#mb872294c97" x="406.51797" y="210.054281" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_5">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: middle" x="406.51797" y="224.652719" transform="rotate(-0 406.51797 224.652719)">2024</text>
+     </g>
+    </g>
+    <g id="xtick_6">
+     <g id="line2d_6">
+      <g>
+       <use xlink:href="#mb872294c97" x="446.802848" y="210.054281" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_6">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: middle" x="446.802848" y="224.652719" transform="rotate(-0 446.802848 224.652719)">2026</text>
+     </g>
+    </g>
+   </g>
+   <g id="matplotlib.axis_2"/>
+   <g id="patch_11">
+    <path d="M 64.096506 210.054281 
+L 477.016506 210.054281 
+" style="fill: none; stroke: #444444; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
+   </g>
+   <g id="text_7">
+    <text style="font-size: 8px; font-family: 'DejaVu Sans'; text-anchor: end" x="231.27875" y="197.452192" transform="rotate(-0 231.27875 197.452192)">FanDuel player-prop closes, available to buy</text>
+   </g>
+   <g id="text_8">
+    <text style="font-size: 8px; font-family: 'DejaVu Sans'; text-anchor: end" x="231.27875" y="174.755503" transform="rotate(-0 231.27875 174.755503)">FanDuel player-prop closes, on disk</text>
+   </g>
+   <g id="text_9">
+    <text style="font-size: 8px; font-family: 'DejaVu Sans'; text-anchor: end" x="231.27875" y="152.058814" transform="rotate(-0 231.27875 152.058814)">FanDuel game-line closes (Odds API, available)</text>
+   </g>
+   <g id="text_10">
+    <text style="font-size: 8px; font-family: 'DejaVu Sans'; text-anchor: end" x="231.27875" y="129.362126" transform="rotate(-0 231.27875 129.362126)">participation: box, rushers, coverage (post-season only)</text>
+   </g>
+   <g id="text_11">
+    <text style="font-size: 8px; font-family: 'DejaVu Sans'; text-anchor: end" x="231.27875" y="106.665437" transform="rotate(-0 231.27875 106.665437)">FTN charting, per play (nflverse)</text>
+   </g>
+   <g id="text_12">
+    <text style="font-size: 8px; font-family: 'DejaVu Sans'; text-anchor: end" x="231.27875" y="83.968748" transform="rotate(-0 231.27875 83.968748)">PFR pressure and coverage, weekly (nflverse)</text>
+   </g>
+   <g id="text_13">
+    <text style="font-size: 8px; font-family: 'DejaVu Sans'; text-anchor: end" x="231.27875" y="61.272059" transform="rotate(-0 231.27875 61.272059)">Next Gen Stats, weekly (nflverse)</text>
+   </g>
+   <g id="text_14">
+    <text style="font-size: 8px; font-family: 'DejaVu Sans'; text-anchor: end" x="231.27875" y="38.575371" transform="rotate(-0 231.27875 38.575371)">play-by-play, usage, snaps, rosters, injuries (nflverse)</text>
+   </g>
+   <g id="text_15">
+    <text style="font-weight: 700; font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: start" x="64.096506" y="15.558281" transform="rotate(-0 64.096506 15.558281)">Seasons covered by each source</text>
+   </g>
+  </g>
+ </g>
+ <defs>
+  <clipPath id="p3c08b89f5b">
+   <rect x="64.096506" y="21.558281" width="412.92" height="188.496"/>
+  </clipPath>
+ </defs>
+</svg>
+<figcaption>Figure 12. Seasons covered by each source. Navy is free and on disk; grey is study-only; orange is the paid prop closes on disk; outlined is paid and available to buy.</figcaption></figure>
+<p>The free side is <a class="gl" href="#g-nflverse" title="The open-source NFL data project (play-by-play, stats, snaps, rosters, injuries, Next Gen Stats, PFR, FTN charting); free, refreshed nightly.">nflverse</a>: play-by-play, usage, snap counts, rosters and injuries since 2016, Next Gen Stats since 2016, PFR pressure and coverage
+since 2018, FTN per-play charting since 2022, refreshed nightly by the <a class="gl" href="#g-runner" title="The GitHub Actions jobs: nightly refresh, closing snapshots at kickoff minus eight, paper-board snapshots. Downloads to the PC as artifacts; never writes the ledger.">runner</a> and on Saturday by <span class="key">P</span>. Weather is an hourly
+forecast at the stadium. The paid side is <a class="gl" href="#g-odds-api" title="The licensed price feed that carries FanDuel&#x27;s board and closes; costs credits, carries no account risk; the only paid data source.">The Odds API</a> with the FanDuel filter: a live <a class="gl" href="#g-board" title="Every selection FanDuel offers on a game at one moment, as stored from The Odds API (about 1,500 selections) or from saved pages.">board</a> is about 1,500 selections across 58 markets for 65
+<a class="gl" href="#g-credits" title="The Odds API&#x27;s unit of spend: one per market per region per request for live boards, ten for historical.">credits</a>; historical closes are sold at ten credits a market from May 2023 for props. The feature table (<code>player_game</code>) holds each
+player's rolled usage and production before each game, about 25,000 rows a season, 55 inputs; the Next Gen, charting and matchup tables sit
+beside it and are joined only by study rows, so nothing enters the live model without a decision.</p>
+
+<h3 id="s5-2">5.2 Models</h3>
+<p>The live props model (<code>player_props-1.1.0</code>) is LightGBM, one model per market, predicting a mean and a spread per player-game; counts are
+priced on a negative binomial, yards on a log-normal or gamma, and the probability of any line comes from the fitted distribution. Game lines are
+Normals with the <a class="gl" href="#g-close" title="The board at kickoff minus nine minutes, taken by the scheduled task or the runner; the market&#x27;s last price.">closing line</a> as an input; their first backtest said they do not beat the close, so they price team totals and <a class="gl" href="#g-sgp" title="Same-game parlay; the price is read from FanDuel&#x27;s slip and typed by hand; nothing is scraped.">SGP</a> legs and are rarely
+staked. <a class="gl" href="#g-one-sided" title="A line with no opposite side to remove the margin from (anytime TD, ladder rungs, sacks); priced against a market-fair reference.">One-sided</a> markets use a market-fair reference fitted on 2025 closes. Two refits are queued behind the matrix: a dispersion refit per market
+and position (1.3.0) if the spread check fails, and the market-anchored refit (2.0.0) that takes the market's number as an input and learns where
+it is wrong.</p>
+
+<h3 id="s5-3">5.3 From board to card</h3>
+<ol>
+<li>Pull FanDuel's <a class="gl" href="#g-board" title="Every selection FanDuel offers on a game at one moment, as stored from The Odds API (about 1,500 selections) or from saved pages.">board</a> for the game (one full pull; a second inside 15 minutes is refused; a <a class="gl" href="#g-credits" title="The Odds API&#x27;s unit of spend: one per market per region per request for live boards, ten for historical.">credit</a> floor stops any pull unless forced).</li>
+<li>Price every selection: the model's probability, the market's <a class="gl" href="#g-no-vig" title="The market&#x27;s probability with the book&#x27;s margin removed (the two sides of a line scaled to sum to 100%).">no-vig</a> probability, the <a class="gl" href="#g-edge" title="The model&#x27;s probability minus the market&#x27;s no-vig probability, in points.">edge</a>, the <a class="gl" href="#g-ev" title="Expected value: the average return per dollar if the probability is right, price and boost included.">EV</a>.</li>
+<li>Gate: feature readiness (no referee, no game lines), the <a class="gl" href="#g-gate" title="Usage thresholds a player must clear before his line is staked: three targets in the last three games, 10% target share, 40% snap share.">stake gate</a>, the role-change check in weeks 1-3, the band on both probabilities, the minimum edge, the TD price floor.</li>
+<li>Size: blend the two probabilities, <a class="gl" href="#g-kelly" title="The share of the growth-optimal stake actually used; 0.25 live, 0.50 behind the calibration gate.">Kelly</a> 0.25 of the ledger's <a class="gl" href="#g-roll" title="The FanDuel balance as the ledger knows it; cards size on it; $496.03 today.">roll</a>, then the caps.</li>
+<li><a class="gl" href="#g-token" title="A FanDuel promotion (profit boost, bet reset, no-sweat, bonus bet) with its terms, inventoried and assigned after sizing.">Tokens</a>: assigned after sizing; a token never raises a stake.</li>
+<li><a class="gl" href="#g-sgp" title="Same-game parlay; the price is read from FanDuel&#x27;s slip and typed by hand; nothing is scraped.">SGP</a>: a copula proposer builds the parlay from <a class="gl" href="#g-card" title="The model&#x27;s priced table of staked lines for the Broncos game, with stakes, minimum prices and token suggestions; the only model evidence.">card</a> legs; the <a class="gl" href="#g-ladder" title="FanDuel&#x27;s alternate lines on a stat (10+, 20+ yards); the rung label is the line (3+ is over 2.5).">ladder</a> prints the stake at each FanDuel price.</li>
+<li>Write the card, the <a class="gl" href="#g-route-page" title="The placement order for the card in FanDuel&#x27;s own layout, with the search word, the tab and the button label.">route page</a> and <a class="gl" href="#g-serve" title="The local confirm form (127.0.0.1:8787) where each placed ticket is ticked with its real stake and price.">serve</a>; store every line with its numbers as of the build.</li>
+</ol>
+
+<h3 id="s5-4">5.4 The ledger and the settle</h3>
+<p>SQLite, additive only. Every priced selection ever stored (about 226,000 rows, 189,000 of them historical closes), every <a class="gl" href="#g-card" title="The model&#x27;s priced table of staked lines for the Broncos game, with stakes, minimum prices and token suggestions; the only model evidence.">card</a> and its lines, every
+ticket with its origin, stake, price, boost, model probability, <a class="gl" href="#g-close" title="The board at kickoff minus nine minutes, taken by the scheduled task or the runner; the market&#x27;s last price.">closing price</a> and result, every <a class="gl" href="#g-token" title="A FanDuel promotion (profit boost, bet reset, no-sweat, bonus bet) with its terms, inventoried and assigned after sizing.">token</a> with its terms, every Transaction History row.
+Corrections are new rows with the ticket id as evidence; <a class="gl" href="#g-paper-ticket" title="A recorded prediction with no money on it; evidence in grading and calibration, excluded from the roll and every cap.">paper tickets</a> are evidence and never cash. Monday's <a class="gl" href="#g-settle" title="Monday&#x27;s two-phase tie-out (propose, apply) of the ledger to FanDuel&#x27;s record, then the grade and the report.">settle</a> proposes, then applies: My Bets
+matched by FanDuel id, cash rows imported, the closing <a class="gl" href="#g-snapshot" title="One pull of a board into odds_snapshots; every row carries its batch id and, since schema v10, the feed&#x27;s own timestamp.">snapshot</a> fetched, the <a class="gl" href="#g-paper-board" title="Every slate game, every week, priced as paper tickets and graded; the calibration evidence.">paper board</a> graded, the report written, the <a class="gl" href="#g-roll" title="The FanDuel balance as the ledger knows it; cards size on it; $496.03 today.">roll</a> tied to the balance.</p>
+
+<h3 id="s5-5">5.5 The runner and the close</h3>
+<p>GitHub Actions does three things: the nightly data refresh and feature build (10:00 UTC), a <a class="gl" href="#g-close" title="The board at kickoff minus nine minutes, taken by the scheduled task or the runner; the market&#x27;s last price.">closing snapshot</a> at kickoff minus eight for every
+standard slot (guarded so it only fires when a Broncos game is inside the window; the result is downloaded at the <a class="gl" href="#g-settle" title="Monday&#x27;s two-phase tie-out (propose, apply) of the ledger to FanDuel&#x27;s record, then the grade and the report.">settle</a>), and the paper-board
+<a class="gl" href="#g-snapshot" title="One pull of a board into odds_snapshots; every row carries its batch id and, since schema v10, the feed&#x27;s own timestamp.">snapshots</a> at six weekly slots plus 6 AM Sunday for London. On the PC a scheduled task takes the close at kickoff minus nine; the close refuses a
+stale feed, so a flat <a class="gl" href="#g-board" title="Every selection FanDuel offers on a game at one moment, as stored from The Odds API (about 1,500 selections) or from saved pages.">board</a> is a measurement, never an artefact.</p>
+
+<h3 id="s5-6">5.6 The paper board</h3>
+<p>Every slate game is snapshotted twice by the <a class="gl" href="#g-runner" title="The GitHub Actions jobs: nightly refresh, closing snapshots at kickoff minus eight, paper-board snapshots. Downloads to the PC as artifacts; never writes the ledger.">runner</a>, early and late, and priced <a class="gl" href="#g-paper-ticket" title="A recorded prediction with no money on it; evidence in grading and calibration, excluded from the roll and every cap.">as paper</a> by the same model and settings as the Broncos <a class="gl" href="#g-card" title="The model&#x27;s priced table of staked lines for the Broncos game, with stakes, minimum prices and token suggestions; the only model evidence.">card</a> with
+stakes sized on the $400 opening <a class="gl" href="#g-roll" title="The FanDuel balance as the ledger knows it; cards size on it; $496.03 today.">roll</a> so weeks compare. Monday grades it, and the report's <a class="gl" href="#g-calibration" title="Whether lines the model calls x% win x% of the time, measured by decile; the largest gap between predicted and realised is the gate&#x27;s number.">calibration</a> block reports priced rows and <a class="gl" href="#g-two-way" title="A line with an over and an under at posted prices; the unit the gate counts.">two-way lines</a>
+separately, because <a class="gl" href="#g-kelly-gate" title="The coded rule (D6, read through D19) that moves the Kelly fraction from 0.25 to 0.50: largest decile gap five points or under on 1,000 or more two-way lines over four graded weeks. The card footer and the settle report print its numbers (the gate line); the report prints KELLY GATE MET the week it opens.">the gate</a> counts two-way lines once each: about 490 a week, so the 1,000-line floor is reached around the Week 7 <a class="gl" href="#g-settle" title="Monday&#x27;s two-phase tie-out (propose, apply) of the ledger to FanDuel&#x27;s record, then the grade and the report.">settle</a>. <a class="xref" href="#s2-7">Paste 52</a>
+adds game lines (weather and a referees file for every game), an early-against-late movement section, and pricing on the runner right after the
+<a class="gl" href="#g-snapshot" title="One pull of a board into odds_snapshots; every row carries its batch id and, since schema v10, the feed&#x27;s own timestamp.">snapshot</a>.</p>
+
+<h3 id="s5-7">5.7 What it costs</h3>
+<figure id="fig-13"><svg xmlns:xlink="http://www.w3.org/1999/xlink" width="585.945469pt" height="236.522531pt" viewBox="0 0 585.945469 236.522531" xmlns="http://www.w3.org/2000/svg" version="1.1">
+ <metadata>
+  <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+   <cc:Work>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:date>2026-10-05T20:39:49.763790</dc:date>
+    <dc:format>image/svg+xml</dc:format>
+    <dc:creator>
+     <cc:Agent>
+      <dc:title>Matplotlib v3.10.9, https://matplotlib.org/</dc:title>
+     </cc:Agent>
+    </dc:creator>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <defs>
+  <style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+ </defs>
+ <g id="figure_1">
+  <g id="patch_1">
+   <path d="M 0 236.522531 
+L 585.945469 236.522531 
+L 585.945469 0 
+L 0 0 
+z
+" style="fill: #ffffff"/>
+  </g>
+  <g id="axes_1">
+   <g id="patch_2">
+    <path d="M 130.35625 198.966281 
+L 543.27625 198.966281 
+L 543.27625 21.558281 
+L 130.35625 21.558281 
+z
+" style="fill: #ffffff"/>
+   </g>
+   <g id="patch_3">
+    <path d="M 130.35625 190.902281 
+L 203.453413 190.902281 
+L 203.453413 178.16965 
+L 130.35625 178.16965 
+z
+" clip-path="url(#p39c6761132)" style="fill: #d9dde3"/>
+   </g>
+   <g id="patch_4">
+    <path d="M 130.35625 169.681229 
+L 130.899928 169.681229 
+L 130.899928 156.948597 
+L 130.35625 156.948597 
+z
+" clip-path="url(#p39c6761132)" style="fill: #002244"/>
+   </g>
+   <g id="patch_5">
+    <path d="M 130.35625 148.460176 
+L 131.681035 148.460176 
+L 131.681035 135.727544 
+L 130.35625 135.727544 
+z
+" clip-path="url(#p39c6761132)" style="fill: #002244"/>
+   </g>
+   <g id="patch_6">
+    <path d="M 130.35625 127.239123 
+L 168.96427 127.239123 
+L 168.96427 114.506492 
+L 130.35625 114.506492 
+z
+" clip-path="url(#p39c6761132)" style="fill: #fb4f14"/>
+   </g>
+   <g id="patch_7">
+    <path d="M 130.35625 106.018071 
+L 360.521299 106.018071 
+L 360.521299 93.285439 
+L 130.35625 93.285439 
+z
+" clip-path="url(#p39c6761132)" style="fill: #fb4f14"/>
+   </g>
+   <g id="patch_8">
+    <path d="M 130.35625 84.797018 
+L 467.412523 84.797018 
+L 467.412523 72.064387 
+L 130.35625 72.064387 
+z
+" clip-path="url(#p39c6761132)" style="fill: #c62828"/>
+   </g>
+   <g id="patch_9">
+    <path d="M 130.35625 63.575965 
+L 133.45315 63.575965 
+L 133.45315 50.843334 
+L 130.35625 50.843334 
+z
+" clip-path="url(#p39c6761132)" style="fill: #002244"/>
+   </g>
+   <g id="patch_10">
+    <path d="M 130.35625 42.354913 
+L 134.3134 42.354913 
+L 134.3134 29.622281 
+L 130.35625 29.622281 
+z
+" clip-path="url(#p39c6761132)" style="fill: #002244"/>
+   </g>
+   <g id="matplotlib.axis_1">
+    <g id="xtick_1">
+     <g id="line2d_1">
+      <defs>
+       <path id="meed9f1d21d" d="M 0 0 
+L 0 3.5 
+" style="stroke: #000000; stroke-width: 0.8"/>
+      </defs>
+      <g>
+       <use xlink:href="#meed9f1d21d" x="130.35625" y="198.966281" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_1">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: middle" x="130.35625" y="213.564719" transform="rotate(-0 130.35625 213.564719)">0</text>
+     </g>
+    </g>
+    <g id="xtick_2">
+     <g id="line2d_2">
+      <g>
+       <use xlink:href="#meed9f1d21d" x="199.17625" y="198.966281" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_2">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: middle" x="199.17625" y="213.564719" transform="rotate(-0 199.17625 213.564719)">20000</text>
+     </g>
+    </g>
+    <g id="xtick_3">
+     <g id="line2d_3">
+      <g>
+       <use xlink:href="#meed9f1d21d" x="267.99625" y="198.966281" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_3">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: middle" x="267.99625" y="213.564719" transform="rotate(-0 267.99625 213.564719)">40000</text>
+     </g>
+    </g>
+    <g id="xtick_4">
+     <g id="line2d_4">
+      <g>
+       <use xlink:href="#meed9f1d21d" x="336.81625" y="198.966281" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_4">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: middle" x="336.81625" y="213.564719" transform="rotate(-0 336.81625 213.564719)">60000</text>
+     </g>
+    </g>
+    <g id="xtick_5">
+     <g id="line2d_5">
+      <g>
+       <use xlink:href="#meed9f1d21d" x="405.63625" y="198.966281" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_5">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: middle" x="405.63625" y="213.564719" transform="rotate(-0 405.63625 213.564719)">80000</text>
+     </g>
+    </g>
+    <g id="xtick_6">
+     <g id="line2d_6">
+      <g>
+       <use xlink:href="#meed9f1d21d" x="474.45625" y="198.966281" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_6">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: middle" x="474.45625" y="213.564719" transform="rotate(-0 474.45625 213.564719)">100000</text>
+     </g>
+    </g>
+    <g id="xtick_7">
+     <g id="line2d_7">
+      <g>
+       <use xlink:href="#meed9f1d21d" x="543.27625" y="198.966281" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_7">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: middle" x="543.27625" y="213.564719" transform="rotate(-0 543.27625 213.564719)">120000</text>
+     </g>
+    </g>
+    <g id="text_8">
+     <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: middle" x="336.81625" y="227.242844" transform="rotate(-0 336.81625 227.242844)">Odds API credits</text>
+    </g>
+   </g>
+   <g id="matplotlib.axis_2">
+    <g id="ytick_1">
+     <g id="line2d_8">
+      <defs>
+       <path id="m537cd291f6" d="M 0 0 
+L -3.5 0 
+" style="stroke: #000000; stroke-width: 0.8"/>
+      </defs>
+      <g>
+       <use xlink:href="#m537cd291f6" x="130.35625" y="184.535965" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_9">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end" x="123.35625" y="188.335184" transform="rotate(-0 123.35625 188.335184)">Oct left (expires Nov 1)</text>
+     </g>
+    </g>
+    <g id="ytick_2">
+     <g id="line2d_9">
+      <g>
+       <use xlink:href="#m537cd291f6" x="130.35625" y="163.314913" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_10">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end" x="123.35625" y="167.114132" transform="rotate(-0 123.35625 167.114132)">Oct probes and tests</text>
+     </g>
+    </g>
+    <g id="ytick_3">
+     <g id="line2d_10">
+      <g>
+       <use xlink:href="#m537cd291f6" x="130.35625" y="142.09386" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_11">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end" x="123.35625" y="145.893079" transform="rotate(-0 123.35625 145.893079)">Oct live + runner</text>
+     </g>
+    </g>
+    <g id="ytick_4">
+     <g id="line2d_11">
+      <g>
+       <use xlink:href="#m537cd291f6" x="130.35625" y="120.872808" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_12">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end" x="123.35625" y="124.672026" transform="rotate(-0 123.35625 124.672026)">Oct 2024 batch 1</text>
+     </g>
+    </g>
+    <g id="ytick_5">
+     <g id="line2d_12">
+      <g>
+       <use xlink:href="#m537cd291f6" x="130.35625" y="99.651755" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_13">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end" x="123.35625" y="103.450974" transform="rotate(-0 123.35625 103.450974)">Oct 2025 backfill</text>
+     </g>
+    </g>
+    <g id="ytick_6">
+     <g id="line2d_13">
+      <g>
+       <use xlink:href="#m537cd291f6" x="130.35625" y="78.430702" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_14">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end" x="123.35625" y="82.229921" transform="rotate(-0 123.35625 82.229921)">Sep expired unused</text>
+     </g>
+    </g>
+    <g id="ytick_7">
+     <g id="line2d_14">
+      <g>
+       <use xlink:href="#m537cd291f6" x="130.35625" y="57.20965" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_15">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end" x="123.35625" y="61.008868" transform="rotate(-0 123.35625 61.008868)">Sep historical</text>
+     </g>
+    </g>
+    <g id="ytick_8">
+     <g id="line2d_15">
+      <g>
+       <use xlink:href="#m537cd291f6" x="130.35625" y="35.988597" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_16">
+      <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: end" x="123.35625" y="39.787816" transform="rotate(-0 123.35625 39.787816)">Sep live pulls</text>
+     </g>
+    </g>
+   </g>
+   <g id="patch_11">
+    <path d="M 130.35625 198.966281 
+L 130.35625 21.558281 
+" style="fill: none; stroke: #444444; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
+   </g>
+   <g id="patch_12">
+    <path d="M 130.35625 198.966281 
+L 543.27625 198.966281 
+" style="fill: none; stroke: #444444; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
+   </g>
+   <g id="text_17">
+    <text style="font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: start" x="209.453413" y="187.535965" transform="rotate(-0 209.453413 187.535965)">21,243</text>
+   </g>
+   <g id="text_18">
+    <text style="font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: start" x="136.899928" y="166.314913" transform="rotate(-0 136.899928 166.314913)">158</text>
+   </g>
+   <g id="text_19">
+    <text style="font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: start" x="137.681035" y="145.09386" transform="rotate(-0 137.681035 145.09386)">385</text>
+   </g>
+   <g id="text_20">
+    <text style="font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: start" x="174.96427" y="123.872808" transform="rotate(-0 174.96427 123.872808)">11,220</text>
+   </g>
+   <g id="text_21">
+    <text style="font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: start" x="366.521299" y="102.651755" transform="rotate(-0 366.521299 102.651755)">66,889</text>
+   </g>
+   <g id="text_22">
+    <text style="font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: start" x="473.412523" y="81.430702" transform="rotate(-0 473.412523 81.430702)">97,953</text>
+   </g>
+   <g id="text_23">
+    <text style="font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: start" x="139.45315" y="60.20965" transform="rotate(-0 139.45315 60.20965)">900</text>
+   </g>
+   <g id="text_24">
+    <text style="font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: start" x="140.3134" y="38.988597" transform="rotate(-0 140.3134 38.988597)">1,150</text>
+   </g>
+   <g id="text_25">
+    <text style="font-weight: 700; font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: start" x="130.35625" y="15.558281" transform="rotate(-0 130.35625 15.558281)">The 100K plan's credits, two cycles: 200,000 bought, about 80,800 used</text>
+   </g>
+  </g>
+ </g>
+ <defs>
+  <clipPath id="p39c6761132">
+   <rect x="130.35625" y="21.558281" width="412.92" height="177.408"/>
+  </clipPath>
+ </defs>
+</svg>
+<figcaption>Figure 13. The 100K plan's two cycles. Red is what expired unused in September; orange is the October backfills; the light bar is what is left and expires Nov 1.</figcaption></figure>
+<p>Everything but the prices is free. <a class="gl" href="#g-odds-api" title="The licensed price feed that carries FanDuel&#x27;s board and closes; costs credits, carries no account risk; the only paid data source.">The Odds API</a> is $59 a month for 100,000 <a class="gl" href="#g-credits" title="The Odds API&#x27;s unit of spend: one per market per region per request for live boards, ten for historical.">credits</a>: a full <a class="gl" href="#g-board" title="Every selection FanDuel offers on a game at one moment, as stored from The Odds API (about 1,500 selections) or from saved pages.">board</a> is $0.04, a live game week about $0.24, a season of
+historical closes about $39.50, a paper-board week about $1.10. The rules since October: no plan change mid-cycle (unused credits expire on the 1st),
+a spend-down check on the 25th, backfills in batches of 40 games with the estimate printed first and a credit ceiling on every call, and any test that
+could spend runs on a copy of the ledger with a zero ceiling.</p>
+
+<h3 id="s5-8">5.8 How the work moves</h3>
+<ul>
+<li><b><a class="gl" href="#g-paste" title="A numbered instruction file the reviewer writes for Code (ops\pastes\paste_NN_name.md); Code works it in order and reports back.">Pastes</a>.</b> The reviewer writes a numbered instruction file; the operator tells Code to read it; Code works it in order, one commit per step, tests green, and reports with the numbers the paste asked for.</li>
+<li><b>Sentences before numbers.</b> Every model or feature change carries its pass sentence in the paste, before the run. A run that fails the sentence is reported as failed, whatever else it shows.</li>
+<li><b>Decisions at the <a class="gl" href="#g-settle" title="Monday&#x27;s two-phase tie-out (propose, apply) of the ledger to FanDuel&#x27;s record, then the grade and the report.">settle</a>.</b> Nothing reaches the live <a class="gl" href="#g-card" title="The model&#x27;s priced table of staked lines for the Broncos game, with stakes, minimum prices and token suggestions; the only model evidence.">card</a> without a decision row the operator answers on a Monday, recorded in <code>docs\DECISIONS.md</code>.</li>
+<li><b>Typed inputs, saved pages.</b> <a class="gl" href="#g-token" title="A FanDuel promotion (profit boost, bet reset, no-sweat, bonus bet) with its terms, inventoried and assigned after sizing.">Tokens</a>, inactives, the referee, shadow matchups and <a class="gl" href="#g-ladder" title="FanDuel&#x27;s alternate lines on a stat (10+, 20+ yards); the rung label is the line (3+ is over 2.5).">ladder</a> rungs are typed; My Bets, Transaction History and Rewards are saved from Chrome. Nothing is scraped from FanDuel.</li>
+</ul>
+
+<h2 id="gloss">Glossary <a class="top" href="#top">contents</a></h2>
+<p class="small">Every term below is linked from its first use in each section (dotted underline; hover for the definition).</p>
+<dl class="gloss"><dt id="g-two-way">Two-way line</dt><dd>A line with an over and an under at posted prices; the unit the gate counts.</dd><dt id="g-paper-board">Paper board</dt><dd>Every slate game, every week, priced as paper tickets and graded; the calibration evidence.</dd><dt id="g-paper-ticket">Paper ticket</dt><dd>A recorded prediction with no money on it; evidence in grading and calibration, excluded from the roll and every cap.</dd><dt id="g-route-page">Route page</dt><dd>The placement order for the card in FanDuel&#x27;s own layout, with the search word, the tab and the button label.</dd><dt id="g-one-sided">One-sided market</dt><dd>A line with no opposite side to remove the margin from (anytime TD, ladder rungs, sacks); priced against a market-fair reference.</dd><dt id="g-clv">CLV, closing-line value</dt><dd>How much better the price taken was than the closing price, raw or with the book&#x27;s margin removed; a diagnostic since D19.</dd><dt id="g-close">Close, closing line</dt><dd>The board at kickoff minus nine minutes, taken by the scheduled task or the runner; the market&#x27;s last price.</dd><dt id="g-no-vig">No-vig</dt><dd>The market&#x27;s probability with the book&#x27;s margin removed (the two sides of a line scaled to sum to 100%).</dd><dt id="g-fold">Fold, walk-forward</dt><dd>A fit on weeks 1 to k, scored on week k+1; eight fixed folds inside 2025 for the matrix (weeks 7 to 14 scored).</dd><dt id="g-holdout">Holdout</dt><dd>Data never used to choose anything, scored once at the end: 2025 weeks 15-18, the playoffs, 2024 as it lands.</dd><dt id="g-log-loss">Log-loss, Brier</dt><dd>Scores of a probability against what happened; lower is better; both are reported against the market&#x27;s no-vig number.</dd><dt id="g-calibration">Calibration, reliability</dt><dd>Whether lines the model calls x% win x% of the time, measured by decile; the largest gap between predicted and realised is the gate&#x27;s number.</dd><dt id="g-decile">Decile</dt><dd>One of ten probability buckets (50-60%, 60-70% ...) that the calibration table is read by; each bucket needs enough lines for its gap to mean anything.</dd><dt id="g-se">Standard error, noise</dt><dd>How far a measured rate can sit from the truth by chance alone: about 50 divided by the square root of n, in points, for a hit rate on n sides. A result inside two standard errors of zero is reported as noise.</dd><dt id="g-kelly-gate">Kelly gate (D6)</dt><dd>The coded rule (D6, read through D19) that moves the Kelly fraction from 0.25 to 0.50: largest decile gap five points or under on 1,000 or more two-way lines over four graded weeks. The card footer and the settle report print its numbers (the gate line); the report prints KELLY GATE MET the week it opens.</dd><dt id="g-kelly">Kelly fraction</dt><dd>The share of the growth-optimal stake actually used; 0.25 live, 0.50 behind the calibration gate.</dd><dt id="g-gate">Stake gate (6b)</dt><dd>Usage thresholds a player must clear before his line is staked: three targets in the last three games, 10% target share, 40% snap share.</dd><dt id="g-ladder">Ladder, rung</dt><dd>FanDuel&#x27;s alternate lines on a stat (10+, 20+ yards); the rung label is the line (3+ is over 2.5).</dd><dt id="g-sgp">SGP</dt><dd>Same-game parlay; the price is read from FanDuel&#x27;s slip and typed by hand; nothing is scraped.</dd><dt id="g-token">Token</dt><dd>A FanDuel promotion (profit boost, bet reset, no-sweat, bonus bet) with its terms, inventoried and assigned after sizing.</dd><dt id="g-snapshot">Snapshot, batch</dt><dd>One pull of a board into odds_snapshots; every row carries its batch id and, since schema v10, the feed&#x27;s own timestamp.</dd><dt id="g-paste">Paste</dt><dd>A numbered instruction file the reviewer writes for Code (ops\pastes\paste_NN_name.md); Code works it in order and reports back.</dd><dt id="g-settle">Settle</dt><dd>Monday&#x27;s two-phase tie-out (propose, apply) of the ledger to FanDuel&#x27;s record, then the grade and the report.</dd><dt id="g-serve">Serve</dt><dd>The local confirm form (127.0.0.1:8787) where each placed ticket is ticked with its real stake and price.</dd><dt id="g-roll">Roll</dt><dd>The FanDuel balance as the ledger knows it; cards size on it; $496.03 today.</dd><dt id="g-edge">Edge</dt><dd>The model&#x27;s probability minus the market&#x27;s no-vig probability, in points.</dd><dt id="g-ev">EV</dt><dd>Expected value: the average return per dollar if the probability is right, price and boost included.</dd><dt id="g-credits">Credits</dt><dd>The Odds API&#x27;s unit of spend: one per market per region per request for live boards, ten for historical.</dd><dt id="g-odds-api">The Odds API</dt><dd>The licensed price feed that carries FanDuel&#x27;s board and closes; costs credits, carries no account risk; the only paid data source.</dd><dt id="g-nflverse">nflverse</dt><dd>The open-source NFL data project (play-by-play, stats, snaps, rosters, injuries, Next Gen Stats, PFR, FTN charting); free, refreshed nightly.</dd><dt id="g-runner">Runner</dt><dd>The GitHub Actions jobs: nightly refresh, closing snapshots at kickoff minus eight, paper-board snapshots. Downloads to the PC as artifacts; never writes the ledger.</dd><dt id="g-board">Board</dt><dd>Every selection FanDuel offers on a game at one moment, as stored from The Odds API (about 1,500 selections) or from saved pages.</dd><dt id="g-card">Card</dt><dd>The model&#x27;s priced table of staked lines for the Broncos game, with stakes, minimum prices and token suggestions; the only model evidence.</dd></dl>
+</main></body></html>

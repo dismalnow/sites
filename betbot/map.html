@@ -1,0 +1,221 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Betbot map</title><style>body{margin:0;background:#E9EDF2;font-family:Segoe UI,Arial,sans-serif}.wrap{padding:16px;overflow:auto}svg{background:#fff;box-shadow:0 2px 12px rgba(0,0,0,.15)}p{color:#4A5568;font-size:13px;margin:8px 16px}</style></head><body><p>Broncos Betbot 2026: how the tool works. Ctrl + mouse wheel to zoom. The editable copy is docs\BETBOT_MAP.drawio.</p><div class="wrap"><svg xmlns="http://www.w3.org/2000/svg" width="1905" height="1082" viewBox="0 0 1905 1082" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+<defs><marker id="aO" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#FB4F14"/></marker><marker id="aG" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#1E7F4F"/></marker><marker id="aN" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#002244"/></marker></defs>
+<rect width="100%" height="100%" fill="#FFFFFF"/>
+<text x="40" y="44" font-size="26" font-weight="800" fill="#002244">Broncos Betbot 2026: how the tool works</text>
+<text x="40" y="68" font-size="13" fill="#6B7686">Read down. Orange: data and pricing. Green: what comes back after the game. Navy dashed: decisions, the only lines that change anything. Reviewer, Wed Oct 7 2026.</text>
+<rect x="20" y="96" width="1865" height="141" rx="10" fill="#F3F5F9"/>
+<text x="40" y="117" font-size="15" font-weight="800" fill="#002244">1  DATA SOURCES</text>
+<text x="190" y="117" font-size="12" fill="#6B7686">what comes in, and who pulls it</text>
+<rect x="20" y="281" width="1865" height="141" rx="10" fill="#F3F5F9"/>
+<text x="40" y="302" font-size="15" font-weight="800" fill="#002244">2  STORES</text>
+<text x="130" y="302" font-size="12" fill="#6B7686">one SQLite file and two feature tables; additive, de-duplicated</text>
+<rect x="20" y="466" width="1865" height="156" rx="10" fill="#F3F5F9"/>
+<text x="40" y="487" font-size="15" font-weight="800" fill="#002244">3  MODELS</text>
+<text x="130" y="487" font-size="12" fill="#6B7686">fitted on the feature tables; plus what the operator types or saves on game day</text>
+<rect x="20" y="666" width="1865" height="156" rx="10" fill="#F3F5F9"/>
+<text x="40" y="687" font-size="15" font-weight="800" fill="#002244">4  PRICING TO CARD</text>
+<text x="220" y="687" font-size="12" fill="#6B7686">game day, left to right; every number here comes from the rules box</text>
+<rect x="20" y="866" width="1865" height="156" rx="10" fill="#F3F5F9"/>
+<text x="40" y="887" font-size="15" font-weight="800" fill="#002244">5  EVIDENCE LOOP</text>
+<text x="200" y="887" font-size="12" fill="#6B7686">right to left, after the game; it ends at the decision, and only the decision changes anything</text>
+<path d="M 190 225 L 190 317" fill="none" stroke="#FB4F14" stroke-width="1.8" marker-end="url(#aO)"/>
+<path d="M 510 218 L 510 317" fill="none" stroke="#FB4F14" stroke-width="1.8" marker-end="url(#aO)"/>
+<path d="M 920 218 L 920 324" fill="none" stroke="#FB4F14" stroke-width="1.8" marker-end="url(#aO)"/>
+<path d="M 1300 210 L 1300 324" fill="none" stroke="#FB4F14" stroke-width="1.8" marker-end="url(#aO)"/>
+<path d="M 520 410 L 520 524" fill="none" stroke="#FB4F14" stroke-width="1.8" marker-end="url(#aO)"/>
+<path d="M 345 410 L 345 710" fill="none" stroke="#FB4F14" stroke-width="1.8" marker-end="url(#aO)"/>
+<path d="M 865 402 L 865 510" fill="none" stroke="#FB4F14" stroke-width="1.8" marker-end="url(#aO)"/>
+<path d="M 1125 402 L 1125 517" fill="none" stroke="#FB4F14" stroke-width="1.8" marker-end="url(#aO)"/>
+<path d="M 1370 402 L 1370 524" fill="none" stroke="#FB4F14" stroke-width="1.8" marker-end="url(#aO)"/>
+<path d="M 1370 588 L 1370 636 L 542 636 L 542 710" fill="none" stroke="#FB4F14" stroke-width="1.8" marker-end="url(#aO)"/>
+<path d="M 1125 595 L 1125 636" fill="none" stroke="#FB4F14" stroke-width="1.8"/>
+<path d="M 865 602 L 865 636" fill="none" stroke="#FB4F14" stroke-width="1.8"/>
+<path d="M 620 588 L 620 636" fill="none" stroke="#FB4F14" stroke-width="1.8"/>
+<path d="M 1682 602 L 1682 654 L 1386 654 L 1386 702" fill="none" stroke="#FB4F14" stroke-width="1.8" marker-end="url(#aO)"/>
+<path d="M 225 756 L 245 756" fill="none" stroke="#FB4F14" stroke-width="1.8" marker-end="url(#aO)"/>
+<path d="M 430 756 L 450 756" fill="none" stroke="#FB4F14" stroke-width="1.8" marker-end="url(#aO)"/>
+<path d="M 635 756 L 655 756" fill="none" stroke="#FB4F14" stroke-width="1.8" marker-end="url(#aO)"/>
+<path d="M 840 756 L 860 756" fill="none" stroke="#FB4F14" stroke-width="1.8" marker-end="url(#aO)"/>
+<path d="M 1045 756 L 1065 756" fill="none" stroke="#FB4F14" stroke-width="1.8" marker-end="url(#aO)"/>
+<path d="M 1250 756 L 1270 756" fill="none" stroke="#FB4F14" stroke-width="1.8" marker-end="url(#aO)"/>
+<path d="M 1455 756 L 1475 756" fill="none" stroke="#FB4F14" stroke-width="1.8" marker-end="url(#aO)"/>
+<path d="M 1660 756 L 1680 756" fill="none" stroke="#FB4F14" stroke-width="1.8" marker-end="url(#aO)"/>
+<path d="M 1568 802 L 1568 884 L 1728 884 L 1728 902" fill="none" stroke="#1E7F4F" stroke-width="1.8" marker-end="url(#aG)"/>
+<path d="M 1590 956 L 1560 956" fill="none" stroke="#1E7F4F" stroke-width="1.8" marker-end="url(#aG)"/>
+<path d="M 1430 1002 L 1430 1038 L 220 1038 L 220 1002" fill="none" stroke="#1E7F4F" stroke-width="1.8" marker-end="url(#aG)"/>
+<path d="M 1130 1002 L 1130 1038" fill="none" stroke="#1E7F4F" stroke-width="1.8"/>
+<path d="M 810 1002 L 810 1038" fill="none" stroke="#1E7F4F" stroke-width="1.8"/>
+<path d="M 530 995 L 530 1038" fill="none" stroke="#1E7F4F" stroke-width="1.8"/>
+<path d="M 40 956 L 30 956 L 30 756 L 40 756" fill="none" stroke="#002244" stroke-width="1.8" stroke-dasharray="7 5" marker-end="url(#aN)"/>
+<path d="M 40 756 L 30 756 L 30 556 L 40 556" fill="none" stroke="#002244" stroke-width="1.8" stroke-dasharray="7 5" marker-end="url(#aN)"/>
+<rect x="40" y="132.0" width="300" height="93" rx="5" fill="#FFFFFF" stroke="#002244" stroke-width="1.2"/>
+<text x="50" y="153" font-size="12" fill="#002244" font-weight="700">The Odds API (FanDuel filter only)</text>
+<text x="50" y="168" font-size="12" fill="#101820">live full board, about 62 credits a pull</text>
+<text x="50" y="183" font-size="12" fill="#101820">closing snapshot at kickoff minus 8</text>
+<text x="50" y="198" font-size="12" fill="#101820">paper boards: early and late, every game</text>
+<text x="50" y="213" font-size="12" fill="#101820">2025 closes: the historical backfill</text>
+<rect x="360" y="139.5" width="300" height="78" rx="5" fill="#FFFFFF" stroke="#002244" stroke-width="1.2"/>
+<text x="370" y="160" font-size="12" fill="#002244" font-weight="700">FanDuel pages, saved by hand (D3)</text>
+<text x="370" y="176" font-size="12" fill="#101820">My Bets, Transaction History, Rewards</text>
+<text x="370" y="190" font-size="12" fill="#101820">a text parser that survives redesigns</text>
+<text x="370" y="206" font-size="12" fill="#101820">no browser automation, ever</text>
+<rect x="740" y="139.5" width="360" height="78" rx="5" fill="#FFFFFF" stroke="#002244" stroke-width="1.2"/>
+<text x="750" y="160" font-size="12" fill="#002244" font-weight="700">nflverse parquet, 2016-2025</text>
+<text x="750" y="176" font-size="12" fill="#101820">schedules, play-by-play, player stats, snap counts,</text>
+<text x="750" y="190" font-size="12" fill="#101820">injuries, rosters, officials</text>
+<text x="750" y="206" font-size="12" fill="#101820">(Hugging Face dataset as the fallback source)</text>
+<rect x="1120" y="147.0" width="360" height="63" rx="5" fill="#FFFFFF" stroke="#002244" stroke-width="1.2"/>
+<text x="1130" y="168" font-size="12" fill="#002244" font-weight="700">Open-Meteo weather + config/stadiums.csv</text>
+<text x="1130" y="183" font-size="12" fill="#101820">temperature, wind, roof flag</text>
+<text x="1130" y="198" font-size="12" fill="#101820">forecast before the game, archive after</text>
+<rect x="1500" y="132.0" width="365" height="93" rx="5" fill="#FFFFFF" stroke="#6B7686" stroke-width="0.8" stroke-dasharray="3 3"/>
+<text x="1510" y="153" font-size="12" fill="#002244" font-weight="700">Who pulls: the GitHub Actions runner</text>
+<text x="1510" y="168" font-size="12" fill="#6B7686">nightly 10:00 UTC: refresh, weather, injuries,</text>
+<text x="1510" y="183" font-size="12" fill="#6B7686">odds snapshot, hf-sync</text>
+<text x="1510" y="198" font-size="12" fill="#6B7686">closing-snapshot at kickoff-8; paper-board slots</text>
+<text x="1510" y="213" font-size="12" fill="#6B7686">secrets live in .env and GitHub secrets only</text>
+<rect x="40" y="317.0" width="620" height="93" rx="12" fill="#FFFFFF" stroke="#002244" stroke-width="1.6"/><rect x="40" y="317.0" width="620" height="7" rx="3" fill="#002244"/>
+<text x="50" y="338" font-size="12" fill="#002244" font-weight="700">data/betbot.sqlite (schema v11)</text>
+<text x="50" y="353" font-size="12" fill="#101820">odds_snapshots 225,932 rows (189,420 closes, 26,643 live, 9,869 pages)</text>
+<text x="50" y="368" font-size="12" fill="#101820">the ledger: bets, bet_legs, bankroll_transactions, fanduel_activity, tokens</text>
+<text x="50" y="383" font-size="12" fill="#101820">cards, card_lines, paper_snapshots, paper_lines</text>
+<text x="50" y="398" font-size="12" fill="#101820">additive only: nothing is ever deleted; every import de-duplicated</text>
+<rect x="740" y="324.5" width="740" height="78" rx="5" fill="#FFFFFF" stroke="#002244" stroke-width="1.2"/>
+<text x="750" y="346" font-size="12" fill="#002244" font-weight="700">Feature tables (betbot features-build)</text>
+<text x="750" y="360" font-size="12" fill="#101820">team_game 5,522 rows 2016-2025; player_game 94,845 rows 2021-2025</text>
+<text x="750" y="376" font-size="12" fill="#101820">rolling _l3 / _l6 and season-to-date columns from strictly prior games</text>
+<text x="750" y="390" font-size="12" fill="#101820">week 1 carried forward from each player's last game of last season</text>
+<rect x="40" y="502.0" width="270" height="108" rx="5" fill="#FFFFFF" stroke="#002244" stroke-width="1.2"/>
+<text x="50" y="523" font-size="12" fill="#002244" font-weight="700">Study models (off the card)</text>
+<text x="50" y="538" font-size="12" fill="#101820">player_props-2.0.0 market-anchored, loadable</text>
+<text x="50" y="553" font-size="12" fill="#101820">1.3.0 dispersion refit: failed its sentence</text>
+<text x="50" y="568" font-size="12" fill="#101820">sacks 1.2.0: does not beat the market</text>
+<text x="50" y="583" font-size="12" fill="#101820">1.1.0+cal calibration map: paste 54</text>
+<text x="50" y="598" font-size="12" fill="#101820">Oct 12 decides what goes on the paper board</text>
+<rect x="380" y="524.5" width="280" height="63" rx="5" fill="#FFFFFF" stroke="#002244" stroke-width="1.2"/>
+<text x="390" y="546" font-size="12" fill="#002244" font-weight="700">Market-fair references</text>
+<text x="390" y="560" font-size="12" fill="#101820">calibration curves for one-sided markets</text>
+<text x="390" y="576" font-size="12" fill="#101820">(anytime TD, sacks) from the 2025 closes</text>
+<rect x="740" y="509.5" width="250" height="93" rx="5" fill="#FFFFFF" stroke="#002244" stroke-width="1.2"/>
+<text x="750" y="530" font-size="12" fill="#002244" font-weight="700">player_props-1.1.0 (LIVE)</text>
+<text x="750" y="546" font-size="12" fill="#101820">LightGBM mean per market, 11 markets</text>
+<text x="750" y="560" font-size="12" fill="#101820">yards log-normal; counts negative</text>
+<text x="750" y="576" font-size="12" fill="#101820">binomial; anytime TD Poisson to binary</text>
+<text x="750" y="590" font-size="12" fill="#101820">pre-kickoff usage floors</text>
+<rect x="1010" y="517.0" width="230" height="78" rx="5" fill="#FFFFFF" stroke="#002244" stroke-width="1.2"/>
+<text x="1020" y="538" font-size="12" fill="#002244" font-weight="700">game_lines-1.1.0</text>
+<text x="1020" y="553" font-size="12" fill="#101820">margin and total as Normals</text>
+<text x="1020" y="568" font-size="12" fill="#101820">closing spread / total as inputs</text>
+<text x="1020" y="583" font-size="12" fill="#101820">out-of-sample residual scale; referee</text>
+<rect x="1260" y="524.5" width="220" height="63" rx="5" fill="#FFFFFF" stroke="#002244" stroke-width="1.2"/>
+<text x="1270" y="546" font-size="12" fill="#002244" font-weight="700">SGP joint probability</text>
+<text x="1270" y="560" font-size="12" fill="#101820">Gaussian copula over measured</text>
+<text x="1270" y="576" font-size="12" fill="#101820">leg correlations (5,125 team-games)</text>
+<rect x="1500" y="509.5" width="365" height="93" rx="5" fill="#FFFFFF" stroke="#FB4F14" stroke-width="1.8" stroke-dasharray="6 3"/>
+<text x="1510" y="530" font-size="12" fill="#002244" font-weight="700">Game day, typed or saved by hand</text>
+<text x="1510" y="546" font-size="12" fill="#101820">final injury report; inactives at I (T-90)</text>
+<text x="1510" y="560" font-size="12" fill="#101820">matchups_today.txt, referees_week.txt</text>
+<text x="1510" y="576" font-size="12" fill="#101820">the Rewards page for the tokens (menu 3)</text>
+<text x="1510" y="590" font-size="12" fill="#101820">never scraped</text>
+<rect x="40" y="702.0" width="185" height="108" rx="5" fill="#FFF3EC" stroke="#002244" stroke-width="1.6"/>
+<text x="50" y="723" font-size="12" fill="#002244" font-weight="700">RULES: config/settings.toml</text>
+<text x="50" y="738" font-size="12" fill="#101820">Kelly 0.25 on the current roll</text>
+<text x="50" y="753" font-size="12" fill="#101820">caps 4% a bet, 80% a week,</text>
+<text x="50" y="768" font-size="12" fill="#101820">10% one-sided; min edge 1.0</text>
+<text x="50" y="783" font-size="12" fill="#101820">band 25-75%; blend 0.50 / 0.30</text>
+<text x="50" y="798" font-size="12" fill="#101820">changed only at a settle (D18)</text>
+<rect x="245" y="709.5" width="185" height="93" rx="5" fill="#FFFFFF" stroke="#002244" stroke-width="1.2"/>
+<text x="255" y="730" font-size="12" fill="#002244" font-weight="700">The board</text>
+<text x="255" y="746" font-size="12" fill="#101820">the latest FanDuel snapshot</text>
+<text x="255" y="760" font-size="12" fill="#101820">inside a time window;</text>
+<text x="255" y="776" font-size="12" fill="#101820">a moved line is never</text>
+<text x="255" y="790" font-size="12" fill="#101820">priced as still offered</text>
+<rect x="450" y="709.5" width="185" height="93" rx="5" fill="#FFFFFF" stroke="#002244" stroke-width="1.2"/>
+<text x="460" y="730" font-size="12" fill="#002244" font-weight="700">Price each selection</text>
+<text x="460" y="746" font-size="12" fill="#101820">FanDuel price &gt; break-even</text>
+<text x="460" y="760" font-size="12" fill="#101820">&gt; no-vig (both sides)</text>
+<text x="460" y="776" font-size="12" fill="#101820">&gt; model probability</text>
+<text x="460" y="790" font-size="12" fill="#101820">&gt; blend &gt; edge and EV</text>
+<rect x="655" y="702.0" width="185" height="108" rx="5" fill="#FFFFFF" stroke="#002244" stroke-width="1.2"/>
+<text x="665" y="723" font-size="12" fill="#002244" font-weight="700">Guards</text>
+<text x="665" y="738" font-size="12" fill="#101820">band 25-75% on model AND</text>
+<text x="665" y="753" font-size="12" fill="#101820">market; one-sided floor</text>
+<text x="665" y="768" font-size="12" fill="#101820">0.20; role-change rule;</text>
+<text x="665" y="783" font-size="12" fill="#101820">min edge; feature readiness</text>
+<text x="665" y="798" font-size="12" fill="#101820">(every refusal says why)</text>
+<rect x="860" y="709.5" width="185" height="93" rx="5" fill="#FFFFFF" stroke="#002244" stroke-width="1.2"/>
+<text x="870" y="730" font-size="12" fill="#002244" font-weight="700">size_stake</text>
+<text x="870" y="746" font-size="12" fill="#101820">fractional Kelly on the roll</text>
+<text x="870" y="760" font-size="12" fill="#101820">caps enforced; SGP half</text>
+<text x="870" y="776" font-size="12" fill="#101820">fraction and $10; best EV</text>
+<text x="870" y="790" font-size="12" fill="#101820">first; minimum acceptable price</text>
+<rect x="1065" y="709.5" width="185" height="93" rx="5" fill="#FFFFFF" stroke="#002244" stroke-width="1.2"/>
+<text x="1075" y="730" font-size="12" fill="#002244" font-weight="700">Token optimizer</text>
+<text x="1075" y="746" font-size="12" fill="#101820">each token where it adds</text>
+<text x="1075" y="760" font-size="12" fill="#101820">the most EV (exact search)</text>
+<text x="1075" y="776" font-size="12" fill="#101820">hold at most 2 bets for</text>
+<text x="1075" y="790" font-size="12" fill="#101820">the T-30 second touch</text>
+<rect x="1270" y="702.0" width="185" height="108" rx="5" fill="#FFFFFF" stroke="#002244" stroke-width="1.2"/>
+<text x="1280" y="723" font-size="12" fill="#002244" font-weight="700">The card</text>
+<text x="1280" y="738" font-size="12" fill="#101820">card.html + card_lines</text>
+<text x="1280" y="753" font-size="12" fill="#101820">ranked bets, SGP ladder,</text>
+<text x="1280" y="768" font-size="12" fill="#101820">tokens, dies-if-inactive</text>
+<text x="1280" y="783" font-size="12" fill="#101820">+ printouts: injury,</text>
+<text x="1280" y="798" font-size="12" fill="#101820">matchups, defense</text>
+<rect x="1475" y="709.5" width="185" height="93" rx="5" fill="#FFFFFF" stroke="#002244" stroke-width="1.2"/>
+<text x="1485" y="730" font-size="12" fill="#002244" font-weight="700">betbot serve (127.0.0.1)</text>
+<text x="1485" y="746" font-size="12" fill="#101820">tick to confirm: one bets</text>
+<text x="1485" y="760" font-size="12" fill="#101820">row per ticket, stake and</text>
+<text x="1485" y="776" font-size="12" fill="#101820">price as actually got</text>
+<text x="1485" y="790" font-size="12" fill="#101820">placement route page</text>
+<rect x="1680" y="709.5" width="185" height="93" rx="28" fill="#FFFFFF" stroke="#FB4F14" stroke-width="2.2"/>
+<text x="1690" y="730" font-size="12" fill="#002244" font-weight="700">YOU place every ticket</text>
+<text x="1690" y="746" font-size="12" fill="#101820">by hand on FanDuel (D3)</text>
+<text x="1690" y="760" font-size="12" fill="#101820">P Saturday, I at T-90,</text>
+<text x="1690" y="776" font-size="12" fill="#101820">G at T-70, 5 verify,</text>
+<text x="1690" y="790" font-size="12" fill="#101820">close at T-8</text>
+<rect x="1590" y="902.0" width="275" height="108" rx="5" fill="#FFFFFF" stroke="#002244" stroke-width="1.2"/>
+<text x="1600" y="923" font-size="12" fill="#002244" font-weight="700">betbot grade (Monday 7 / 8)</text>
+<text x="1600" y="938" font-size="12" fill="#101820">box scores &gt; results; closing</text>
+<text x="1600" y="953" font-size="12" fill="#101820">line &gt; CLV (a diagnostic)</text>
+<text x="1600" y="968" font-size="12" fill="#101820">Transaction History ties the</text>
+<text x="1600" y="983" font-size="12" fill="#101820">roll to the cent; the operator's</text>
+<text x="1600" y="998" font-size="12" fill="#101820">own rows: one aggregate line</text>
+<rect x="1300" y="909.5" width="260" height="93" rx="5" fill="#FFFFFF" stroke="#002244" stroke-width="1.2"/>
+<text x="1310" y="930" font-size="12" fill="#002244" font-weight="700">Weekly report 2026_wNN.md</text>
+<text x="1310" y="946" font-size="12" fill="#101820">calibration first: reliability by</text>
+<text x="1310" y="960" font-size="12" fill="#101820">decile, largest gap, the Kelly</text>
+<text x="1310" y="976" font-size="12" fill="#101820">gate's read; dollars second;</text>
+<text x="1310" y="990" font-size="12" fill="#101820">card rows only (D10)</text>
+<rect x="990" y="909.5" width="280" height="93" rx="5" fill="#FFFFFF" stroke="#002244" stroke-width="1.2"/>
+<text x="1000" y="930" font-size="12" fill="#002244" font-weight="700">Paper board (D19), league-wide</text>
+<text x="1000" y="946" font-size="12" fill="#101820">every game priced by the same</text>
+<text x="1000" y="960" font-size="12" fill="#101820">engine, graded, never bet;</text>
+<text x="1000" y="976" font-size="12" fill="#101820">1,000+ lines over 4 weeks with</text>
+<text x="1000" y="990" font-size="12" fill="#101820">largest gap &lt;= 5 pts opens the gate</text>
+<rect x="660" y="909.5" width="300" height="93" rx="5" fill="#FFFFFF" stroke="#002244" stroke-width="1.2"/>
+<text x="670" y="930" font-size="12" fill="#002244" font-weight="700">Studies and the regression matrix</text>
+<text x="670" y="946" font-size="12" fill="#101820">on the 2025 closes, no credits:</text>
+<text x="670" y="960" font-size="12" fill="#101820">folds weeks 7-14 walk-forward; holdout</text>
+<text x="670" y="976" font-size="12" fill="#101820">weeks 15-22 + 40 games of 2024, scored</text>
+<text x="670" y="990" font-size="12" fill="#101820">once; sentences before numbers</text>
+<rect x="430" y="917.0" width="200" height="78" rx="5" fill="#FFFFFF" stroke="#002244" stroke-width="1.2"/>
+<text x="440" y="938" font-size="12" fill="#002244" font-weight="700">Audits (ops/audits)</text>
+<text x="440" y="953" font-size="12" fill="#101820">a reader that did not build it</text>
+<text x="440" y="968" font-size="12" fill="#101820">01 leakage: no verdict moves</text>
+<text x="440" y="983" font-size="12" fill="#101820">02 doctrine; 03 Sunday</text>
+<rect x="40" y="909.5" width="360" height="93" rx="5" fill="#FFF3EC" stroke="#FB4F14" stroke-width="2.4"/>
+<text x="50" y="930" font-size="12" fill="#002244" font-weight="700">MONDAY SETTLE: the operator decides</text>
+<text x="50" y="946" font-size="12" fill="#101820">D18: no settings change this season;</text>
+<text x="50" y="960" font-size="12" fill="#101820">Week 9 review Nov 9. Oct 12: 2.0.0 on</text>
+<text x="50" y="976" font-size="12" fill="#101820">the paper board? injury row? boost rule?</text>
+<text x="50" y="990" font-size="12" fill="#101820">the only path that changes rules or models</text>
+<rect x="526" y="429" width="77" height="15" rx="3" fill="#FFFFFF" stroke="#FB4F14" stroke-width="0.6"/><text x="530" y="440" font-size="11" fill="#FB4F14">2025 closes</text>
+<rect x="351" y="429" width="128" height="15" rx="3" fill="#FFFFFF" stroke="#FB4F14" stroke-width="0.6"/><text x="355" y="440" font-size="11" fill="#FB4F14">the day's snapshots</text>
+<rect x="892" y="628" width="128" height="15" rx="3" fill="#FFFFFF" stroke="#FB4F14" stroke-width="0.6"/><text x="956" y="639" font-size="11" fill="#FB4F14" text-anchor="middle">model probabilities</text>
+<rect x="1590" y="876" width="115" height="15" rx="3" fill="#FFFFFF" stroke="#1E7F4F" stroke-width="0.6"/><text x="1648" y="887" font-size="11" fill="#1E7F4F" text-anchor="middle">confirmed tickets</text>
+<rect x="783" y="1030" width="84" height="15" rx="3" fill="#FFFFFF" stroke="#1E7F4F" stroke-width="0.6"/><text x="825" y="1041" font-size="11" fill="#1E7F4F" text-anchor="middle">the evidence</text>
+<rect x="40" y="835" width="153" height="15" rx="3" fill="#FFFFFF" stroke="#002244" stroke-width="0.6"/><text x="44" y="846" font-size="11" fill="#002244">rules, at a settle only</text>
+<rect x="40" y="635" width="147" height="15" rx="3" fill="#FFFFFF" stroke="#002244" stroke-width="0.6"/><text x="44" y="646" font-size="11" fill="#002244">which model goes where</text>
+<text x="40" y="1068" font-size="11" fill="#6B7686">Sources: config/settings.toml; docs/DECISIONS.md (D3, D10, D18, D19); docs/REGRESSION_MATRIX_2025.md; ops/menu.ps1. The operator's own tickets appear nowhere here.</text>
+</svg></div></body></html>
