@@ -1,0 +1,455 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>DnB eBay lot inventory</title>
+<meta name="description" content="106 drum and bass records from one eBay lot, identified from the listing photos and checked against Discogs.">
+<style>
+  :root {
+    --quilt: #0f3745;
+    --quilt-deep: #0a2832;
+    --paper: #f5f6f7;
+    --ink: #15171a;
+    --ink-soft: #4b5258;
+    --rule: #d3d7db;
+    --hi: #1f7a4d;
+    --med: #a56a00;
+    --low: #b4501c;
+    --none: #8a2f2f;
+    --link: #0b5c8a;
+    --focus: #ffd23f;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--quilt);
+    background-image:
+      linear-gradient(135deg, rgba(255,255,255,.035) 25%, transparent 25%, transparent 50%, rgba(255,255,255,.035) 50%, rgba(255,255,255,.035) 75%, transparent 75%);
+    background-size: 120px 120px;
+    color: var(--ink);
+    font-family: "Helvetica Neue", Helvetica, Arial, "Liberation Sans", sans-serif;
+    font-size: 15px;
+    line-height: 1.45;
+  }
+  .wrap { max-width: 1280px; margin: 0 auto; padding: 28px 16px 64px; }
+  a { color: var(--link); }
+  :focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+
+  /* The seller's catalog sticker, scaled up: the one loud element on the page. */
+  .sticker {
+    background: var(--paper);
+    border-radius: 14px;
+    padding: 22px 26px 0;
+    max-width: 760px;
+    box-shadow: 0 2px 0 var(--quilt-deep);
+    overflow: hidden;
+  }
+  .sticker h1 {
+    margin: 0;
+    font-size: clamp(34px, 7vw, 64px);
+    line-height: 1;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+  .sticker .sub { margin: 8px 0 0; font-size: clamp(16px, 2.4vw, 21px); color: var(--ink); }
+  .sticker .meta {
+    display: flex; flex-wrap: wrap; gap: 6px 40px;
+    margin: 22px 0 14px; font-size: 14px; color: var(--ink-soft);
+    font-variant-numeric: tabular-nums;
+  }
+  .hatch {
+    height: 16px; margin: 0 -26px;
+    background: repeating-linear-gradient(115deg, var(--ink) 0 5px, transparent 5px 12px);
+    border-top: 10px solid var(--paper); border-bottom: 12px solid var(--paper);
+    box-sizing: content-box;
+  }
+  .lede { color: #e6eef1; max-width: 68ch; margin: 22px 0 26px; font-size: 16px; }
+  .lede strong { color: #fff; }
+
+  .panel { background: var(--paper); border-radius: 10px; }
+  .controls { padding: 16px; display: grid; gap: 14px; }
+  .controls label.search { display: grid; gap: 6px; font-weight: 700; font-size: 14px; }
+  .controls input[type="search"] {
+    font: inherit; padding: 10px 12px; border: 2px solid var(--ink); border-radius: 6px;
+    background: #fff; color: var(--ink); width: 100%; max-width: 520px;
+  }
+  fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+  legend { padding: 0; font-weight: 700; font-size: 14px; margin-bottom: 6px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip {
+    font: inherit; font-size: 14px; cursor: pointer;
+    padding: 7px 12px; border-radius: 999px;
+    border: 2px solid var(--ink); background: #fff; color: var(--ink);
+  }
+  .chip[aria-pressed="true"] { background: var(--ink); color: #fff; }
+  .chip .count { font-variant-numeric: tabular-nums; opacity: .75; margin-left: 4px; }
+  .status { padding: 0 16px 14px; font-size: 14px; color: var(--ink-soft); }
+
+  .table-scroll { overflow-x: auto; border-top: 1px solid var(--rule); }
+  table { border-collapse: collapse; width: 100%; min-width: 980px; font-size: 14px; }
+  th, td { text-align: left; vertical-align: top; padding: 9px 10px; border-bottom: 1px solid var(--rule); }
+  thead th { background: #e9ecef; position: sticky; top: 0; white-space: nowrap; font-size: 13px; }
+  th button {
+    font: inherit; font-weight: 700; background: none; border: 0; padding: 0; cursor: pointer; color: var(--ink);
+  }
+  th button .arrow { display: inline-block; width: 1em; color: var(--ink-soft); }
+  td.num, td.year { font-variant-numeric: tabular-nums; white-space: nowrap; }
+  td.cat { font-variant-numeric: tabular-nums; }
+  tr.rec { cursor: pointer; }
+  tr.rec:hover td { background: #fff; }
+  tr.rec td.artist { font-weight: 700; }
+  .unknown { color: var(--ink-soft); font-style: italic; font-weight: 400; }
+  .toggle {
+    font: inherit; font-size: 13px; cursor: pointer; white-space: nowrap;
+    border: 1px solid var(--ink); border-radius: 5px; background: #fff; color: var(--ink); padding: 3px 8px;
+  }
+  .badge {
+    display: inline-block; white-space: nowrap; font-size: 12.5px; font-weight: 700;
+    padding: 2px 8px; border-radius: 4px; color: #fff;
+  }
+  .badge.High { background: var(--hi); }
+  .badge.Medium { background: var(--med); }
+  .badge.Low { background: var(--low); }
+  .badge.None { background: var(--none); }
+  .outside { display: inline-block; margin-left: 6px; font-size: 12px; color: var(--none); font-weight: 700; }
+
+  tr.detail td { background: #fff; padding: 14px 16px 18px; }
+  .detail-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px 28px; max-width: 1100px; }
+  .detail-grid h3 { margin: 0 0 3px; font-size: 13px; color: var(--ink-soft); font-weight: 700; }
+  .detail-grid p { margin: 0; }
+  .detail-grid .wide { grid-column: 1 / -1; max-width: 80ch; }
+  .empty { padding: 28px 16px; }
+  .empty button { margin-left: 8px; }
+
+  section.more { margin-top: 28px; padding: 20px 22px 22px; }
+  section.more h2 { margin: 0 0 10px; font-size: 20px; }
+  section.more ul { margin: 0; padding-left: 20px; max-width: 80ch; }
+  section.more li { margin: 5px 0; }
+  section.more p { max-width: 76ch; margin: 0 0 12px; }
+  section.more table { min-width: 720px; }
+  footer { color: #c9d8dd; font-size: 13px; margin-top: 26px; max-width: 76ch; }
+
+  @media (max-width: 640px) {
+    .wrap { padding: 16px 16px 48px; }
+    .sticker { padding: 18px 18px 0; }
+    .hatch { margin: 0 -18px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="sticker">
+    <h1>Various Artists</h1>
+    <p class="sub">Drum and bass 12"s, one eBay lot</p>
+    <div class="meta"><span id="meta-count"></span><span>Read from 16 listing photos</span><span id="meta-years"></span></div>
+    <div class="hatch" aria-hidden="true"></div>
+  </header>
+
+  <p class="lede" id="lede"></p>
+
+  <main>
+    <div class="panel">
+      <div class="controls">
+        <label class="search">Search artist, title, label, cat # or track
+          <input type="search" id="q" autocomplete="off" placeholder="e.g. Underfire, Decoder, SHADOW 142">
+        </label>
+        <fieldset>
+          <legend>How sure is the identification</legend>
+          <div class="chips" id="conf-chips"></div>
+        </fieldset>
+        <fieldset>
+          <legend>Release year against the listing's 1998 to 2010 range</legend>
+          <div class="chips" id="year-chips"></div>
+        </fieldset>
+      </div>
+      <div class="status" id="status" role="status" aria-live="polite"></div>
+      <div class="table-scroll">
+        <table id="records">
+          <thead><tr id="head-row"></tr></thead>
+          <tbody id="body"></tbody>
+        </table>
+      </div>
+      <div class="empty" id="empty" hidden>No records match those filters.<button class="toggle" id="clear" type="button">Clear filters</button></div>
+    </div>
+
+    <section class="panel more">
+      <h2>Ask the seller before bidding</h2>
+      <ul id="questions"></ul>
+    </section>
+
+    <section class="panel more">
+      <h2>The two unread Calyx 2x12"s</h2>
+      <p>Photo 6 shows two Calyx 2x12" records in plain white sleeves whose titles cannot be read. Calyx released exactly five 2x12" EPs between 1998 and 2006, so the two in the lot are among these. The Moving Shadow EPs use side letters X / Y / XX / YY; the Metalheadz one does not.</p>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>Title</th><th>Label</th><th>Cat #</th><th>Year</th><th>Format</th><th>Tracklist</th><th>Discogs</th></tr></thead>
+          <tbody id="calyx"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel more">
+      <h2>How this was put together</h2>
+      <ul id="method"></ul>
+    </section>
+  </main>
+
+  <footer>Release data from Discogs, linked on each row. Listing photos are the seller's and are not reproduced here.</footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var RECORDS = [{"photo":1,"position":"Top 1","artist":"Dillinja","title":"Twist 'Em Out (Discogs title: Here Comes Trouble - LP Sampler Volume One)","label":"Trouble On Vinyl","cat":"TOV 56","year":2003,"format":"12\"","discs":1,"shows":"Picture sleeve; 1 disc","tracklist":"A: Twist 'Em Out (Original Mix) / AA: Twist 'Em Out (Dylan Remix)","read":"Picture sleeve: DILLINJA - TWIST 'EM OUT, round label logo","inv":"","confidence":"Medium","notes":"Title is printed on the sleeve; the exact pressing is not. Other sleeved/unsleeved versions of this title: TOV 56R (DJ Fresh BC Remix / Skibadee Vocal Mix, 2003), TOV 56RW (Keaton Remix / Skibadee Vocal Remix, 2003), Renegade Hardware RH40 (Twist 'Em Out / Kids Stuff, 2002). Confirm cat# on the label.","url":"https://www.discogs.com/release/141922-Dillinja-Here-Comes-Trouble-LP-Sampler-Volume-One","n":1},{"photo":1,"position":"Top 2","artist":"Demo & Cease","title":"Ladies Night","label":"Human Imprint Recordings","cat":"HUMA8023","year":2008,"format":"12\"","discs":1,"shows":"Picture sleeve; 1 disc","tracklist":"A: Ladies Night / AA: Ladies Night (VIP)","read":"Picture sleeve: LADIES NIGHT - DEMO AND CEASE","inv":"","confidence":"High","notes":"US release. Picture sleeve = stock issue (Jan 2008); a white-label promo is dated Dec 2007.","url":"https://www.discogs.com/release/1221820-Demo-4-And-Cease-Ladies-Night","n":2},{"photo":1,"position":"Top 3","artist":"Crossfire","title":"Counterforce / Firebolt","label":"DSCI4","cat":"DSCI4 008","year":2003,"format":"12\"","discs":1,"shows":"Picture sleeve; 1 disc","tracklist":"A: Counterforce / B: Firebolt","read":"Red angular 3D artwork, grey band with DSCI4 logo; title area hidden by the next record","inv":"","confidence":"Medium","notes":"Matched on sleeve artwork only (the one DSCI4 sleeve of 1999-2006 with red angular artwork under a grey band). The title tag at top right of the real sleeve is covered in the photo. Confirm with seller.","url":"https://www.discogs.com/release/125946-Crossfire-Counterforce-Firebolt","n":3},{"photo":1,"position":"Top 4","artist":"Kraken","title":"Side Effects (Blazin - Limited Edition LP Sampler)","label":"Underfire","cat":"UDFRLP-01","year":1999,"format":"12\", single-sided, 45 RPM","discs":1,"shows":"Black sleeve; 1 disc","tracklist":"A: Side Effects (B side blank)","read":"Seller sticker: Kraken / Side Effects / UDFRLP-01 / 1999","inv":"0430","confidence":"High","notes":"One-sided sampler for the Blazin LP (UDFRLP02). Kraken = Stakka & Skynet alias.","url":"https://www.discogs.com/release/125806-Kraken-Side-Effects-Blazin-Limited-Edition-LP-Sampler","n":4},{"photo":1,"position":"Top 5","artist":"Profound Noise + DJ Skinny / Worlds End","title":"Trans-F / Status Control","label":"Underfire","cat":"UDFR009","year":1998,"format":"12\", 45 RPM","discs":1,"shows":"White label with black flame logo (promo-style); 1 disc","tracklist":"A: Profound Noise + DJ Skinny - Trans-F / AA: Worlds End - Status Control","read":"Seller sticker: Profound Noize / Trans-F/Status Control / UDFR009 / 1998","inv":"0596","confidence":"High","notes":"Split 12\": Status Control is by Worlds End, which the seller sticker omits. Stock copies have a black label, so this white-label copy is a promo variant (label design not matched to a Discogs photo).","url":"https://www.discogs.com/release/3874006-Profound-Noise-DJ-Skinny-Worlds-End-4-Trans-F-Status-Control","n":5},{"photo":1,"position":"Bottom 1","artist":"Dom & Rymetyme","title":"Iceberg / We-Gee","label":"Moving Shadow","cat":"SHADOW 142","year":2000,"format":"12\", 45 RPM","discs":1,"shows":"Black sleeve, printed label; 1 disc","tracklist":"X: Iceberg / Y: We-Gee","read":"Seller sticker: Dom & Rhymetyme / Iceberg/We-Gee / SHADOW142 / 2000","inv":"0065","confidence":"High","notes":"A mispress exists with Dom & Roland 'Original Sin' on the Y side. Check runout SHADOW-142 Y-1 if it matters.","url":"https://www.discogs.com/release/5863-Dom-And-Rymetyme-Iceberg-We-Gee","n":6},{"photo":1,"position":"Bottom 2","artist":"Technical Itch","title":"Dimensions / Relic","label":"Moving Shadow","cat":"SHADOW 147","year":2000,"format":"12\"","discs":1,"shows":"Black sleeve, printed label; 1 disc","tracklist":"X: Dimensions / Y: Relic","read":"Seller sticker: Technical Itch / Dimensions/Relic / SHADOW147 / 2000","inv":"0089","confidence":"High","notes":"","url":"https://www.discogs.com/release/1768-Technical-Itch-Dimensions-Relic","n":7},{"photo":1,"position":"Bottom 3","artist":"Profound Noize","title":"Soundscape / No Way Out","label":"Underfire","cat":"UDFR001","year":1997,"format":"12\", 33 RPM, promo","discs":1,"shows":"White label stamped UDFR001 X: Soundscape Y: No Way Out; 1 disc","tracklist":"X: Soundscape / Y: No Way Out","read":"Seller sticker: Profound Noize / Soundscape/No Way Out / UDFR001 / 1997","inv":"0609","confidence":"High","notes":"Promo white label of the first Underfire release. Stock issue came in a picture sleeve.","url":"https://www.discogs.com/release/2578336-Profound-Noize-Soundscape-No-Way-Out","n":8},{"photo":1,"position":"Bottom 4","artist":"Total Science","title":"Zodiac / Basic","label":"True Playaz","cat":"TPR12036","year":2001,"format":"12\", 45 RPM","discs":1,"shows":"True Playaz picture sleeve; 1 disc","tracklist":"A: Zodiac / AA: Basic","read":"Seller sticker: Total Science / Zodiac/Basic / TPR12036 / 2001","inv":"0650","confidence":"High","notes":"","url":"https://www.discogs.com/release/15757-Total-Science-Zodiac-Basic","n":9},{"photo":1,"position":"Bottom 5","artist":"Klone / DJ Wildchild","title":"Bloodshot (The Upbeats Remix) / Human Affairs VIP","label":"Wildstyle Recordings","cat":"WILD010","year":2006,"format":"12\", 45 RPM, white label promo","discs":1,"shows":"White label in white sleeve; 1 disc","tracklist":"A: Klone - Bloodshot (The Upbeats Remix) / AA: DJ Wildchild - Human Affairs VIP","read":"Handwritten on sleeve: 'Bloodshot Rmx.' and 'Wildstyle 10'","inv":"","confidence":"Medium","notes":"Identified from handwriting only. WILD010 is the only Wildstyle release with that number and it carries a Bloodshot remix. Runout should confirm.","url":"https://www.discogs.com/release/1542431-Klone-2-DJ-Wildchild-Bloodshot-The-Upbeats-Remix-Human-Affairs-VIP","n":10},{"photo":2,"position":"Top 1","artist":"Danny C","title":"Star (mastering acetate / dubplate)","label":"Heathmans Mastering (acetate); released on Metalheadz","cat":"none on acetate (commercial release: METH 051)","year":2003,"format":"Acetate, 45 RPM","discs":1,"shows":"Heathmans Mastering sleeve and label; 1 disc","tracklist":"Star (commercial 12\": A: Star / AA: Sunday)","read":"Label: HEATHMANS mastering / Danny C / Star / 45 RPM / dated 22 or 23/4/2003","inv":"","confidence":"High","notes":"One-off cutting-house acetate, not a pressing. Acetates wear out with play; whether it is one-sided or the released mix is not verifiable from the photo. Track was released as Metalheadz METH 051 (2003).","url":"https://www.discogs.com/release/184306-Danny-C-Star-Sunday","n":11},{"photo":2,"position":"Top 2","artist":"Kosheen","title":"Catch / Demonstrate (Decoder & Substance mixes)","label":"Moksha Recordings","cat":"MOKSHA 06T","year":2000,"format":"12\", 45 RPM","discs":1,"shows":"Black sleeve; 1 disc","tracklist":"A: Catch (Decoder & Substance Mix) / AA: Demonstrate (Decoder & Substance Mix)","read":"Seller sticker: Kosheen/Decoder Substance / Catch (Decoder & Substance Mix) Demonstrate (Decoder & Substance Mix) / MOKSHA06T / 2000","inv":"0015","confidence":"High","notes":"","url":"https://www.discogs.com/release/5136-Kosheen-Catch-Demonstrate","n":12},{"photo":2,"position":"Top 3","artist":"Profound Noize","title":"Wired / Cosmic Funk","label":"Underfire","cat":"UDFR003","year":1997,"format":"12\", 33 RPM","discs":1,"shows":"Stock copy in Underfire picture sleeve; 1 disc","tracklist":"A: Wired / B: Cosmic Funk","read":"Seller sticker: Profound Noise / Wired/Cosmic Funk / UDFR003 / 1997","inv":"0585","confidence":"High","notes":"Copy 1 of 2 in the lot (the other is the promo white label, Photo 2 Bottom 4).","url":"https://www.discogs.com/release/52549-Profound-Noize-Wired-Cosmic-Funk","n":13},{"photo":2,"position":"Top 4","artist":"","title":"","label":"","cat":"","year":null,"format":"","discs":null,"shows":"Cream sleeve; 1 disc, mostly hidden","tracklist":"","read":"Black printed label with a yellow triangular shape at the edge; everything else covered by the Cylon record","inv":"","confidence":"None","notes":"Not identifiable from the photo. Ask seller for the label text.","url":"","n":14},{"photo":2,"position":"Top 5","artist":"Universal Project","title":"Jackhammer / Hoax","label":"Cylon Recordings","cat":"CYLON008","year":2002,"format":"12\"","discs":1,"shows":"Cylon picture sleeve; 1 disc","tracklist":"A: Jackhammer / B: Hoax","read":"Seller sticker: Universal Project / Jackhammer/Hoax / CYLON008 / 2002; label matches","inv":"0271","confidence":"High","notes":"","url":"https://www.discogs.com/release/22281-Universal-Project-Jackhammer","n":15},{"photo":2,"position":"Bottom 1","artist":"Spirit","title":"20/20 / Inside Out","label":"Inneractive Music","cat":"INNA 004","year":2003,"format":"12\"","discs":1,"shows":"Black sleeve; 1 disc","tracklist":"A: 20/20 / AA: Inside Out","read":"Seller sticker: Spirit / 20/20 / Inside Out / INNA004 / 2003","inv":"0217","confidence":"High","notes":"","url":"https://www.discogs.com/release/134734-Spirit-2020-Inside-Out","n":16},{"photo":2,"position":"Bottom 2","artist":"The Militia","title":"Amnesia / Uncooked","label":"The Militia Recordings","cat":"THEMILITIA001","year":2003,"format":"12\"","discs":1,"shows":"Black sleeve, printed label; 1 disc","tracklist":"A: Amnesia / AA: Uncooked","read":"Label: The Militia Recordings / a. Amnesia / aa. Uncooked / Written & produced by S. Morris & A. Ash / Made in England","inv":"","confidence":"High","notes":"The Militia = K.Tee, Skinny, Friction & Stakka.","url":"https://www.discogs.com/release/162719-Militia-Amnesia-Uncooked","n":17},{"photo":2,"position":"Bottom 3","artist":"Jonny L","title":"The Bells / Raise","label":"Piranha Records","cat":"PIH-001","year":1999,"format":"12\", 45 RPM","discs":1,"shows":"Picture sleeve (blue creature); 1 disc","tracklist":"A: The Bells / AA: Raise","read":"Seller sticker: Jonny L / The Bells/Raise / PIH-001 / 1999","inv":"0276","confidence":"High","notes":"","url":"https://www.discogs.com/release/26944-Jonny-L-The-Bells-Raise","n":18},{"photo":2,"position":"Bottom 4","artist":"Profound Noize","title":"Wired / Cosmic Funk (promo)","label":"Underfire","cat":"UDFR003","year":1997,"format":"12\", 33 RPM, white label promo","discs":1,"shows":"White label in black sleeve; 1 disc","tracklist":"X: Wired / Y: Cosmic Funk","read":"Seller sticker: Profound Noize / Wired/Cosmic Funk / UDFR003 / 1997; white label printed with Y: ... CAT: ...","inv":"0594","confidence":"High","notes":"Copy 2 of 2 in the lot (promo white label).","url":"https://www.discogs.com/release/2567897-Profound-Noize-Wired-Cosmic-Funk","n":19},{"photo":2,"position":"Bottom 5","artist":"Various","title":"Fire (disc 2 of 3, sides C/D)","label":"Hardleaders","cat":"HLLP10","year":2000,"format":"3x12\" compilation, 45 RPM","discs":3,"shows":"Single disc (C/D) in black sleeve","tracklist":"C: Decoder - Defender / D: Manifest - Underworld","read":"Seller sticker: Various Artists / Fire LP C/D / HLLP10 / 2000; yellow FIRE label","inv":"0518","confidence":"High","notes":"Lot shows discs 2 and 3 only (see Photo 3 Top 3). Disc 1 (A: Total Science - Fallout / B: Tech Level 2 - Tracker) is not in any photo, so the set looks incomplete.","url":"https://www.discogs.com/release/98337-Various-Fire","n":20},{"photo":3,"position":"Top 1","artist":"Decoder","title":"Crisis / Spy Ring","label":"BS1 Records","cat":"BS1 003","year":2001,"format":"12\", 45 RPM","discs":1,"shows":"White sleeve, printed BS1 label; 1 disc","tracklist":"A: Crisis / B: Spy Ring","read":"Seller sticker: Decoder / Crisis/Spy Ring / BS1003 / 2001; label shows BS1 logo and DECODER","inv":"0260","confidence":"High","notes":"","url":"https://www.discogs.com/release/55983-Decoder-Crisis-Spy-Ring","n":21},{"photo":3,"position":"Top 2","artist":"Decoder (per handwriting)","title":"","label":"","cat":"","year":null,"format":"12\" white label","discs":null,"shows":"White label in black sleeve; 1 disc","tracklist":"","read":"Handwritten on label: 'Decoder'","inv":"","confidence":"None","notes":"Artist name only. Not identifiable without the runout etching.","url":"","n":22},{"photo":3,"position":"Top 3","artist":"Various","title":"Fire (disc 3 of 3, sides E/F)","label":"Hardleaders","cat":"HLLP10","year":2000,"format":"3x12\" compilation, 45 RPM","discs":3,"shows":"Single disc (E/F) in black sleeve","tracklist":"E: 5th Assassin - Perimeters / F: Digital - Bad Mind","read":"Seller sticker: Various Artists / Fire LP E/F / HLLP10 / 2000","inv":"0519","confidence":"High","notes":"See Photo 2 Bottom 5. Disc 1 (A/B) not shown in the listing.","url":"https://www.discogs.com/release/98337-Various-Fire","n":23},{"photo":3,"position":"Top 4","artist":"Worlds End","title":"General Lock Down / Human Affairs","label":"Underfire","cat":"UDFR007","year":1997,"format":"12\", 33 RPM","discs":1,"shows":"Brown card sleeve, printed label; 1 disc","tracklist":"A: General Lock-Down / B: Human Affairs","read":"Label: underfire / WORLDS END / This side: General Lock-Down / That side: Human Affairs","inv":"","confidence":"High","notes":"","url":"https://www.discogs.com/release/52540-Worlds-End-4-General-Lock-Down-Human-Affairs","n":24},{"photo":3,"position":"Top 5","artist":"Phace & Misanthrop / Phace","title":"Progression / Systeme Mecanique","label":"Neosignal","cat":"NSGNL010","year":2012,"format":"12\", 45 RPM, limited to 500","discs":1,"shows":"Brown card sleeve with green NSGNL010 sticker; 1 disc","tracklist":"A: Phace & Misanthrop - Progression / B: Phace - Systeme Mecanique","read":"Sleeve sticker: NSGNL010 // ... Made in Germany; label logo of three bars","inv":"","confidence":"High","notes":"German pressing from 2012, later than the 1998-2010 range in the listing title.","url":"https://www.discogs.com/release/3633793-Phace-Misanthrop-Phace-Progression-Syst%C3%A8me-M%C3%A9canique","n":25},{"photo":3,"position":"Bottom 1","artist":"","title":"","label":"","cat":"","year":null,"format":"12\" white label","discs":null,"shows":"Blank white label in white sleeve; 1 disc","tracklist":"","read":"No markings visible","inv":"","confidence":"None","notes":"Not identifiable from the photo.","url":"","n":26},{"photo":3,"position":"Bottom 2","artist":"Jonny L","title":"Selecta / Change","label":"Piranha Records","cat":"PIH-003","year":1999,"format":"12\", 45 RPM","discs":1,"shows":"Picture sleeve (gold creature); 1 disc","tracklist":"A: Selecta / B: Change","read":"Seller sticker: Jonny L / Selecta/Change / PIH-003 / 1999","inv":"0349","confidence":"High","notes":"","url":"https://www.discogs.com/release/26954-Jonny-L-Selecta-Change","n":27},{"photo":3,"position":"Bottom 3","artist":"Jonny L","title":"Cut-Off / Move Upon","label":"Piranha Records","cat":"PIH 004","year":2000,"format":"12\", 45 RPM","discs":1,"shows":"Picture sleeve (gold creature); 1 disc","tracklist":"A: Cut-Off / AA: Move Upon","read":"Seller sticker: Jonny L / Cut-Off/Move Upon / PIH004 / 2000","inv":"0342","confidence":"High","notes":"","url":"https://www.discogs.com/release/5052-Jonny-L-Cut-Off-Move-Upon","n":28},{"photo":3,"position":"Bottom 4","artist":"Danny C / Sonic","title":"Drum & Bass Fiesta Remixes Pt.1","label":"V Recordings","cat":"V044","year":2003,"format":"12\", white label","discs":1,"shows":"White label in paper sleeve; 1 disc","tracklist":"A: Danny C - Happy Hour (Drumsound & Simon Bassline Smith Remix) / B: Sonic - Make Me Wanna (Artificial Intelligence Remix)","read":"Handwritten on label: 'Danny C' and 'V044'","inv":"","confidence":"Medium","notes":"Identified from the handwritten cat#. Split 12\": only the A side is Danny C.","url":"https://www.discogs.com/release/3001182-Danny-C-Sonic-Drum-And-Bass-Fiesta-The-Remixes","n":29},{"photo":3,"position":"Bottom 5","artist":"DJ Buz","title":"Slave Special / Watch Me Now","label":"No U-Turn","cat":"NUT-008","year":1994,"format":"12\", 45 RPM","discs":1,"shows":"Black sleeve, printed No U-Turn label; 1 disc","tracklist":"A: Slave Special / AA: Watch Me Now","read":"Seller sticker: DJ Buz / Slave Special/Watch Me Now / NUT-008 / 1994; label matches","inv":"0036","confidence":"High","notes":"1994 jungle, earlier than the 1998-2010 range in the listing title.","url":"https://www.discogs.com/release/17232-DJ-Buz-Slave-Special-Watch-Me-Now","n":30},{"photo":4,"position":"Top 1","artist":"Bad Company","title":"Shot Down On Safari - disc 1 'Round 1' (Hornet / Snow Cat), promo/white label","label":"BC Recordings","cat":"BCRUKLP002","year":2002,"format":"1 disc from a 4x12\" LP","discs":4,"shows":"Single white label in white sleeve","tracklist":"A: Hornet / B: Snow Cat","read":"Handwritten on sleeve: 'Snowcat' and 'hornet'","inv":"","confidence":"Medium","notes":"Only D&B release pairing both titles is disc 1 of Shot Down On Safari. Probably a stray promo disc; the full retail LP is also in the lot (Photo 15). Runout should read BCRUKLP002.","url":"https://www.discogs.com/release/1474152-BC-Shot-Down-On-Safari","n":31},{"photo":4,"position":"Top 2","artist":"","title":"","label":"","cat":"","year":null,"format":"12\" white label","discs":null,"shows":"Blank white label; 1 disc","tracklist":"","read":"Sleeve marked 'D+B $12'","inv":"","confidence":"None","notes":"Not identifiable from the photo.","url":"","n":32},{"photo":4,"position":"Top 3","artist":"","title":"","label":"","cat":"","year":null,"format":"12\" white label","discs":null,"shows":"Blank white label; 1 disc","tracklist":"","read":"No markings visible","inv":"","confidence":"None","notes":"Not identifiable from the photo.","url":"","n":33},{"photo":4,"position":"Top 4","artist":"","title":"","label":"","cat":"","year":null,"format":"","discs":null,"shows":"Sleeve almost entirely hidden behind Top 5","tracklist":"","read":"Only a sleeve edge is visible","inv":"","confidence":"None","notes":"Not identifiable from the photo. May or may not contain a record.","url":"","n":34},{"photo":4,"position":"Top 5","artist":"","title":"","label":"","cat":"","year":null,"format":"12\" white label","discs":null,"shows":"White label; 1 disc","tracklist":"","read":"Handwritten on label: 'SHA 013' or 'SHA 05' (reads '50 VHS' the other way up); sleeve marked 'D+B $8.50'","inv":"","confidence":"None","notes":"Handwriting looks like a catalog number with an SHA prefix. SHA is the prefix I associate with Shogun Audio, but that is not verified and the digits are unclear. Ask seller for the runout.","url":"","n":35},{"photo":4,"position":"Bottom 1","artist":"","title":"","label":"","cat":"","year":null,"format":"12\" white label","discs":null,"shows":"Blank white label; 1 disc","tracklist":"","read":"Sleeve marked 'D+B $12'","inv":"","confidence":"None","notes":"Not identifiable from the photo.","url":"","n":36},{"photo":4,"position":"Bottom 2","artist":"Motive","title":"Saviour Dub / How Much You Hurt Me","label":"Sound Trax","cat":"FILM011","year":2005,"format":"12\", 45 RPM, white label promo","discs":1,"shows":"Printed promo label; 1 disc","tracklist":"A: Saviour Dub / AA: How Much You Hurt Me","read":"Label: FILM 011 PROMO SOUND TRAX + Soundtrax logo; sleeve marked 'D+B $12'","inv":"","confidence":"High","notes":"","url":"https://www.discogs.com/release/3640390-Motive-Saviour-Dub-How-Much-You-Hurt-Me","n":37},{"photo":4,"position":"Bottom 3","artist":"Funky Technicians","title":"Desperate Housewives / Back Draft","label":"Advance//d Recordings","cat":"ADVR018","year":2005,"format":"12\", 45 RPM, white label","discs":1,"shows":"White label; 1 disc","tracklist":"A: Desperate Housewives / AA: Back Draft","read":"Handwritten on label: 'ADVR018' and an 'X'","inv":"","confidence":"Medium","notes":"Identified from the handwritten cat# only.","url":"https://www.discogs.com/release/2402587-Funky-Technicians-Desperate-Housewives-Back-Draft","n":38},{"photo":4,"position":"Bottom 4","artist":"","title":"","label":"","cat":"","year":null,"format":"","discs":null,"shows":"Cream sleeve, label hidden behind Bottom 5","tracklist":"","read":"Only part of the sleeve is visible","inv":"","confidence":"None","notes":"Not identifiable from the photo.","url":"","n":39},{"photo":4,"position":"Bottom 5","artist":"Beta 2 & Zero Tolerance","title":"On My Mind / Front Door","label":"Sound Trax","cat":"FILM007","year":2005,"format":"12\", white label promo","discs":1,"shows":"White label with typed sticker, black sleeve; 1 disc","tracklist":"A: On My Mind / AA: Front Door","read":"Typed sticker: ZERO TOLERANCE & BETA 2 / ON MY MIND / FILM007","inv":"","confidence":"High","notes":"","url":"https://www.discogs.com/release/1152896-Beta-2-Zero-Tolerance-On-My-Mind-Front-Door","n":40},{"photo":5,"position":"Top 1","artist":"Cleveland Lounge","title":"Drowning (remixes)","label":"Moonshine Music","cat":"MM 88471-1","year":2000,"format":"2x12\", 33 RPM","discs":2,"shows":"Moonshine sleeve; seller numbering implies 2 discs","tracklist":"A: Micro Remix / B: Joshua Ryan Scuba Dub Mix / C: Dave Aude Drum & Space Mix / D: AK1200 Remix","read":"Seller sticker: Cleveland Lounge Act / Drowning Remixes / MM 88471-1 / 2000; sleeve: MICRO REMIX + JOSHUA RYAN SCUBA...","inv":"0252/0253","confidence":"High","notes":"US trance/progressive remix package. Only side D (AK1200 Remix) is drum & bass.","url":"https://www.discogs.com/release/31443-Cleveland-Lounge-Drowning","n":41},{"photo":5,"position":"Top 2","artist":"Stakka & Skynet","title":"Clockwork (Sampler EP)","label":"Underfire","cat":"UDFRLPS04","year":2001,"format":"2x12\", 45 RPM","discs":2,"shows":"Picture sleeve; discs not countable from photo","tracklist":"A: Decoy / B: Side Effects (Kemal & Rob Data Remix) / C: 9000 Series (feat. DJ Red) / D: Side Effects (Teebee Remix)","read":"Sleeve: SKYNET & STAKKA PRESENT CLOCKWORK + four-track list (Decoy / Side Effects / 9000 Series / Side Effects)","inv":"","confidence":"High","notes":"This is the 2-disc sampler, not the 5x12\" Clockwork album (UDFRLP04). A mispress exists with 'Clockwork' instead of '9000 Series' on side C.","url":"https://www.discogs.com/release/9323-Stakka-Skynet-Clockwork-Sampler-EP","n":42},{"photo":5,"position":"Top 3","artist":"Decoder & Substance","title":"IconOne","label":"Breakbeat Culture Records","cat":"BBC018","year":2001,"format":"2x12\", 45 RPM","discs":2,"shows":"Picture sleeve; discs not countable from photo","tracklist":"A: Dialect (feat. MC Jakes) / B: Dogfight / C: Icon / D: Squadron","read":"Sleeve: DECODER SUBSTANCE ICONONE","inv":"","confidence":"High","notes":"The same sleeve appears again in Photo 6 (Bottom 3). Could be one copy photographed twice or two copies.","url":"https://www.discogs.com/release/11042-Decoder-Substance-IconOne","n":43},{"photo":5,"position":"Top 4","artist":"","title":"","label":"","cat":"","year":null,"format":"","discs":null,"shows":"Plain grey/black gradient sleeve, partly hidden","tracklist":"","read":"No text visible","inv":"","confidence":"None","notes":"Not identifiable from the photo.","url":"","n":44},{"photo":5,"position":"Top 5","artist":"Decoder","title":"Decoded EP","label":"Tech Itch Recordings","cat":"TI 016","year":1997,"format":"2x12\" EP","discs":2,"shows":"Picture sleeve in bag; discs not countable from photo","tracklist":"A: PGM 5 / B: D-fect / C: Circuit Breaker (Peshay Remix) / D: Jazzstation","read":"Sleeve: DECODER decoded; shop barcode sticker","inv":"","confidence":"High","notes":"1997 release, a year earlier than the range in the listing title. Disc 2 plays at 33 despite the label.","url":"https://www.discogs.com/release/986-Decoder-Decoded-EP","n":45},{"photo":5,"position":"Bottom 1","artist":"Vicious Circle","title":"Welcome To Shanktown EP","label":"Renegade Hardware","cat":"HWARE02","year":2007,"format":"2x12\" EP","discs":2,"shows":"Picture sleeve; discs not countable from photo","tracklist":"A: Amityville / B: Cerberus / C: Welcome To Shanktown (feat. Nocturnal) / D: Pandora's Box","read":"Sleeve: VICIOUS CIRCLE - WELCOME TO SHANKTOWN EP","inv":"","confidence":"High","notes":"","url":"https://www.discogs.com/release/923169-Vicious-Circle-3-Welcome-To-Shanktown-EP","n":46},{"photo":5,"position":"Bottom 2","artist":"Dom & Keaton / Current Affairs feat. Dom","title":"Archaeon (EP)","label":"Moving Shadow","cat":"MSXEP016","year":2002,"format":"2x12\", 45 RPM, limited edition","discs":2,"shows":"Black sleeve; seller numbering implies 2 discs","tracklist":"X: Dom & Keaton - Archaeon / Y: Dom & Keaton - Twisted City / XX: Current Affairs feat. Dom - Sand-Gun / YY: Current Affairs feat. Dom - The Voyage","read":"Seller sticker: Dom + Keaton / Archaeon E.P. / MSXEP016 / 2000 (year partly cut off)","inv":"0254/0255","confidence":"High","notes":"Discogs dates it 28 Jan 2002, not 2000. First pressing is a mispress that plays Exile 'Don't Forget X' on side X; XX/YY labels are swapped on some copies.","url":"https://www.discogs.com/release/31710-Various-Archaeon","n":47},{"photo":5,"position":"Bottom 3","artist":"Decoder","title":"Two-Nine EP (test pressing, disc 1: Auto / Dead Fall)","label":"Tech Itch Recordings","cat":"TI032","year":2002,"format":"2x12\" EP (test pressing)","discs":2,"shows":"One test-press disc visible in white sleeve","tracklist":"A: Auto / B: Dead Fall (disc 2 would be C: Static / D: 2 Weeks)","read":"Label: Tech Itch Recordings / TEST PRESS TI 032 / Decoder / Two-Nine E.P / A: Auto / B: Dead Fall","inv":"","confidence":"High","notes":"Full EP is two discs. Only the A/B disc is identifiable in the photo; ask whether the C/D disc is included.","url":"https://www.discogs.com/release/39835-Decoder-Two-Nine-EP","n":48},{"photo":5,"position":"Bottom 4","artist":"","title":"'Take U Higher' (per handwriting)","label":"","cat":"","year":null,"format":"12\" white label","discs":null,"shows":"White label in black sleeve; 1 disc","tracklist":"","read":"Handwritten on label: 'Take U Higher...' and '33'","inv":"","confidence":"Low","notes":"No exact D&B match found. Candidates: Greg Packer / Commix - Take You Higher / Gets Me High (Looking Good LGR051, 2004, but 45 RPM); Michael King - Take U Higher (Love St. LST-001, 1998, UK garage, 33 RPM, exact spelling). Needs the runout or a listen.","url":"https://www.discogs.com/release/250470-Greg-Packer-Commix-Take-You-Higher-Gets-Me-High","n":49},{"photo":5,"position":"Bottom 5","artist":"Various","title":"The Artillery Double Pack EP","label":"Underfire","cat":"UDFR010","year":1998,"format":"2x12\" EP","discs":2,"shows":"Picture sleeve; discs not countable from photo","tracklist":"A: Spy - Terminal / B: Kraken - Illusions (Remix) / C: Profound Noise - Soundscape (Remix) / D: Stakka & K/Tee - Contact","read":"Sleeve: THE ARTILLERY DOUBLE PACK/EP + four artist-track pairs","inv":"","confidence":"High","notes":"","url":"https://www.discogs.com/release/11813-Various-The-Artillery-Double-Pack-EP","n":50},{"photo":6,"position":"Top 1","artist":"Decoder","title":"Encrypted","label":"Tech Itch Recordings","cat":"TI024","year":1999,"format":"2x12\", 45 RPM","discs":2,"shows":"Picture sleeve; seller states 2x12\"","tracklist":"A: Decoder & Substance - Hazardous / B: Decoder & Substance - Last Stop / C: Dead Calm / D: BS9","read":"Sleeve: TECH ITCH RECORDINGS / DECODER - ENCRYPTED; shop sticker $16.99","inv":"","confidence":"High","notes":"","url":"https://www.discogs.com/release/2571-Decoder-Encrypted","n":51},{"photo":6,"position":"Top 2","artist":"Decoder? (unconfirmed)","title":"","label":"","cat":"","year":null,"format":"2x12\" white label","discs":2,"shows":"White label in white sleeve; seller states 2x12\"","tracklist":"","read":"Small handwriting on label (illegible, possibly 'Decoder'); shop sticker $16.99, first line appears to start 'Decoder'","inv":"","confidence":"Low","notes":"Candidates if it is a Decoder 2x12\": Two-Nine EP (TI032, white-label version exists), IconOne promo issued as 'Dog Fight EP' (BBC018), Encrypted promo (TI024), Decoded EP promo (TI 016). Needs runout.","url":"","n":52},{"photo":6,"position":"Top 3","artist":"The Sect (side A with Raiden)","title":"The Sect EP","label":"Offkey","cat":"OK005","year":2006,"format":"2x12\", 45 RPM","discs":2,"shows":"Offkey picture sleeve; seller states 2x12\"","tracklist":"A: The Sect & Raiden - Caesium 137 / B: Kill All Humans / C: Nerve Attack / D: Zeroid","read":"Offkey 'OK' sleeve; label text: THE SECT / RAIDEN","inv":"","confidence":"Medium","notes":"Only Offkey 2x12\" pairing The Sect with Raiden. Cat# not readable in the photo.","url":"https://www.discogs.com/release/866112-The-Sect-3-The-Sect-EP","n":53},{"photo":6,"position":"Bottom 1","artist":"Calyx","title":"Unidentified 2x12\" EP","label":"Moving Shadow or Metalheadz","cat":"","year":null,"format":"2x12\"","discs":2,"shows":"Plain white sleeve; seller states 2x12\"","tracklist":"","read":"Shop sticker: first line starts 'Calyx', $18.99; rest illegible","inv":"","confidence":"Low","notes":"One of five Calyx 2x12\" EPs from 2000-2004. See the 'Calyx candidates' tab.","url":"","n":54},{"photo":6,"position":"Bottom 2","artist":"Calyx","title":"Unidentified 2x12\" EP (title on sticker appears to start 'The ... EP')","label":"Moving Shadow or Metalheadz","cat":"","year":null,"format":"2x12\"","discs":2,"shows":"Plain white sleeve; seller states 2x12\"","tracklist":"","read":"Shop sticker: 'Calyx' / second line looks like 'The ... EP (2x12)', $18.99","inv":"","confidence":"Low","notes":"If the title does start with 'The', that points to The Wasteground EP (MSXEP018) or The Killa EP (MSXEP027). Sticker is too blurred to be sure. See the 'Calyx candidates' tab.","url":"","n":55},{"photo":6,"position":"Bottom 3","artist":"Decoder & Substance","title":"IconOne","label":"Breakbeat Culture Records","cat":"BBC018","year":2001,"format":"2x12\", 45 RPM","discs":2,"shows":"Picture sleeve in bag; seller states 2x12\"","tracklist":"A: Dialect (feat. MC Jakes) / B: Dogfight / C: Icon / D: Squadron","read":"Sleeve: DECODER SUBSTANCE ICONONE","inv":"","confidence":"High","notes":"Possibly the same copy shown in Photo 5 (Top 3). Confirm whether the lot has one or two.","url":"https://www.discogs.com/release/11042-Decoder-Substance-IconOne","n":56},{"photo":7,"position":"Top 1","artist":"Deep Rooted","title":"The 'AKA Roots' EP (white label / test pressing)","label":"Moving Shadow","cat":"MSXEP009","year":2001,"format":"2x12\" EP","discs":2,"shows":"White label printed DEEP ROOTED, white sleeve in bag; seller states 2x12\"","tracklist":"X: Chi / Y: Tokyo No Yoake / XX: Wanton / YY: Hz","read":"Label print: DEEP ROOTED; shop sticker with handwritten '$5' (printed text illegible)","inv":"","confidence":"Low","notes":"Deep Rooted is an artist name and this is that artist's only 2x12\". The shop sticker text could not be matched to it. Runout should read MSXEP009 if correct.","url":"https://www.discogs.com/release/55187-Deep-Rooted-The-AKA-Roots-EP","n":57},{"photo":7,"position":"Top 2","artist":"Usual Suspects","title":"Lunacy E.P.","label":"Renegade Hardware","cat":"RH33","year":2001,"format":"2x12\" EP","discs":2,"shows":"Picture sleeve; seller states 2x12\"","tracklist":"A: Ed 209 / B: Therapy / C: Lunacy (feat. DJ Friction) / D: Bodycount (Cause 4 Concern Remix)","read":"Sleeve: USUAL SUSPECTS - LUNACY E.P.","inv":"","confidence":"High","notes":"","url":"https://www.discogs.com/release/8866-Usual-Suspects-Lunacy-EP","n":58},{"photo":7,"position":"Top 3","artist":"Future Cut","title":"Bloodline EP","label":"Renegade Hardware","cat":"RH 23","year":2000,"format":"2x12\" EP, 45 RPM","discs":2,"shows":"Picture sleeve in bag; seller states 2x12\"","tracklist":"A: Overload / B: Busted / C: Whiplash (Lemon D Remix) / D: Bloodline (feat. DJ Kontrol)","read":"Sleeve: FUTURE CUT - Bloodline ep; bag sticker reads RAM TRILOGY / TITAN EP (2x12\") $18.99","inv":"","confidence":"High","notes":"VERIFY CONTENTS: the shop sticker on the bag is for a different record, Ram Trilogy - Titan EP (RAM Records RAMM 28, 2000: Titan / Incarnate / Reflection (Look Inside) / Incoming). Likely a reused bag, but ask. A Bloodline mispress also exists where sides C and D both play 'Bloodline'.","url":"https://www.discogs.com/release/128704-Future-Cut-Bloodline-EP","n":59},{"photo":7,"position":"Bottom 1","artist":"Raiden","title":"The Cenobyte E.P","label":"Transparent Recordings","cat":"TPT003","year":2002,"format":"2x12\" EP","discs":2,"shows":"Picture sleeve in bag; seller states 2x12\"","tracklist":"A: Cenobyte / B: Fatal Statistic / C: Bulldoze / D: Chemeria","read":"Sleeve: Raiden presents THE CENOBYTE E.P / transparent recordings; shop sticker appears to read 'The Cenobyte EP'","inv":"","confidence":"High","notes":"","url":"https://www.discogs.com/release/97973-Raiden-The-Cenobyte-EP","n":60},{"photo":7,"position":"Bottom 2","artist":"Biostacis","title":"Biotactics EP","label":"Tech Itch Recordings","cat":"TI 027","year":2000,"format":"2x12\" EP","discs":2,"shows":"Picture sleeve; seller states 2x12\"","tracklist":"A: Tylenol / B: Brain Hack / C: Titanium / D: Dos","read":"Sleeve: BIOSTACIS - BIOTACTICS - Tech Itch Recordings (TI027 in artwork)","inv":"","confidence":"High","notes":"","url":"https://www.discogs.com/release/31452-Biostacis-Biotactics-EP","n":61},{"photo":8,"position":"Top 1","artist":"The Militia / Stakka & K.Tee","title":"Brainwash / Echo Chamber","label":"Cargo Industries","cat":"CARG01","year":2003,"format":"12\", 45 RPM","discs":1,"shows":"Printed sleeve in bag; 1 disc","tracklist":"A: The Militia - Brainwash / B: Stakka & K.Tee - Echo Chamber","read":"Sleeve print: 12\" Disc / CARG01 / The Militia, Stakka & K.Tee / Brainwash, Echo Chamber","inv":"","confidence":"High","notes":"","url":"https://www.discogs.com/release/162714-The-Militia-Stakka-KTee-Brainwash-Echo-Chamber","n":62},{"photo":8,"position":"Top 2","artist":"Kraken","title":"Final Warning / Connections","label":"Underfire","cat":"UDFR004","year":1997,"format":"12\", 33 RPM","discs":1,"shows":"Stock copy in Underfire picture sleeve; 1 disc","tracklist":"A: Final Warning / B: Connections","read":"Seller sticker: Kraken / Final Warning/Connections / UDFR004 / 1997","inv":"0618","confidence":"High","notes":"","url":"https://www.discogs.com/release/9321-Kraken-Final-Warning-Connections","n":63},{"photo":8,"position":"Top 3","artist":"Photek","title":"Terminus","label":"Science (Virgin)","cat":"QEDT 8","year":2000,"format":"12\", 33 RPM","discs":1,"shows":"Picture sleeve; 1 disc","tracklist":"A1: Terminus / A2: DNA / AA: Infinity","read":"Seller sticker: Photek / Terminus/DNA/Infinity / QEDT8 / 2000; sleeve: TERMINUS","inv":"0121","confidence":"High","notes":"","url":"https://www.discogs.com/release/5395-Photek-Terminus","n":64},{"photo":8,"position":"Top 4","artist":"Gydra","title":"Dystopia / Insurrection","label":"Bad Taste Recordings","cat":"BT049","year":2016,"format":"12\", 45 RPM","discs":1,"shows":"White label in black sleeve; 1 disc","tracklist":"A: Dystopia / B: Insurrection","read":"Handwritten on label: 'Gyd?a' (fourth letter unclear) and 'Dystopia'","inv":"","confidence":"Medium","notes":"Handwriting fits Gydra - Dystopia, a 2016 release, well outside the range in the listing title. Discogs lists no white-label version, so this would be a test pressing. Runout should read BT049.","url":"https://www.discogs.com/release/8502004-Gydra-Dystopia","n":65},{"photo":8,"position":"Bottom 1","artist":"DJ Probe & Sylo","title":"Give Me Some More / Shadow Luck (promo)","label":"Worldwide Audio Recordings","cat":"WAR 007","year":2004,"format":"12\", white label promo","discs":1,"shows":"White label with typed sticker, black sleeve; 1 disc","tracklist":"A: Give Me Some More (feat. IC3) / AA: Shadow Luck","read":"Typed sticker (blurred): WORLDWIDE AUDIO RECORDINGS / Promo WAR 007 / P... & ...YLO / A: Give me ... (feat ...) / AA: Shadow Lu.. / Release Date May 200?","inv":"","confidence":"High","notes":"Artist, titles and 2004 date come from Discogs' transcription of this promo sticker; the photo is too blurred to read them outright. Retail issue is titled 'Gimme Some More / Shadow Lock'.","url":"https://www.discogs.com/release/2156476-Probe-Sylo-Give-Me-Some-More-Shadow-Luck","n":66},{"photo":8,"position":"Bottom 2","artist":"Supply & Demand","title":"Shizzle / Life On The Streets","label":"Chronic","cat":"CHR023","year":2003,"format":"12\"","discs":1,"shows":"Printed label in white sleeve; 1 disc","tracklist":"A: Shizzle / AA: Life On The Streets","read":"Label: CHRONIC 23 / Supply & Demand / A: Shizzle / AA: Life on the Streets","inv":"","confidence":"High","notes":"","url":"https://www.discogs.com/release/175178-Supply-Demand-Shizzle-Life-On-The-Streets","n":67},{"photo":8,"position":"Bottom 3","artist":"Laroque","title":"Throw Your Hands Up / Shock","label":"Wildstyle Recordings","cat":"WILD007","year":2005,"format":"12\", white label","discs":1,"shows":"White label in black sleeve; 1 disc","tracklist":"A: Throw Your Hands Up / AA: Shock","read":"Handwritten on label: 'Laroque', 'throw your hands', 'wildstyle'","inv":"","confidence":"Medium","notes":"Identified from handwriting only; artist, title and label all agree.","url":"https://www.discogs.com/release/3666423-Laroque-Throw-Your-Hands-Up-Shock","n":68},{"photo":8,"position":"Bottom 4","artist":"","title":"","label":"","cat":"","year":null,"format":"12\" white label","discs":null,"shows":"Blank white label in white sleeve; 1 disc","tracklist":"","read":"Sleeve marked 'D+B' with a number ending 0668 and '$12'","inv":"","confidence":"None","notes":"Not identifiable from the photo.","url":"","n":69},{"photo":9,"position":"Top 1","artist":"LTJ Bukem presents / Various","title":"Earth Volume One (disc 1, sides A/B)","label":"Earth (Good Looking)","cat":"EARTHLP001","year":1996,"format":"5x12\" box set, limited edition","discs":5,"shows":"Single disc in its own picture sleeve","tracklist":"A: Poets Of Thought - The Rhyme Goes On / B: Appaloosa - Travelling","read":"Seller sticker: Various Artists / Earth Volume A/B / EARTHLP001 / 1996","inv":"0511","confidence":"High","notes":"4 of 5 discs shown. Seller numbers run 0511, 0513, 0514, 0515, so 0512 (C/D) is missing from the photo. 1996 release, earlier than the range in the listing title.","url":"https://www.discogs.com/release/23946-LTJ-Bukem-Earth-Volume-One","n":70},{"photo":9,"position":"Top 2","artist":"LTJ Bukem presents / Various","title":"Earth Volume One (disc 3, sides E/F)","label":"Earth (Good Looking)","cat":"EARTHLP001","year":1996,"format":"5x12\" box set, limited edition","discs":5,"shows":"Single disc in its own picture sleeve","tracklist":"E: Poets Of Thought - Samba With J.C. / F: Blame - Revival","read":"Seller sticker: Various Artists / Earth Volume E/F / EARTHLP001 / 1996","inv":"0513","confidence":"High","notes":"See Photo 9 Top 1.","url":"https://www.discogs.com/release/23946-LTJ-Bukem-Earth-Volume-One","n":71},{"photo":9,"position":"Top 3","artist":"LTJ Bukem presents / Various","title":"Earth Volume One (disc 4, sides G/H)","label":"Earth (Good Looking)","cat":"EARTHLP001","year":1996,"format":"5x12\" box set, limited edition","discs":5,"shows":"Single disc in its own picture sleeve","tracklist":"G: Pablo - Do What You Gotta Do / H: Poets Of Thought - Jamming The Session","read":"Seller sticker: Various Artists / Earth Volume G/H / EARTHLP001 / 1996","inv":"0514","confidence":"High","notes":"See Photo 9 Top 1.","url":"https://www.discogs.com/release/23946-LTJ-Bukem-Earth-Volume-One","n":72},{"photo":9,"position":"Top 4","artist":"LTJ Bukem presents / Various","title":"Earth Volume One (disc 5, sides I/J)","label":"Earth (Good Looking)","cat":"EARTHLP001","year":1996,"format":"5x12\" box set, limited edition","discs":5,"shows":"Single disc in its own picture sleeve","tracklist":"I: LTJ Bukem - Moodswings / J: Doc Scott - Tokyo Dawn","read":"Seller sticker: Various Artists / Earth Volume I/J / EARTHLP001 / 1996","inv":"0515","confidence":"High","notes":"See Photo 9 Top 1. Missing disc 2 would be C: Subject 13 - Faith / D: Funky Technicians & PHD - Above & Beyond.","url":"https://www.discogs.com/release/23946-LTJ-Bukem-Earth-Volume-One","n":73},{"photo":9,"position":"Top 5","artist":"","title":"","label":"","cat":"","year":null,"format":"12\" white label","discs":null,"shows":"Blank white label in black sleeve; 1 disc","tracklist":"","read":"No markings visible","inv":"","confidence":"None","notes":"Not identifiable from the photo.","url":"","n":74},{"photo":9,"position":"Bottom 1","artist":"Various","title":"Plastic Surgery 4 #02 (disc 3 of 3, sides E/F)","label":"Hospital Records","cat":"NHS53","year":2003,"format":"3x12\" compilation, 45 RPM","discs":3,"shows":"Single disc in white sleeve","tracklist":"E: Landslide + Alison Crockett - It's Not Over (Influx UK's Dig Deeper Mix) / F: DJ Kalm + Citizen feat. Adam M - Mirage","read":"Label: Hospital H logo / LANDSLIDE + ALISON CROCKET / IT'S NOT OVER / INFLUX UK's DIG DEEPER MIX / ... SIDE E","inv":"","confidence":"High","notes":"One loose disc from a 3-disc set.","url":"https://www.discogs.com/release/123885-Various-Plastic-Surgery-4-02","n":75},{"photo":9,"position":"Bottom 2","artist":"Various","title":"Points In Time 006","label":"Good Looking Records","cat":"GLRPIT006LP","year":1999,"format":"3x12\" compilation","discs":3,"shows":"Picture sleeve; discs not countable from photo","tracklist":"A: Artemis - Innerworlds / B: Big Bud - Emotionography / C: Motive One - Cosmik / D: Blame - Visions Of Mars / E: PHD & Conrad - Progression Session / F: Blu Mar Ten - Global Access","read":"Sleeve: GOOD LOOKING / POINTS IN TIME 006","inv":"","confidence":"High","notes":"3-disc set; confirm all three discs are present.","url":"https://www.discogs.com/release/139070-Various-Points-In-Time-006","n":76},{"photo":9,"position":"Bottom 3","artist":"Various","title":"Points In Time 007","label":"Good Looking Records","cat":"GLRPIT007LP","year":2000,"format":"3x12\" compilation","discs":3,"shows":"Picture sleeve; discs not countable from photo","tracklist":"A: Cedar - Equinox / B: Artemis - Sun Stars / C: Big Bud - Blue 52 / D: Total Science - Algebra / E: Seba - Catch The Moment / F: Blu Mar Ten - Myriad","read":"Sleeve: GOOD LOOKING / POINTS IN TIME 007","inv":"","confidence":"High","notes":"3-disc set; confirm all three discs are present.","url":"https://www.discogs.com/release/123750-Various-Points-In-Time-007","n":77},{"photo":9,"position":"Bottom 4","artist":"Various","title":"Points In Time 009","label":"Good Looking Records","cat":"GLRPIT009LP","year":2000,"format":"3x12\" compilation","discs":3,"shows":"Picture sleeve; discs not countable from photo","tracklist":"A: The Invisible Man - Spiritual Awareness / B: Blame - Centuries / C: Big Bud - Lifeline / D: PHD & Conrad - 3 By 4 / E: Voyager - Beatnik / F: Chameleon - Close Your Eyes & Listen","read":"Sleeve: GOOD LOOKING / POINTS IN TIME 009","inv":"","confidence":"High","notes":"3-disc set; confirm all three discs are present.","url":"https://www.discogs.com/release/135751-Various-Points-In-Time-009","n":78},{"photo":9,"position":"Bottom 5","artist":"Dom & Optical","title":"Quadrant 6 / Concrete Shoes (promo)","label":"Moving Shadow","cat":"SHADOW 111","year":1997,"format":"12\", 45 RPM, promo","discs":1,"shows":"Printed promo label in paper sleeve; 1 disc","tracklist":"X: Quadrant 6 / Y: Concrete Shoes","read":"Label print: DOM & OPTICAL / QUADRANT ... (faint); handwritten 'Q6'","inv":"","confidence":"Medium","notes":"Two promo candidates the photo cannot separate: Moving Shadow SHADOW 111 (original, flip Concrete Shoes) or Audio Couture AC 111 (Quadrant Six (Fierce Remix) / Rage Roll, Dec 1997). Check runout. Either way it is 1997.","url":"https://www.discogs.com/release/1084697-Dom-Optical-Quadrant-6-Concrete-Shoes","n":79},{"photo":10,"position":"Top 1","artist":"Kryptic Minds / Nightbreed","title":"Full Frequency EP","label":"Frequency","cat":"FQY005","year":2003,"format":"12\", 45 RPM","discs":1,"shows":"Printed label in white sleeve; 1 disc","tracklist":"A: Kryptic Minds - The Truth (Kryptic Minds & Leon Switch Remix) / B: Nightbreed - Night Walker","read":"Label: FREQUENCY / FULL FREQUENCY / A: The Truth (Kryptic Minds & Leon Switch ...) / B: Night Walker","inv":"","confidence":"High","notes":"Standalone 12\", not a disc from an LP.","url":"https://www.discogs.com/release/147780-Kryptic-Minds-Nightbreed-3-Full-Frequency-EP","n":80},{"photo":10,"position":"Top 2","artist":"Laroque (per handwriting)","title":"","label":"","cat":"","year":null,"format":"12\" white label","discs":null,"shows":"White label in black sleeve inside bag; 1 disc","tracklist":"","read":"Handwritten on label: 'Laroque'","inv":"","confidence":"None","notes":"Artist name only. A separate Laroque white label (Throw Your Hands Up) is in Photo 8, so this is probably a different Laroque release. Needs runout.","url":"","n":81},{"photo":10,"position":"Top 3","artist":"","title":"","label":"","cat":"","year":null,"format":"12\" white label","discs":null,"shows":"White label in black sleeve inside bag; 1 disc","tracklist":"","read":"Handwritten '+' or 'X' on label","inv":"","confidence":"None","notes":"Not identifiable from the photo.","url":"","n":82},{"photo":10,"position":"Top 4","artist":"","title":"","label":"","cat":"","year":null,"format":"12\"","discs":null,"shows":"Printed black label in cream sleeve; 1 disc","tracklist":"","read":"Black label with an outlined square-letter wordmark (reads roughly 'QUAD' / 'AURA', photographed upside down), chain-style graphic, small text possibly 'D1 ... / D2 ...'","inv":"","confidence":"None","notes":"Printed label, so it is identifiable in hand, but not legible in the photo. Looks like one disc from an LP (side D with two tracks). Ask seller for the label text.","url":"","n":83},{"photo":10,"position":"Top 5","artist":"Various","title":"MDZ.03 Metalheadz Presents No Smoke Without Fire (disc 2 of 4, sides C/D)","label":"Metalheadz","cat":"METH003LP","year":2003,"format":"4x12\" compilation","discs":4,"shows":"Single disc in cream sleeve","tracklist":"C: Loxy & Ink - Headz Roll / D: Lemon D - Urban Style Music (Hidden Agenda Remix)","read":"Label: MDZ.0? (digit unclear) / NO SMOKE WITHOUT FIRE / THE ALBUM / D: LEMON D - URBAN STYLE MUSIC / HIDDEN AGENDA REMIX","inv":"","confidence":"High","notes":"One loose disc from a 4-disc album.","url":"https://www.discogs.com/release/164049-Various-MDZ03-Metalheadz-Presents-_-No-Smoke-Without-Fire","n":84},{"photo":10,"position":"Bottom 1","artist":"Kemal + Rob Data","title":"Star Trails / Hybrid","label":"Audio Blueprint","cat":"ABPR013","year":2000,"format":"12\"","discs":1,"shows":"Black sleeve, printed label; 1 disc","tracklist":"A: Star Trails / AA: Hybrid","read":"Seller sticker: Kemal + Rob Data / Star Trails/Hybrid / ABPR013 / 2000","inv":"0220","confidence":"High","notes":"Label prints 45 RPM; Discogs notes the speed is misprinted (plays at 33).","url":"https://www.discogs.com/release/25024-Kemal-Rob-Data-Star-Trails-Hybrid","n":85},{"photo":10,"position":"Bottom 2","artist":"Various","title":"Metalheadz Presents Platinum Breakz 03 (Record B, disc 2 of 4)","label":"FFRR / Metalheadz","cat":"8573869041","year":2001,"format":"4x12\" compilation, 45 RPM","discs":4,"shows":"Single disc in white sleeve","tracklist":"Side 03: Doc Scott - Drumz 2000 / Side 04: Digital - B-Boyism","read":"Label: Record B // side ... / DOC SCOTT / DRUMZ 2000 / DIGITAL / B-BOYISM","inv":"","confidence":"High","notes":"One loose disc from a 4-disc album.","url":"https://www.discogs.com/release/19812-Various-Metalheadz-Presents-Platinum-Breakz-03","n":86},{"photo":10,"position":"Bottom 3","artist":"","title":"","label":"","cat":"","year":null,"format":"12\"","discs":null,"shows":"Cream printed label, mostly hidden; 1 disc","tracklist":"","read":"Cream label with a fragment of a green logo and small print; rest covered by sleeves","inv":"","confidence":"None","notes":"Label style resembles the Hospital Records disc beside it, which would make it another Plastic Surgery disc, but that is a guess from colour alone.","url":"","n":87},{"photo":10,"position":"Bottom 4","artist":"Various (this disc: Total Science)","title":"Plastic Surgery 2 (disc with side F)","label":"Hospital Records","cat":"NHS30LP","year":2001,"format":"4x12\" compilation, 45 RPM","discs":4,"shows":"Single disc in white sleeve","tracklist":"F: Total Science - Let It Go (flip likely E: Yukihiro Fukutomi - I Am (London Elektricity Remix))","read":"Label: Hospital H logo / total science / let it go / plastic ...","inv":"","confidence":"Medium","notes":"Volume number is cut off in the photo. Let It Go is on Plastic Surgery 2; Total Science's track on Plastic Surgery 3 (NHS43LP) is Flip Flop. E/F pairing assumes sequential sides.","url":"https://www.discogs.com/release/15715-Various-Plastic-Surgery-2","n":88},{"photo":10,"position":"Bottom 5","artist":"Substance","title":"Solace EP","label":"Breakbeat Culture Records","cat":"BBC 016","year":2000,"format":"2x12\" EP","discs":2,"shows":"One printed-label disc visible in white sleeve","tracklist":"A: Drilla / B: Solace / C: Decoder & Substance - Gunk / D: Suspicion","read":"Label: SUBSTANCE: SOLACE EP + track credits","inv":"","confidence":"High","notes":"Full EP is two discs; only one is visible. Ask whether both are included.","url":"https://www.discogs.com/release/11052-Substance-2-Solace-EP","n":89},{"photo":11,"position":"Left","artist":"Various (Tech Itch presents)","title":"Killabites 2","label":"Moving Shadow","cat":"ASHADOW 27 LP","year":2001,"format":"4x12\" compilation","discs":4,"shows":"Picture sleeve in shrink/bag; discs not countable from photo","tracklist":"A: Biostacis - Shatter / B: Decoder - Back @ Mine / C: Ice Minus & Decoder - Drowning / D: Ice Minus - Jabba / E: Ice Minus & Technical Itch - Altered Beast / F: Technical Itch - Analysis / G: Technical Itch - Portscan / H: Technical Itch - The Signal","read":"Sleeve: TECH ITCH PRESENTS KILLABITES.[2] / EXCLUSIVE TRACKS TAKEN FROM THE DOUBLE MIX CD BY TECHNICAL ITCH","inv":"","confidence":"Medium","notes":"The long artist list on the sleeve is the mix CD's tracklist; the vinyl carries eight exclusives. Three vinyl configurations share this artwork family: 4x12\" LP (ASHADOW 27 LP), single 12\" (ASHADOW 27: Shatter / Back @ Mine), and 2x12\" sampler (MSXEP012). Count the discs.","url":"https://www.discogs.com/release/10183-Various-Killabites-2","n":90},{"photo":11,"position":"Right","artist":"Decoder","title":"Dissection","label":"Hardleaders","cat":"HLLP06","year":1998,"format":"4x12\" album","discs":4,"shows":"Picture sleeve; discs not countable from photo","tracklist":"A: Stash / B: Chase / C: Downtime / D: Sectioned / E: Hacker / F: Dissected / G: Special Names / H: Dropzone","read":"Sleeve: decoder DISSECTION / ... RECORDED TECH ITCH STUDIOS BRISTOL / FILE UNDER DRUM 'N' BASS","inv":"","confidence":"High","notes":"A single 12\" sampler (HL30) also exists; the full album is four discs.","url":"https://www.discogs.com/release/14433-Decoder-Dissection","n":91},{"photo":12,"position":"Top 1","artist":"Various","title":"Breakbeat Science 2","label":"Volume","cat":"SCINLP002","year":1997,"format":"5x12\" box set","discs":5,"shows":"Disc One visible in white sleeve; seller numbering implies 5 discs","tracklist":"A: Kid Loops - The Comeback; T.Power - Thirteen Over For / B: DJ Rap - Fury; The Advocate - Plastic Bagging; Aphrodite & Micky Finn - Bass Of The Tramp / C: Unknown Face-DJ NKS - DC97; The Underwolves - Malik / D: J Majik - Killa; Nookie - Paradise / E: James Hardway - Illustrated Men; Sureshot - The Kill Off / F: Klute - New Form Of Life; Kosh & ST Files - Soundtrack / G: Subject 13 - Good Guys Bad Guys; Cleveland Watkiss - Introducing / H: Endemic Void - Zen; Justice - Lounge Lizard / I: Neo - Phenomenon; Cybernet - Refractions / J: Elementz Of Noize - Ends Justify Means; Genaside II - Just As Rougher","read":"Seller sticker: Various Artists / Breakbeat Science 2 / SCINLP02 / 1997; label: BREAKBEAT 2 / DISC ONE","inv":"0603-0607","confidence":"High","notes":"1997 release, a year earlier than the range in the listing title. Original came as a box with a 120-page booklet; photo shows a plain sleeve, so ask whether the box and booklet are included.","url":"https://www.discogs.com/release/31384-Various-Breakbeat-Science-2","n":92},{"photo":12,"position":"Top 2","artist":"Various","title":"Rare Grooves (Freshly Cut Drum & Bass)","label":"Bassbin","cat":"BBLP01","year":2005,"format":"4x12\" compilation, 45 RPM","discs":4,"shows":"Picture sleeve in bag; seller numbering implies 4 discs","tracklist":"A: Skitty - Sweet Vibrations / B: Alias - Long Time / C: Calibre - Can't Stop This Fire / D: Paradox - Bongolia / E: Equinox - Don't Wanna Hurt You / F: Breakage - Rise / G: Digital - Lucky 7 / H: Seba & Lenk feat. Robert Manos - Everyman For Himself","read":"Seller sticker: Various Artists / Rare Grooves / BBLP001 / 2005; sleeve: RARE GROOVES - FRESHLY CUT DRUM & BASS","inv":"0572-0575","confidence":"High","notes":"Irish label. Discogs writes the cat# BBLP01.","url":"https://www.discogs.com/release/407816-Various-Rare-Grooves-Freshly-Cut-Drum-Bass","n":93},{"photo":12,"position":"Right","artist":"Various","title":"Killa Bites - Limited Edition (volume 1, black sleeve)","label":"Moving Shadow","cat":"ASHADOW25LP1LE","year":2000,"format":"3x12\" compilation, limited edition","discs":3,"shows":"Black gloss-print sleeve; discs not countable from photo","tracklist":"A: Renegade - Terrorist (Dom & Roland Remix) / B: AK1200 & Danny Breaks - Deep Porn (VIP Mix) / C: TJ Rizing - Earthworm / D: Shere Khan - One Day / E: Bammer - Device / F: SKAB Alliance - Skanning For Lifeformz","read":"Sleeve (close-up is Photo 13): KILLA BITES + six artist-track lines + LIMITED EDITION; price sticker","inv":"","confidence":"High","notes":"Tracklist on the sleeve matches volume 1 of the three limited black-sleeve sets exactly.","url":"https://www.discogs.com/release/10176-Various-Killa-Bites-LimitedEdition","n":94},{"photo":12,"position":"Bottom 1","artist":"Various","title":"Genetically Unmodified","label":"Hardleaders","cat":"HLLP8","year":1999,"format":"3x12\" compilation, 45 RPM","discs":3,"shows":"Picture sleeve; discs not countable from photo","tracklist":"1A: Capone - Feelings / 1B: Manifest - Centrum / 2A: Capone - 2 DA 1 / 2B: Tech Level 2 - Chemical / 3A: Decoder - Stash (Decoder Remix) / 3B: DJ Surreal - No Where","read":"Sleeve: [Hard]leaders / [Genet]ically Unmodified / ... drum & bass / CAPONE - DECODER - MANIFEST - DJ SURREAL - TECH LEVEL 2","inv":"","confidence":"High","notes":"","url":"https://www.discogs.com/release/106951-Various-Genetically-Unmodified","n":95},{"photo":12,"position":"Bottom 2","artist":"Various (Stakka & Skynet)","title":"Clockwork (The Remix EP)","label":"Underfire","cat":"UDFR019","year":2003,"format":"3x12\" EP","discs":3,"shows":"Picture sleeve; discs not countable from photo","tracklist":"A: Clockwork (Skynet Remix) / B: Metalaw / C: Bios Fear (Skynet & Kemal Remix) / D: Black Monday (Remix) / E: Spider Monkey (Cause 4 Concern Remix) / F: Altitude (Fierce & Ryme Tyme Remix)","read":"Sleeve: CLOCKWORK - THE REMIX EP","inv":"","confidence":"High","notes":"3-disc set; confirm all three discs are present.","url":"https://www.discogs.com/release/111620-Various-Clockwork-The-Remix-EP","n":96},{"photo":14,"position":"Top left","artist":"DJ Trace presents / Various","title":"23 Degrees From Vertical","label":"DSCI4","cat":"DSCI4 LP001","year":2001,"format":"6x12\" compilation, 45 RPM","discs":6,"shows":"Outer sleeve in bag; discs not countable from photo","tracklist":"A: Kemal - Mutationz III / B: Matrix - Landslide / C: Stakka & Skynet - Black Monday / D: Ed Rush, Optical & Rymetyme - Cannibal Run / E: Kemal & Rob Data - The Encrypter / F: Black Sun Empire - Firing Squad / G: Future Cut - Uprock / H: Marcus Intalex & S.T. Files - Warp 2 / I: DJ Trace - Syntax / J: Technical Itch & Decoder - Abduction / K: The Invaderz - Life Support / L: Black Sun Empire - Radiation","read":"Sleeve: DJ TRACE - 23 FROM VERTICAL - DSCI4; red price sticker","inv":"","confidence":"High","notes":"6-disc set. Individual discs were also sold separately, so count them.","url":"https://www.discogs.com/release/23183-DJ-Trace-23-From-Vertical","n":97},{"photo":14,"position":"Top right","artist":"Various","title":"Spy Technologies 2 (Battlefield)","label":"DSCI4","cat":"DSCI4LP 003","year":2003,"format":"6x12\" compilation","discs":6,"shows":"Outer sleeve/box; discs not countable from photo","tracklist":"A: Trace - Mutant Closure Pt2 (Dkay Remix) / B: SKC & Chris SU - Black Out (VIP) / C: Chris SU & Safair - The Borg / D: Chris SU - The Bouncer / E: SKC - Skank / F: SKC - Subtribe / G: SKC & Longman - Battlefield / H: Fresh & Trace - Warehouse Lick / I: Mindscape - Detected / J: Paul B - Solar Unreal / K: SKC - G Funk / L: Fierce & Optical - Weapon","read":"Sleeve: spy technologies 2 BATTLEFIELD - DSCI4; red price sticker","inv":"","confidence":"High","notes":"6-disc set; discs were also sold singly. Count them.","url":"https://www.discogs.com/release/215840-Various-Spy-Technologies-2-Battlefield","n":98},{"photo":14,"position":"Bottom left","artist":"Various","title":"MDZ.02 The Album","label":"Metalheadz","cat":"METH02LP","year":2002,"format":"6x12\", 45 RPM","discs":6,"shows":"Box/sleeve; discs not countable from photo","tracklist":"A: Usual Suspects - Tribute / B: Future Cut - Popcorn / C: Loxy & Ink - Shine (V.I.P) / D: Jonny L - Part Of U / E: Marcus Intalex & ST Files - My Soul / F: Sonic & Silver - Innacorner / G: Klute - Unwind Yourself / H: Spirit - Solitaire / I: Hidden Agenda - Relentless / J: Teebee - White Venom / K: Total Science - Screwball / L: Invaderz - Revealed","read":"Sleeve: MDZ.02 THE ALBUM + Metalheadz logo","inv":"","confidence":"High","notes":"6-disc set. Count them.","url":"https://www.discogs.com/release/43508-Various-MDZ02-The-Album","n":99},{"photo":14,"position":"Bottom right","artist":"Blame","title":"Firestorm EP","label":"Good Looking Records","cat":"GLREP014V","year":2001,"format":"2x12\" EP, 45 RPM, gatefold","discs":2,"shows":"Picture sleeve in bag; seller numbering implies 2 discs","tracklist":"A: Firestorm / B: Forest Of Pagodas / C: Mechanism. 02 / D: Lifeform","read":"Seller sticker: Blame / Firestorm EP / GLREP014V / 2001; sleeve: blame FIRESTORM .ep","inv":"0105/0106","confidence":"High","notes":"","url":"https://www.discogs.com/release/18989-Blame-Firestorm-EP","n":100},{"photo":15,"position":"Top left","artist":"Total Science presents / Various","title":"Tuned-In","label":"C.I.A.","cat":"CIALP002","year":2001,"format":"5x12\", 45 RPM","discs":5,"shows":"Outer sleeve in bag; seller numbering implies 5 discs","tracklist":"a: Total Science - Kingpin / b: Invaderz - Mirage / c: Marcus Intalex & ST Files - 305 / d: Spirit - Moving Target / e: Phantom Audio - K2 / f: Total Science - Juicy Fruit / g: Digital - Fu Man Chu / h: Future Cut - Hideous Kinky / i: Calibre - Behind The Sun / j: Total Science - Freeze (Tee Bee Remix)","read":"Seller sticker: Total Science / Tuned-In LP / CIALP002 / 2001; sleeve: total science // TUNED-IN","inv":"0208-0212","confidence":"High","notes":"","url":"https://www.discogs.com/release/125568-Total-Science-Tuned-In","n":101},{"photo":15,"position":"Top right","artist":"Bad Company","title":"Digital Nation","label":"BC Recordings","cat":"BCRUKLP01","year":2000,"format":"5x12\" album, 45 RPM","discs":5,"shows":"Outer sleeve in bag; discs not countable from photo","tracklist":"A: Digital Nation / B: Breathe / C: Hysteria / D: Crucafixion / E: Toxin / F: Night Train / G: Dream Thief (with Fierce) / H: Infinity / I: Son Of Nitrous (with DJ Trace) / J: Navajo","read":"Sleeve: BC logo / DIGITAL NATION; shop price sticker","inv":"","confidence":"High","notes":"5-disc set. Count them.","url":"https://www.discogs.com/release/1485-BC-Digital-Nation","n":102},{"photo":15,"position":"Bottom left","artist":"Bad Company","title":"Shot Down On Safari","label":"BC Recordings","cat":"BCRUKLP002","year":2002,"format":"4x12\" album, 45 RPM","discs":4,"shows":"Picture sleeve in bag; discs not countable from photo","tracklist":"A: Hornet / B: Snow Cat / C: Dogsploitation / D: Dr. Schevago / E: Torpedo / F: Dosage / G: Jellybean / H: Wednesday","read":"Sleeve: BC logo / SHOT DOWN ON SAFARI","inv":"","confidence":"High","notes":"4-disc set. A loose white label of disc 1 (Hornet / Snow Cat) also appears in Photo 4, so check this copy still has its own disc 1.","url":"https://www.discogs.com/release/72785-Bad-Company-UK-Shot-Down-On-Safari","n":103},{"photo":15,"position":"Bottom right","artist":"Technical Itch / Mason & MC Armanni Reign","title":"Nothing / Ruff Rugged & Raw (Technical Itch Remix)","label":"Freak Recordings","cat":"FREAK010","year":2004,"format":"12\", 45 RPM","discs":1,"shows":"Freak house sleeve in bag; 1 disc","tracklist":"A: Technical Itch - Nothing / AA: Mason & MC Armanni Reign - Ruff Rugged & Raw (Technical Itch Remix)","read":"Seller sticker: Tech Itch/Mason / Nothing/Ruff Rugged & Raw Rmx / FREAK010 / 2004; label matches","inv":"0202","confidence":"High","notes":"","url":"https://www.discogs.com/release/349642-Technical-Itch-Mason-2-Armanni-Reign-Nothing-Ruff-Rugged-Raw-Technical-Itch-Remix","n":104},{"photo":16,"position":"Left","artist":"Various (compiled by DJ SS)","title":"The World Of Drum & Bass","label":"Formation Records","cat":"FORMLP07","year":1999,"format":"8x12\" box set, 45 RPM","discs":8,"shows":"Box with slipcase; discs not countable from photo","tracklist":"A: Twisted Individual - Muzik / B: Rayner - Emperor / C: John B - Salsa (Remix) / D: Decoder & Substance - Skuffle / E: Kenny Ken & G Squad - Afrika / F: Tekniq - Geneva / G: DJ SS - Motorways / H: Blue Sonix - Funk Nouveau / I: Bad Company - Morphine / J: Shy FX & Trend - Contagious / K: Codename John & DJ SS - Distance / L: John B - Ole (Remix) / M: JB & Asend - The Change / N: DJ SS & Matrix - The Answer? / O: Sound Of The Future - Windmills / P: Perfect Combination - Down Four","read":"Box: FORMATION RECORDS PRESENTS THE WORLD OF DRUM & BASS / COMPILED BY DJ SS + artist list","inv":"","confidence":"High","notes":"8-disc box. Count them.","url":"https://www.discogs.com/release/112735-Various-The-World-Of-Drum-Bass","n":105},{"photo":16,"position":"Right","artist":"Various","title":"Spy Technologies","label":"DSCI4","cat":"DSCI4LP 002","year":2002,"format":"6x12\" compilation","discs":6,"shows":"Box/slipcase with diamond-plate artwork; discs not countable from photo","tracklist":"A: Sta & Paul B - Step 2 Zero / B: Sta & Paul B - Gush / C: Black Sun Empire - Smoke (Sinthetix Remix) / D: Sinthetix - Cryogenic / E: Chris SU & SKC - Black Out / F: SKC - Lobotomy / G: Sinthetix - Hypochondriac / H: Sinthetix - Switchblade Sisters / I: Crossfire - Hydra / J: DJ S.I.N. & Stare - Highline / K: Sta & Paul B - Come Closer / L: ArQer & Realtime - Exhaust","read":"Box: SPY TECHNOLOGIES / DSCI4; red price sticker","inv":"","confidence":"High","notes":"6-disc set; discs and a 2x12\" sampler were also sold separately. Count them.","url":"https://www.discogs.com/release/52393-Various-Spy-Technologies","n":106}];
+  var CALYX = [{"title":"Catapult EP","label":"Moving Shadow","cat":"MSXEP003","year":2000,"format":"2x12\", limited edition","tracklist":"X: Catapult / Y: Reshuffle / XX: Transition / YY: Decompression","url":"https://www.discogs.com/release/55186-Calyx-Catapult-EP"},{"title":"Downpour EP","label":"Moving Shadow","cat":"MSXEP007","year":2000,"format":"2x12\", 33 RPM","tracklist":"X: Downpour / Y: Quagmire / XX: Ripe / YY: Exchange","url":"https://www.discogs.com/release/26880-Calyx-Downpour-EP"},{"title":"The Wasteground EP","label":"Moving Shadow","cat":"MSXEP018","year":2002,"format":"2x12\", 45 RPM, limited edition","tracklist":"X: Wasteground / Y: Deviation / XX: Kingdom / YY: Mirror Image","url":"https://www.discogs.com/release/59913-Calyx-The-Wasteground-EP"},{"title":"The Killa EP","label":"Moving Shadow","cat":"MSXEP027","year":2003,"format":"2x12\", 45 RPM, limited edition","tracklist":"X: Killa / Y: Ascension / XX: Collision Course / YY: Just You","url":"https://www.discogs.com/release/202768-Calyx-The-Killa-EP"},{"title":"Dark Night EP (spine reads 'Calyx EP')","label":"Metalheadz","cat":"METH 055","year":2004,"format":"2x12\", 45 RPM","tracklist":"Inner Distance / Dark Night (with Kontrol) / Fear This / Headhunter (with OB1)","url":"https://www.discogs.com/release/292974-Calyx-Dark-Night-EP"}];
+  var QUESTIONS = ["Disc counts for every multi-disc set. The photos show outer sleeves only.","Fire (HLLP10): only discs C/D and E/F are shown. Is disc A/B included?","Earth Volume One: discs A/B, E/F, G/H and I/J are shown (seller nos. 0511, 0513 to 0515). Is C/D (0512) included?","Future Cut, Bloodline EP: the bag carries a shop sticker for Ram Trilogy, Titan EP. Which record is inside?","Decoder, Two-Nine EP test press and Substance, Solace EP: one disc of each 2x12\" is visible. Is the second disc there?","Decoder & Substance, IconOne appears in photos 5 and 6. One copy or two?","Loose single discs from albums (MDZ.03, Platinum Breakz 03, Plastic Surgery 2 and 4): confirm no partner discs.","Runout etchings or label photos for the unidentified and candidates-only items, especially the two Calyx 2x12\"s.","Breakbeat Science 2: is the box and 120-page booklet included, or discs only?"];
+  var METHOD = ["Source photos are 1600 px wide. Seller stickers and large sleeve text are legible; small label print and shop price stickers mostly are not.","\"Read from photo\" is what is actually visible. Artist, title, label, cat #, year, format and tracklist come from the linked Discogs entries, retrieved October 2026.","Where the seller sticker and Discogs disagree, Discogs is used and the difference is stated in the notes.","Many of these titles exist as stock, promo and white-label variants under one cat #. The linked entry is the best-fit variant.","Nothing here covers condition, grading or price."];
+
+  var RANGE_START = 1998, RANGE_END = 2010;
+  var CONF_LABEL = { High: "Identified", Medium: "Probable", Low: "Candidates only", None: "Unidentified" };
+  var CONF_ORDER = { High: 0, Medium: 1, Low: 2, None: 3 };
+
+  function yearBucket(r) {
+    if (r.year === null || r.year === undefined) { return "unknown"; }
+    return (r.year >= RANGE_START && r.year <= RANGE_END) ? "inside" : "outside";
+  }
+  RECORDS.forEach(function (r) {
+    r.bucket = yearBucket(r);
+    r.haystack = [r.artist, r.title, r.label, r.cat, r.tracklist, r.read, r.notes, r.inv, r.format]
+      .join(" ").toLowerCase();
+  });
+
+  var state = { q: "", conf: "all", year: "all", sortKey: "n", sortDir: 1, open: {} };
+
+  function el(tag, attrs, text) {
+    var node = document.createElement(tag);
+    if (attrs) { Object.keys(attrs).forEach(function (k) { node.setAttribute(k, attrs[k]); }); }
+    if (text !== undefined && text !== null) { node.textContent = text; }
+    return node;
+  }
+  function count(fn) { return RECORDS.filter(fn).length; }
+
+  // Header sticker and lede
+  var years = RECORDS.map(function (r) { return r.year; }).filter(function (y) { return y; });
+  var minYear = Math.min.apply(null, years), maxYear = Math.max.apply(null, years);
+  document.getElementById("meta-count").textContent = "0001 to " + String(RECORDS.length).padStart(4, "0");
+  document.getElementById("meta-years").textContent = minYear + " to " + maxYear;
+  var nHigh = count(function (r) { return r.confidence === "High"; });
+  var nMed = count(function (r) { return r.confidence === "Medium"; });
+  var nOpen = RECORDS.length - nHigh - nMed;
+  var nOutside = count(function (r) { return r.bucket === "outside"; });
+  var lede = document.getElementById("lede");
+  lede.appendChild(el("strong", null, RECORDS.length + " items"));
+  lede.appendChild(document.createTextNode(
+    " are visible in the listing. " + nHigh + " are identified from printed sleeves, labels or the seller's stickers, " +
+    nMed + " are probable matches from handwriting or artwork, and " + nOpen +
+    " cannot be pinned down from the photos. " + nOutside +
+    " fall outside the 1998 to 2010 range in the listing title. Open a row for the tracklist, what the photo shows and what to check."));
+
+  // Filter chips
+  function chipRow(hostId, key, options) {
+    var host = document.getElementById(hostId);
+    options.forEach(function (opt) {
+      var b = el("button", { type: "button", "class": "chip", "aria-pressed": String(state[key] === opt.value) }, opt.label);
+      b.appendChild(el("span", { "class": "count" }, String(opt.count)));
+      b.addEventListener("click", function () {
+        state[key] = opt.value;
+        Array.prototype.forEach.call(host.children, function (c) { c.setAttribute("aria-pressed", "false"); });
+        b.setAttribute("aria-pressed", "true");
+        render();
+      });
+      host.appendChild(b);
+    });
+  }
+  chipRow("conf-chips", "conf", [{ value: "all", label: "All", count: RECORDS.length }].concat(
+    ["High", "Medium", "Low", "None"].map(function (c) {
+      return { value: c, label: CONF_LABEL[c], count: count(function (r) { return r.confidence === c; }) };
+    })));
+  chipRow("year-chips", "year", [
+    { value: "all", label: "Any year", count: RECORDS.length },
+    { value: "inside", label: "Inside the range", count: count(function (r) { return r.bucket === "inside"; }) },
+    { value: "outside", label: "Outside the range", count: nOutside },
+    { value: "unknown", label: "Year unknown", count: count(function (r) { return r.bucket === "unknown"; }) }
+  ]);
+
+  // Sortable header
+  var COLUMNS = [
+    { key: "n", label: "#" }, { key: "photo", label: "Photo" }, { key: "artist", label: "Artist" },
+    { key: "title", label: "Title" }, { key: "label", label: "Label" }, { key: "cat", label: "Cat #" },
+    { key: "year", label: "Year" }, { key: "format", label: "Format" }, { key: "confidence", label: "Identification" },
+    { key: null, label: "Details" }
+  ];
+  var headRow = document.getElementById("head-row");
+  COLUMNS.forEach(function (col) {
+    var th = el("th", { scope: "col" });
+    if (col.key) {
+      var b = el("button", { type: "button" }, col.label);
+      b.appendChild(el("span", { "class": "arrow", "aria-hidden": "true" }, ""));
+      b.addEventListener("click", function () {
+        if (state.sortKey === col.key) { state.sortDir = -state.sortDir; } else { state.sortKey = col.key; state.sortDir = 1; }
+        render();
+      });
+      th.appendChild(b);
+      th.dataset.key = col.key;
+    } else {
+      th.textContent = col.label;
+    }
+    headRow.appendChild(th);
+  });
+
+  function sortValue(r, key) {
+    if (key === "confidence") { return CONF_ORDER[r.confidence]; }
+    if (key === "photo") { return r.photo * 1000 + r.n; }
+    var v = r[key];
+    if (v === null || v === undefined || v === "") { return null; }
+    return typeof v === "string" ? v.toLowerCase() : v;
+  }
+  function compare(a, b) {
+    var va = sortValue(a, state.sortKey), vb = sortValue(b, state.sortKey);
+    if (va === null && vb === null) { return a.n - b.n; }
+    if (va === null) { return 1; }            // blanks always last
+    if (vb === null) { return -1; }
+    if (va < vb) { return -state.sortDir; }
+    if (va > vb) { return state.sortDir; }
+    return a.n - b.n;
+  }
+
+  function detailBlock(heading, text, wide) {
+    var d = el("div", wide ? { "class": "wide" } : null);
+    d.appendChild(el("h3", null, heading));
+    d.appendChild(el("p", null, text));
+    return d;
+  }
+
+  function buildDetail(r) {
+    var tr = el("tr", { "class": "detail", id: "detail-" + r.n });
+    var td = el("td", { colspan: String(COLUMNS.length) });
+    var grid = el("div", { "class": "detail-grid" });
+    if (r.tracklist) { grid.appendChild(detailBlock("Tracklist", r.tracklist, true)); }
+    if (r.notes) { grid.appendChild(detailBlock("Notes and what to verify", r.notes, true)); }
+    if (r.read) { grid.appendChild(detailBlock("Read from the photo", r.read)); }
+    if (r.shows) { grid.appendChild(detailBlock("What the listing shows", r.shows)); }
+    var facts = [];
+    if (r.discs) { facts.push("Discs in the full release: " + r.discs); }
+    if (r.inv) { facts.push("Seller inventory no.: " + r.inv); }
+    facts.push("Photo " + r.photo + ", " + r.position.toLowerCase());
+    grid.appendChild(detailBlock("Where and how many", facts.join(". ") + "."));
+    if (r.url) {
+      var d = el("div");
+      d.appendChild(el("h3", null, "Source"));
+      var p = el("p");
+      p.appendChild(el("a", { href: r.url, rel: "noopener", target: "_blank" }, "Open the Discogs entry"));
+      d.appendChild(p);
+      grid.appendChild(d);
+    }
+    td.appendChild(grid);
+    tr.appendChild(td);
+    return tr;
+  }
+
+  function cell(cls, text, placeholder) {
+    var td = el("td", cls ? { "class": cls } : null);
+    if (text === null || text === undefined || text === "") {
+      td.appendChild(el("span", { "class": "unknown" }, placeholder || "Not readable"));
+    } else {
+      td.textContent = String(text);
+    }
+    return td;
+  }
+
+  function buildRow(r) {
+    var tr = el("tr", { "class": "rec" });
+    tr.appendChild(cell("num", r.n));
+    tr.appendChild(cell("num", r.photo + " / " + r.position));
+    tr.appendChild(cell("artist", r.artist));
+    tr.appendChild(cell("", r.title));
+    tr.appendChild(cell("", r.label));
+    tr.appendChild(cell("cat", r.cat));
+    var yearTd = cell("year", r.year, "Unknown");
+    if (r.bucket === "outside") { yearTd.appendChild(el("span", { "class": "outside" }, "outside range")); }
+    tr.appendChild(yearTd);
+    tr.appendChild(cell("", r.format));
+    var confTd = el("td");
+    confTd.appendChild(el("span", { "class": "badge " + r.confidence }, CONF_LABEL[r.confidence]));
+    tr.appendChild(confTd);
+    var tdBtn = el("td");
+    var isOpen = !!state.open[r.n];
+    var btn = el("button", { type: "button", "class": "toggle", "aria-expanded": String(isOpen),
+      "aria-controls": "detail-" + r.n }, isOpen ? "Hide" : "Show");
+    tdBtn.appendChild(btn);
+    tr.appendChild(tdBtn);
+    function toggle() { state.open[r.n] = !state.open[r.n]; render(); }
+    btn.addEventListener("click", function (e) { e.stopPropagation(); toggle(); });
+    tr.addEventListener("click", function (e) { if (!e.target.closest("a, button")) { toggle(); } });
+    return tr;
+  }
+
+  function render() {
+    var q = state.q.trim().toLowerCase();
+    var rows = RECORDS.filter(function (r) {
+      if (state.conf !== "all" && r.confidence !== state.conf) { return false; }
+      if (state.year !== "all" && r.bucket !== state.year) { return false; }
+      if (q && r.haystack.indexOf(q) === -1) { return false; }
+      return true;
+    }).sort(compare);
+
+    var body = document.getElementById("body");
+    body.textContent = "";
+    var frag = document.createDocumentFragment();
+    rows.forEach(function (r) {
+      frag.appendChild(buildRow(r));
+      if (state.open[r.n]) { frag.appendChild(buildDetail(r)); }
+    });
+    body.appendChild(frag);
+
+    document.getElementById("empty").hidden = rows.length !== 0;
+    document.getElementById("records").hidden = rows.length === 0;
+    document.getElementById("status").textContent =
+      "Showing " + rows.length + " of " + RECORDS.length + " items.";
+
+    Array.prototype.forEach.call(headRow.children, function (th) {
+      var arrow = th.querySelector(".arrow");
+      if (!arrow) { return; }
+      var active = th.dataset.key === state.sortKey;
+      arrow.textContent = active ? (state.sortDir === 1 ? " ▲" : " ▼") : "";
+      if (active) { th.setAttribute("aria-sort", state.sortDir === 1 ? "ascending" : "descending"); }
+      else { th.removeAttribute("aria-sort"); }
+    });
+  }
+
+  document.getElementById("q").addEventListener("input", function (e) { state.q = e.target.value; render(); });
+  document.getElementById("clear").addEventListener("click", function () {
+    state.q = ""; state.conf = "all"; state.year = "all";
+    document.getElementById("q").value = "";
+    ["conf-chips", "year-chips"].forEach(function (id) {
+      Array.prototype.forEach.call(document.getElementById(id).children, function (c, i) {
+        c.setAttribute("aria-pressed", String(i === 0));
+      });
+    });
+    render();
+  });
+
+  // Static sections
+  var qList = document.getElementById("questions");
+  QUESTIONS.forEach(function (t) { qList.appendChild(el("li", null, t)); });
+  var mList = document.getElementById("method");
+  METHOD.forEach(function (t) { mList.appendChild(el("li", null, t)); });
+  var calyxBody = document.getElementById("calyx");
+  CALYX.forEach(function (c) {
+    var tr = el("tr");
+    [c.title, c.label, c.cat, c.year, c.format, c.tracklist].forEach(function (v) { tr.appendChild(el("td", null, String(v))); });
+    var td = el("td");
+    td.appendChild(el("a", { href: c.url, rel: "noopener", target: "_blank" }, "Open"));
+    tr.appendChild(td);
+    calyxBody.appendChild(tr);
+  });
+
+  render();
+}());
+</script>
+<noscript><p style="color:#fff;padding:16px">This page needs JavaScript to show the record list.</p></noscript>
+</body>
+</html>
